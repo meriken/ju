@@ -1,0 +1,2060 @@
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  target/cljsbuild/public/js/out/goog/deps.js
+notifying browser that file changed:  target/cljsbuild/public/js/out/cljs_deps.js
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 2.722 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.499 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.341 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.359 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.516 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.288 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.295 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.382 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.358 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.365 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.347 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.357 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  target/cljsbuild/public/js/out/goog/deps.js
+notifying browser that file changed:  target/cljsbuild/public/js/out/cljs_deps.js
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.81 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.568 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.592 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.425 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.356 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.927 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.377 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.369 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.382 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.394 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.344 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.266 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.377 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: No such namespace: goog.history.Html5history.EventType, could not locate goog/history/Html5history/EventType.cljs, goog/history/Html5history/EventType.cljc, or Closure namespace "goog.history.Html5history.EventType" on file null, line null, column null
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.197 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.378 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.321 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/Html5History at line 82 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/Html5History at line 82 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/Uri at line 94 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.393 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: No such namespace: goog.history.Html5history, could not locate goog/history/Html5history.cljs, goog/history/Html5history.cljc, or Closure namespace "goog.history.Html5history" on file null, line null, column null
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.138 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  target/cljsbuild/public/js/out/cljs_deps.js
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.382 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.294 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.367 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.89 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.336 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.333 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.376 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.351 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.336 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: No such namespace: console, could not locate console.cljs, console.cljc, or Closure namespace "" at line 103 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var console/log at line 103 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.348 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: No such namespace: console, could not locate console.cljs, console.cljc, or Closure namespace "" at line 105 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var console/log at line 105 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.16 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.302 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.306 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.282 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/target at line 105 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/target at line 105 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.34 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.338 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.344 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.307 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.296 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.294 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.634 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.338 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.29 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.297 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Unable to resolve var: about-page in this context at line 65 src-cljs\ju\core.cljs on file src-cljs\ju\core.cljs, line 65, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.168 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.292 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.298 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.41 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.297 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.311 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.362 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.91 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: new-posts-page at line 61 is being replaced at line 65 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.301 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: new-posts-page at line 61 is being replaced at line 65 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.332 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: new-posts-page at line 61 is being replaced at line 65 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.323 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.297 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: new-posts-page at line 65 is being replaced at line 69 src-cljs\ju\core.cljs
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Unable to resolve var: create-new-thread-page in this context at line 73 src-cljs\ju\core.cljs on file src-cljs\ju\core.cljs, line 73, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.189 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.308 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.315 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.301 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.31 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.31 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.291 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.31 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.339 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.329 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.297 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.368 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.343 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.335 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.301 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.305 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.336 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.329 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.307 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ] on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 64, column 5
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.187 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.298 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.315 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.333 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ) on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 69, column 4
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.196 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.286 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.301 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.322 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.309 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter } on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 59, column 39
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.129 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.32 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.313 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/% at line 63 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/tag at line 63 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var cljs.core/for at line 63 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/in at line 63 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/% at line 63 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.426 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.796 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ) on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 72, column 4
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.159 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ) on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 72, column 4
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.127 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.341 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.372 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.336 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.312 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.326 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.323 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.326 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/identityi at line 65 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.375 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.296 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.318 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.301 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.527 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.352 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.359 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.369 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.283 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.279 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.349 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ) on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 81, column 4
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.139 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.297 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.316 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.382 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.3 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.365 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.341 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: No such namespace: accountant.core, could not locate accountant/core.cljs, accountant/core.cljc, or Closure namespace "accountant.core" on file null, line null, column null
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.166 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: No such namespace: accountant.core, could not locate accountant/core.cljs, accountant/core.cljc, or Closure namespace "accountant.core" on file null, line null, column null
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.168 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  target/cljsbuild/public/js/out/goog/deps.js
+notifying browser that file changed:  target/cljsbuild/public/js/out/cljs_deps.js
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.593 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.593 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.456 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.431 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.475 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.408 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.596 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.421 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  target/cljsbuild/public/js/out/cljs_deps.js
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.45 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.411 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.346 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.365 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  target/cljsbuild/public/js/out/cljs_deps.js
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.5 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.335 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.454 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.366 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.369 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.402 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.303 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.365 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.329 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.337 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.409 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.372 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.37 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.388 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  target/cljsbuild/public/js/out/cljs_deps.js
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.346 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.026 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/history at line 141 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.391 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/history at line 141 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.396 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/history at line 141 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.36 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/history at line 141 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.326 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/history at line 141 src-cljs\ju\core.cljs
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 143 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 169, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.248 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/history at line 141 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/e at line 154 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.395 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/history at line 141 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.348 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.408 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.356 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.412 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.365 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.33 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.362 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.289 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.362 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.378 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.573 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.313 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.315 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.305 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.297 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.28 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  target/cljsbuild/public/js/out/goog/deps.js
+notifying browser that file changed:  target/cljsbuild/public/js/out/cljs_deps.js
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.811 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mclojure.lang.ExceptionInfo: Only :as and :refer options supported in :require / :require-macros; offending spec: [jayq.core :only [$ css html]] at line 1 src-cljs\ju\core.cljs
+ at clojure.core$ex_info.invoke (core.clj:4593)
+    cljs.analyzer$error.invoke (analyzer.cljc:568)
+    cljs.analyzer$error.invoke (analyzer.cljc:566)
+    cljs.analyzer$basic_validate_ns_spec.invoke (analyzer.cljc:1703)
+    cljs.analyzer$parse_require_spec.invoke (analyzer.cljc:1739)
+    clojure.lang.AFn.applyToHelper (AFn.java:171)
+    clojure.lang.AFn.applyTo (AFn.java:144)
+    clojure.core$apply.invoke (core.clj:636)
+    clojure.core$partial$fn__4533.doInvoke (core.clj:2512)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$map$fn__4553.invoke (core.clj:2622)
+    clojure.lang.LazySeq.sval (LazySeq.java:40)
+    clojure.lang.LazySeq.seq (LazySeq.java:49)
+    clojure.lang.Cons.next (Cons.java:39)
+    clojure.lang.RT.boundedLength (RT.java:1735)
+    clojure.lang.RestFn.applyTo (RestFn.java:130)
+    clojure.core$apply.invoke (core.clj:634)
+    cljs.analyzer$eval1114$fn__1116$fn__1121.invoke (analyzer.cljc:1926)
+    clojure.core.protocols/fn (protocols.clj:167)
+    clojure.core.protocols$fn__6478$G__6473__6487.invoke (protocols.clj:19)
+    clojure.core.protocols$seq_reduce.invoke (protocols.clj:31)
+    clojure.core.protocols/fn (protocols.clj:101)
+    clojure.core.protocols$fn__6452$G__6447__6465.invoke (protocols.clj:13)
+    clojure.core$reduce.invoke (core.clj:6519)
+    cljs.analyzer$eval1114$fn__1116.invoke (analyzer.cljc:1909)
+    clojure.lang.MultiFn.invoke (MultiFn.java:251)
+    cljs.analyzer$analyze_seq_STAR_.invoke (analyzer.cljc:2390)
+    cljs.analyzer$analyze_seq_STAR__wrap.invoke (analyzer.cljc:2395)
+    cljs.analyzer$analyze_seq.invoke (analyzer.cljc:2416)
+    cljs.analyzer$analyze_form.invoke (analyzer.cljc:2525)
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.046 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mclojure.lang.ExceptionInfo: Only :as and :refer options supported in :require / :require-macros; offending spec: [jayq.core :only [$ id]] at line 1 src-cljs\ju\core.cljs
+ at clojure.core$ex_info.invoke (core.clj:4593)
+    cljs.analyzer$error.invoke (analyzer.cljc:568)
+    cljs.analyzer$error.invoke (analyzer.cljc:566)
+    cljs.analyzer$basic_validate_ns_spec.invoke (analyzer.cljc:1703)
+    cljs.analyzer$parse_require_spec.invoke (analyzer.cljc:1739)
+    clojure.lang.AFn.applyToHelper (AFn.java:171)
+    clojure.lang.AFn.applyTo (AFn.java:144)
+    clojure.core$apply.invoke (core.clj:636)
+    clojure.core$partial$fn__4533.doInvoke (core.clj:2512)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$map$fn__4553.invoke (core.clj:2622)
+    clojure.lang.LazySeq.sval (LazySeq.java:40)
+    clojure.lang.LazySeq.seq (LazySeq.java:49)
+    clojure.lang.Cons.next (Cons.java:39)
+    clojure.lang.RT.boundedLength (RT.java:1735)
+    clojure.lang.RestFn.applyTo (RestFn.java:130)
+    clojure.core$apply.invoke (core.clj:634)
+    cljs.analyzer$eval1114$fn__1116$fn__1121.invoke (analyzer.cljc:1926)
+    clojure.core.protocols/fn (protocols.clj:167)
+    clojure.core.protocols$fn__6478$G__6473__6487.invoke (protocols.clj:19)
+    clojure.core.protocols$seq_reduce.invoke (protocols.clj:31)
+    clojure.core.protocols/fn (protocols.clj:101)
+    clojure.core.protocols$fn__6452$G__6447__6465.invoke (protocols.clj:13)
+    clojure.core$reduce.invoke (core.clj:6519)
+    cljs.analyzer$eval1114$fn__1116.invoke (analyzer.cljc:1909)
+    clojure.lang.MultiFn.invoke (MultiFn.java:251)
+    cljs.analyzer$analyze_seq_STAR_.invoke (analyzer.cljc:2390)
+    cljs.analyzer$analyze_seq_STAR__wrap.invoke (analyzer.cljc:2395)
+    cljs.analyzer$analyze_seq.invoke (analyzer.cljc:2416)
+    cljs.analyzer$analyze_form.invoke (analyzer.cljc:2525)
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.02 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mclojure.lang.ExceptionInfo: Only :as and :refer options supported in :require / :require-macros; offending spec: [jayq.core :only [$ id]] at line 1 src-cljs\ju\core.cljs
+ at clojure.core$ex_info.invoke (core.clj:4593)
+    cljs.analyzer$error.invoke (analyzer.cljc:568)
+    cljs.analyzer$error.invoke (analyzer.cljc:566)
+    cljs.analyzer$basic_validate_ns_spec.invoke (analyzer.cljc:1703)
+    cljs.analyzer$parse_require_spec.invoke (analyzer.cljc:1739)
+    clojure.lang.AFn.applyToHelper (AFn.java:171)
+    clojure.lang.AFn.applyTo (AFn.java:144)
+    clojure.core$apply.invoke (core.clj:636)
+    clojure.core$partial$fn__4533.doInvoke (core.clj:2512)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$map$fn__4553.invoke (core.clj:2622)
+    clojure.lang.LazySeq.sval (LazySeq.java:40)
+    clojure.lang.LazySeq.seq (LazySeq.java:49)
+    clojure.lang.Cons.next (Cons.java:39)
+    clojure.lang.RT.boundedLength (RT.java:1735)
+    clojure.lang.RestFn.applyTo (RestFn.java:130)
+    clojure.core$apply.invoke (core.clj:634)
+    cljs.analyzer$eval1114$fn__1116$fn__1121.invoke (analyzer.cljc:1926)
+    clojure.core.protocols/fn (protocols.clj:167)
+    clojure.core.protocols$fn__6478$G__6473__6487.invoke (protocols.clj:19)
+    clojure.core.protocols$seq_reduce.invoke (protocols.clj:31)
+    clojure.core.protocols/fn (protocols.clj:101)
+    clojure.core.protocols$fn__6452$G__6447__6465.invoke (protocols.clj:13)
+    clojure.core$reduce.invoke (core.clj:6519)
+    cljs.analyzer$eval1114$fn__1116.invoke (analyzer.cljc:1909)
+    clojure.lang.MultiFn.invoke (MultiFn.java:251)
+    cljs.analyzer$analyze_seq_STAR_.invoke (analyzer.cljc:2390)
+    cljs.analyzer$analyze_seq_STAR__wrap.invoke (analyzer.cljc:2395)
+    cljs.analyzer$analyze_seq.invoke (analyzer.cljc:2416)
+    cljs.analyzer$analyze_form.invoke (analyzer.cljc:2525)
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.023 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mclojure.lang.ExceptionInfo: Only :as and :refer options supported in :require / :require-macros; offending spec: [jayq.core :only [$ id]] at line 1 src-cljs\ju\core.cljs
+ at clojure.core$ex_info.invoke (core.clj:4593)
+    cljs.analyzer$error.invoke (analyzer.cljc:568)
+    cljs.analyzer$error.invoke (analyzer.cljc:566)
+    cljs.analyzer$basic_validate_ns_spec.invoke (analyzer.cljc:1703)
+    cljs.analyzer$parse_require_spec.invoke (analyzer.cljc:1739)
+    clojure.lang.AFn.applyToHelper (AFn.java:171)
+    clojure.lang.AFn.applyTo (AFn.java:144)
+    clojure.core$apply.invoke (core.clj:636)
+    clojure.core$partial$fn__4533.doInvoke (core.clj:2512)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$map$fn__4553.invoke (core.clj:2622)
+    clojure.lang.LazySeq.sval (LazySeq.java:40)
+    clojure.lang.LazySeq.seq (LazySeq.java:49)
+    clojure.lang.Cons.next (Cons.java:39)
+    clojure.lang.RT.boundedLength (RT.java:1735)
+    clojure.lang.RestFn.applyTo (RestFn.java:130)
+    clojure.core$apply.invoke (core.clj:634)
+    cljs.analyzer$eval1114$fn__1116$fn__1121.invoke (analyzer.cljc:1926)
+    clojure.core.protocols/fn (protocols.clj:167)
+    clojure.core.protocols$fn__6478$G__6473__6487.invoke (protocols.clj:19)
+    clojure.core.protocols$seq_reduce.invoke (protocols.clj:31)
+    clojure.core.protocols/fn (protocols.clj:101)
+    clojure.core.protocols$fn__6452$G__6447__6465.invoke (protocols.clj:13)
+    clojure.core$reduce.invoke (core.clj:6519)
+    cljs.analyzer$eval1114$fn__1116.invoke (analyzer.cljc:1909)
+    clojure.lang.MultiFn.invoke (MultiFn.java:251)
+    cljs.analyzer$analyze_seq_STAR_.invoke (analyzer.cljc:2390)
+    cljs.analyzer$analyze_seq_STAR__wrap.invoke (analyzer.cljc:2395)
+    cljs.analyzer$analyze_seq.invoke (analyzer.cljc:2416)
+    cljs.analyzer$analyze_form.invoke (analyzer.cljc:2525)
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.022 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mclojure.lang.ExceptionInfo: Only :as and :refer options supported in :require / :require-macros; offending spec: [jayq.core :only [$ id]] at line 1 src-cljs\ju\core.cljs
+ at clojure.core$ex_info.invoke (core.clj:4593)
+    cljs.analyzer$error.invoke (analyzer.cljc:568)
+    cljs.analyzer$error.invoke (analyzer.cljc:566)
+    cljs.analyzer$basic_validate_ns_spec.invoke (analyzer.cljc:1703)
+    cljs.analyzer$parse_require_spec.invoke (analyzer.cljc:1739)
+    clojure.lang.AFn.applyToHelper (AFn.java:171)
+    clojure.lang.AFn.applyTo (AFn.java:144)
+    clojure.core$apply.invoke (core.clj:636)
+    clojure.core$partial$fn__4533.doInvoke (core.clj:2512)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$map$fn__4553.invoke (core.clj:2622)
+    clojure.lang.LazySeq.sval (LazySeq.java:40)
+    clojure.lang.LazySeq.seq (LazySeq.java:49)
+    clojure.lang.Cons.next (Cons.java:39)
+    clojure.lang.RT.boundedLength (RT.java:1735)
+    clojure.lang.RestFn.applyTo (RestFn.java:130)
+    clojure.core$apply.invoke (core.clj:634)
+    cljs.analyzer$eval1114$fn__1116$fn__1121.invoke (analyzer.cljc:1926)
+    clojure.core.protocols/fn (protocols.clj:167)
+    clojure.core.protocols$fn__6478$G__6473__6487.invoke (protocols.clj:19)
+    clojure.core.protocols$seq_reduce.invoke (protocols.clj:31)
+    clojure.core.protocols/fn (protocols.clj:101)
+    clojure.core.protocols$fn__6452$G__6447__6465.invoke (protocols.clj:13)
+    clojure.core$reduce.invoke (core.clj:6519)
+    cljs.analyzer$eval1114$fn__1116.invoke (analyzer.cljc:1909)
+    clojure.lang.MultiFn.invoke (MultiFn.java:251)
+    cljs.analyzer$analyze_seq_STAR_.invoke (analyzer.cljc:2390)
+    cljs.analyzer$analyze_seq_STAR__wrap.invoke (analyzer.cljc:2395)
+    cljs.analyzer$analyze_seq.invoke (analyzer.cljc:2416)
+    cljs.analyzer$analyze_form.invoke (analyzer.cljc:2525)
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.022 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Referred var jayq.core/id does not exist on file null, line null, column null
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.251 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/id at line 143 src-cljs\ju\core.cljs
+notifying browser that file changed:  target/cljsbuild/public/js/out/cljs_deps.js
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.511 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.387 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.402 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.388 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.443 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.422 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: create-new-thread-page at line 99 is being replaced at line 105 src-cljs\ju\core.cljs
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Unable to resolve var: help-page in this context at line 111 src-cljs\ju\core.cljs on file src-cljs\ju\core.cljs, line 111, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.229 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.371 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.438 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.501 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.483 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.514 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.462 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.458 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.42 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.484 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.401 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.397 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.015 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.4 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Unknown dot form of (. ($ "a") -on ("click" (fn* [p1__38946#] (handle-click-on-link history p1__38946#)))) with classification [:cljs.analyzer/expr :cljs.analyzer/property :cljs.analyzer/expr] at line 172 src-cljs\ju\core.cljs on file src-cljs\ju\core.cljs, line 172, column 5
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.218 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.419 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.354 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.361 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.363 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.344 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.357 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.375 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.326 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.44 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.299 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.367 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 160 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 186, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.207 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Wrong number of args (3) passed to jayq.core/$ at line 171 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.507 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.372 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.354 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.412 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.405 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.407 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/on at line 171 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.393 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.329 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.365 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.325 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.337 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 160 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 186, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.199 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.368 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.378 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.494 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.348 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.69 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.395 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.363 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.463 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.409 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.364 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.325 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.331 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.334 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.341 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.3 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.33 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.321 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.346 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: No such namespace: jayq.macros, could not locate jayq/macros.cljs, jayq/macros.cljc, or Closure namespace "jayq.macros" on file null, line null, column null
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.147 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.373 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mclojure.lang.ExceptionInfo: Only [lib.ns :only (names)] specs supported in :use / :use-macros; offending spec: [jayq.macros] at line 1 src-cljs\ju\core.cljs
+ at clojure.core$ex_info.invoke (core.clj:4593)
+    cljs.analyzer$error.invoke (analyzer.cljc:568)
+    cljs.analyzer$error.invoke (analyzer.cljc:566)
+    cljs.analyzer$use__GT_require.invoke (analyzer.cljc:1730)
+    clojure.core$partial$fn__4527.invoke (core.clj:2493)
+    clojure.core$comp$fn__4495.invoke (core.clj:2438)
+    clojure.core$map$fn__4553.invoke (core.clj:2622)
+    clojure.lang.LazySeq.sval (LazySeq.java:40)
+    clojure.lang.LazySeq.seq (LazySeq.java:49)
+    clojure.lang.Cons.next (Cons.java:39)
+    clojure.lang.RT.boundedLength (RT.java:1735)
+    clojure.lang.RestFn.applyTo (RestFn.java:130)
+    clojure.core$apply.invoke (core.clj:634)
+    cljs.analyzer$eval1114$fn__1116$fn__1121.invoke (analyzer.cljc:1926)
+    clojure.core.protocols/fn (protocols.clj:167)
+    clojure.core.protocols$fn__6478$G__6473__6487.invoke (protocols.clj:19)
+    clojure.core.protocols$seq_reduce.invoke (protocols.clj:31)
+    clojure.core.protocols/fn (protocols.clj:101)
+    clojure.core.protocols$fn__6452$G__6447__6465.invoke (protocols.clj:13)
+    clojure.core$reduce.invoke (core.clj:6519)
+    cljs.analyzer$eval1114$fn__1116.invoke (analyzer.cljc:1909)
+    clojure.lang.MultiFn.invoke (MultiFn.java:251)
+    cljs.analyzer$analyze_seq_STAR_.invoke (analyzer.cljc:2390)
+    cljs.analyzer$analyze_seq_STAR__wrap.invoke (analyzer.cljc:2395)
+    cljs.analyzer$analyze_seq.invoke (analyzer.cljc:2416)
+    cljs.analyzer$analyze_form.invoke (analyzer.cljc:2525)
+    cljs.analyzer$analyze_STAR_.invoke (analyzer.cljc:2572)
+    cljs.analyzer$analyze.invoke (analyzer.cljc:2588)
+    cljs.analyzer$parse_ns$fn__1387$fn__1388.invoke (analyzer.cljc:2704)
+    cljs.analyzer$parse_ns$fn__1387.invoke (analyzer.cljc:2704)
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.022 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Could not locate jayq/core__init.class or jayq/core.clj on classpath. on file null, line null, column null
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.145 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.37 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.419 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.371 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.366 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.31 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.366 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.303 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 162 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 187, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.166 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.321 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.319 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.316 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.359 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ) on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 166, column 38
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.21 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.364 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.39 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.415 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.308 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.359 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.328 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.376 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.389 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.34 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.31 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.285 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.368 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.332 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.336 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.35 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Wrong number of args (3) passed to ju.core/handle-click-on-link at line 187 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.331 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.294 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.381 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.278 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.324 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ) on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 187, column 26
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.226 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.351 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.345 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/clear at line 131 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/clear at line 132 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.424 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Referred var jayq.core/clear does not exist on file null, line null, column null
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.171 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/clear at line 131 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/clear at line 132 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.431 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.419 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.415 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.447 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.425 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.398 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/history at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.441 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 133 Z:\GitHub\ju\src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/handle-click-on-link at line 134 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.408 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.324 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.446 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.305 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.341 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.345 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.361 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.327 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.295 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.346 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.324 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.667 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.826 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.333 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.363 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.412 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.34 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.395 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.355 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.325 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.351 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.45 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.398 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.98 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.332 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.341 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.33 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.343 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.387 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.309 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.379 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.333 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.939 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.321 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.307 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.314 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.35 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.302 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.329 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.331 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.374 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.4 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.335 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.329 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.574 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.354 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.31 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.308 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.343 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.322 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.384 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.319 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ) on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 99, column 4
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.166 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.493 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.342 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.353 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.404 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.358 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.423 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.351 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/update-links at line 127 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.449 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/update-links at line 128 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.366 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/update-page at line 128 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.328 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/update-page at line 128 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.373 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/update-page at line 128 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.389 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.342 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.314 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.374 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Unable to resolve var: updated-page in this context at line 182 Z:\GitHub\ju\src-cljs\ju\core.cljs on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 182, column 3
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.206 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Unable to resolve var: updated-page in this context at line 183 Z:\GitHub\ju\src-cljs\ju\core.cljs on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 183, column 3
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.467 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Unable to resolve var: updated-page in this context at line 184 Z:\GitHub\ju\src-cljs\ju\core.cljs on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 184, column 3
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.18 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Unable to resolve var: updated-page in this context at line 185 Z:\GitHub\ju\src-cljs\ju\core.cljs on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 185, column 3
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.18 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.354 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/wrapper at line 131 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.29 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Unable to resolve var: page in this context at line 179 Z:\GitHub\ju\src-cljs\ju\core.cljs on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 179, column 3
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.195 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.319 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.351 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.289 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.379 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.352 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.352 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.333 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.352 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.33 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.407 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.393 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.316 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.349 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.365 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.402 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.323 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.348 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.325 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.349 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.093 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.313 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.317 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.303 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Invalid token: : on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 99, column 49
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.136 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.316 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.38 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.353 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.432 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.305 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.328 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/html at line 93 Z:\GitHub\ju\src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.401 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.275 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.337 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.341 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.429 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.696 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.348 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 92 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 212, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.148 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 92 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 213, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.21 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.382 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.363 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.353 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.449 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.397 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.358 seconds.[0m
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+sending changed CSS file: resources/public/css/screen.css
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Invalid token: happened: on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 103, column 49
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.167 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.457 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.457 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 1.063 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.502 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.37 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.879 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/threads-handler at line 100 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.548 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/threads-handler at line 93 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.372 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/threads-handler at line 93 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.361 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/threads-handler at line 93 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.384 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/threads-handler at line 93 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.396 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/threads-handler at line 93 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.427 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.365 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.335 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.363 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/keywords? at line 195 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.364 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/keywords? at line 196 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.388 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.331 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.392 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.398 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/pmap at line 185 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.364 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.389 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.41 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.377 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.45 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.35 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.378 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.387 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.399 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.68 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.349 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.464 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.375 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/add-class at line 145 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.402 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mANALYSIS ERROR: Referred var jayq.core/update does not exist on file null, line null, column null
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.143 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.31 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.359 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 161 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 161 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.556 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 161 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 161 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.421 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ) on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 153, column 68
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.199 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 149 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 214, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.173 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 160 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 160 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.405 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 160 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 160 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.426 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/unhexify at line 166 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.384 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 161 src-cljs\ju\core.cljs
+WARNING: Use of undeclared Var ju.core/fetch-thread-list! at line 161 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.575 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter ) on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 183, column 2
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.182 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.323 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.958 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.358 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.662 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.325 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.346 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.33 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.373 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.416 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.362 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.308 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.325 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.354 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.397 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.336 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.422 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.488 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.345 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.611 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.366 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 166 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 221, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.185 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: Unmatched delimiter } on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 173, column 159
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.285 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 166 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 221, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.183 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+WARNING: Use of undeclared Var ju.core/first- at line 178 src-cljs\ju\core.cljs
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.404 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.414 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.364 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.385 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.319 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.361 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.329 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.725 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 166 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 227, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.178 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.395 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.345 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+[31mCompiling "target/cljsbuild/public/js/app.js" failed.
+[0mERROR: EOF while reading, starting at line 192 and column 1 on file Z:\GitHub\ju\src-cljs\ju\core.cljs, line 227, column 1
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.248 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.389 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.402 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.363 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.346 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.352 seconds.[0m
+[0mCompiling "target/cljsbuild/public/js/app.js" from ("src-cljs" "env/dev/cljs")...
+notifying browser that file changed:  out\ju\core.js
+[32mSuccessfully compiled "target/cljsbuild/public/js/app.js" in 0.422 seconds.[0m

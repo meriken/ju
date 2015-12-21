@@ -10,3 +10,9 @@ pom.xml.asc
 .lein-plugins/
 .lein-failures
 .nrepl-port
+ju.log.*
+/.idea
+.lein-env
+ju.hsqldb.*
+ju.log
+/projectFilesBackup
