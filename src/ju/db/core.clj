@@ -191,6 +191,14 @@
       (pos? (count files))
       (first files))))
 
+(defn get-file-by-id
+  [file-id]
+  (let [files (select files (where {:id file-id}))]
+    (and
+      files
+      (pos? (count files))
+      (first files))))
+
 (defn hexify [s]
   (apply str (map #(format "%02X" %) (.getBytes s "UTF-8"))))
 
@@ -256,7 +264,24 @@
 
 (defn get-all-records-in-file
   [file-id]
-  (select records (where {:file_id file-id}) (order :stamp :ASC)))
+  (select records
+          (where {:file_id file-id})
+          (order :stamp :ASC)
+          ;(offset 20)
+          ;(limit 20)
+          ))
+
+(defn get-records-on-page
+  [file-id page-size page-num]
+  (let [num-records (:num-records (get-file-by-id file-id))
+        num-pages (+ (quot num-records page-size) (if (pos? (rem num-records page-size)) 1 0))
+        record-offset (- num-records page-size (* page-num page-size))
+        record-offset (if (neg? record-offset) 0 record-offset)]
+    (select records
+          (where {:file_id file-id})
+          (order :stamp :ASC)
+          (offset record-offset)
+          (limit page-size))))
 
 (defn get-records-in-file-with-range
   [file-id start end]

@@ -9,14 +9,13 @@
             [taoensso.timbre :as timbre]))
 
 (defn home-page []
-  (timbre/debug "home-page\n")
   (layout/render "home.html"))
 
 (defroutes home-routes
            (GET "/" [] (home-page))
            (GET "/threads" [] (home-page))
-           (GET "/threads/:title" [] (home-page))
-           (GET "/threads/:title/:qualifier" [] (home-page))
+           (GET "/thread/:title" [] (home-page))
+           (GET "/thread/:title/:qualifier" [] (home-page))
            (GET "/new-posts" [] (home-page))
            (GET "/create-new-thread" [] (home-page))
            ; (GET "/status" [] (home-page))

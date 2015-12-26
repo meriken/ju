@@ -45,6 +45,7 @@
                  [pandect "0.5.4"]
                  ;[venantius/accountant "0.1.6"]
                  [jayq "2.5.4"]
+                 [com.andrewmcveigh/cljs-time "0.3.14"]
                  ]
 
   :min-lein-version "2.0.0"
@@ -53,7 +54,6 @@
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
              "-Xmx8g"
-             "-XX:MaxPermSize=256m"
              "-XX:+UseG1GC"
              "-XX:MaxGCPauseMillis=1000"]
   :resource-paths ["resources" "target/cljsbuild"]
@@ -116,7 +116,7 @@
                       {:main "ju.app"
                        :asset-path "/js/out"
                        :optimizations :none
-                       :source-map true}}}} 
+                       :source-map true}}}}
                   
                   :figwheel
                   {:http-server-root "public"

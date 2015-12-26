@@ -1,6 +1,6 @@
 (ns ju.routes.shingetsu
   (:require [ju.layout :as layout]
-            [compojure.core :refer [defroutes GET]]
+            [compojure.core :refer [defroutes GET POST]]
             [ring.util.http-response :refer [ok]]
             [ring.util.response :refer [content-type]]
             [clojure.java.io :as io]
@@ -686,13 +686,28 @@
            ; Gateway ;
            ;;;;;;;;;;;
 
-           (GET "/api/thread/:title"
+           (GET "/api/thread"
                 {:keys [headers params body server-name] :as request}
-             (let [{title :title} params
-                   file-id (db/get-file-id-by-thread-title title)]
-               (->
-                 (ok (apply str (map #(String. (:body %) "UTF-8") (db/get-all-records-in-file file-id))))
-                 (content-type "text/plain; charset=UTF-8"))))
+             ;(timbre/info "/api/thread" (:thread-title params) )
+             (let [{thread-title :thread-title page-num :page-num page-size :page-size} params
+                   file-id (db/get-file-id-by-thread-title thread-title)
+                   file (db/get-file (str "thread_" (apply str (map #(format "%02X" %) (.getBytes thread-title "UTF-8")))))
+                   page-num (try (Integer/parseInt page-num) (catch Throwable _ 0))
+                   page-size (try (Integer/parseInt page-size) (catch Throwable _ 20))
+                   results (doall (map
+                             (fn [record]
+                               (let [body (String. (:body record) "UTF-8")
+                                     elements (->> (clojure.string/split body #"<>")
+                                                   (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                                   (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                                   (apply merge))
+                                     elements (assoc elements :attach (true? (:attach elements)))]
+                                 (-> record
+                                     (assoc :body nil)
+                                     (merge elements))))
+                             (db/get-records-on-page file-id page-size page-num)))]
+               ;(timbre/info "Done")
+               {:body {:num-posts (:num-records file) :posts results}}))
 
            (GET "/api/threads"
                 {:keys [headers params body server-name] :as request}
