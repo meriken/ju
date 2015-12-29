@@ -10,7 +10,8 @@
     [korma.core :refer :all]
     [korma.db :refer [defdb transaction create-db default-connection]]
     [ju.db.schema :as schema]
-    [pandect.algo.md5 :refer :all])
+    [pandect.algo.md5 :refer :all]
+    [clj-time.coerce])
   (:import [java.sql
             BatchUpdateException
             PreparedStatement]))
@@ -266,10 +267,22 @@
   [file-id]
   (select records
           (where {:file_id file-id})
-          (order :stamp :ASC)
-          ;(offset 20)
-          ;(limit 20)
-          ))
+          (order :stamp :ASC)))
+
+(defn get-records-in-file-by-short-id
+  [file-id short-id]
+  (select records
+          (where {:file_id file-id
+                  :record_short_id short-id})
+          (limit 1)))
+
+(defn get-record-in-file-by-short-id
+  [file-id short-id]
+  (first
+    (select records
+            (where {:file_id file-id
+                    :record_short_id short-id})
+            (limit 1))))
 
 (defn get-records-on-page
   [file-id page-size page-num]

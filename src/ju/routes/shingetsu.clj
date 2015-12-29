@@ -1,8 +1,10 @@
 (ns ju.routes.shingetsu
   (:require [ju.layout :as layout]
             [compojure.core :refer [defroutes GET POST]]
+            [compojure.coercions :refer [as-int]]
             [ring.util.http-response :refer [ok]]
             [ring.util.response :refer [content-type]]
+            [ring.util.request :refer [body-string]]
             [clojure.java.io :as io]
 
     ; Meriken
@@ -252,8 +254,8 @@
 
     (let [nodes (db/get-all-nodes)]
       (if (zero? (count nodes))
-        (doall (pmap #(try (check-node %1) (catch Throwable t)) initial-nodes))
-        (doall (pmap #(try (check-node %1) (catch Throwable t)) (shuffle (map :node-name nodes))))))
+        (doall (map #(try (check-node %1) (catch Throwable t)) initial-nodes))
+        (doall (map #(try (check-node %1) (catch Throwable t)) (shuffle (map :node-name nodes))))))
 
     (while (> (count @active-nodes) max-num-active-nodes)
       (bye (first (shuffle @active-nodes))))
@@ -686,14 +688,14 @@
            ; Gateway ;
            ;;;;;;;;;;;
 
-           (GET "/api/thread"
-                {:keys [headers params body server-name] :as request}
-             ;(timbre/info "/api/thread" (:thread-title params) )
-             (let [{thread-title :thread-title page-num :page-num page-size :page-size} params
+           (POST "/api/thread"
+                request
+             (timbre/debug request)
+             (let [{:keys [thread-title page-num page-size record-short-id]} (:params request)
+                   ;page-num (Integer/parseInt page-num)
+                   ;page-size (Integer/parseInt page-size)
                    file-id (db/get-file-id-by-thread-title thread-title)
-                   file (db/get-file (str "thread_" (apply str (map #(format "%02X" %) (.getBytes thread-title "UTF-8")))))
-                   page-num (try (Integer/parseInt page-num) (catch Throwable _ 0))
-                   page-size (try (Integer/parseInt page-size) (catch Throwable _ 20))
+                   file (db/get-file-by-id file-id)
                    results (doall (map
                              (fn [record]
                                (let [body (String. (:body record) "UTF-8")
@@ -705,13 +707,17 @@
                                  (-> record
                                      (assoc :body nil)
                                      (merge elements))))
-                             (db/get-records-on-page file-id page-size page-num)))]
+                             (if (and record-short-id (pos? (count record-short-id)))
+                               (db/get-records-in-file-by-short-id file-id record-short-id)
+                               (db/get-records-on-page file-id page-size page-num))
+                             ))]
                ;(timbre/info "Done")
                {:body {:num-posts (:num-records file) :posts results}}))
 
            (GET "/api/threads"
                 {:keys [headers params body server-name] :as request}
-             (let [n (:n params)]
+             (let [n (:n params)
+                   n (if (zero? (count n)) nil n)]
                (remove #(or
                        (some #{(:file-name %)} known-corrupt-files)
                        (zero? (:num-records %)))

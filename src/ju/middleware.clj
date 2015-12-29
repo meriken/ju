@@ -51,7 +51,7 @@
         :title "Invalid anti-forgery token"})}))
 
 (defn wrap-formats [handler]
-  (wrap-restful-format handler {:formats [:json-kw :transit-json :transit-msgpack]}))
+  (wrap-restful-format handler {:formats [:json-kw ]}))
 
 (defn on-error [request response]
   (error-page
@@ -72,10 +72,18 @@
       wrap-identity
       (wrap-authentication (session-backend))))
 
+(defn hoge
+  [handler]
+  (fn [response]
+    (if (:record-short-id (:params response))
+      (timbre/debug "(:record-short-id (:params response)):" (:record-short-id (:params response))))
+    (handler response)))
+
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
       wrap-auth
       wrap-formats
+      hoge
       wrap-webjars
       wrap-flash
       (wrap-session {:cookie-attrs {:http-only true}})

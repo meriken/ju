@@ -13,13 +13,15 @@
 	}
 
 	body {
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif, 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオI;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif, 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ;
 	    font-family: 'Lucida Grande', 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ, sans-serif
 	}
 
     #navbar-toggle-button {
         padding-top: 6px;
         padding-bottom: 5px;
+        margin-top: 4px;
+        margin-bottom: 3px;
     }
 
     #navbar-toggle-button > span.glyphicon.glyphicon-triangle-bottom {
@@ -27,16 +29,37 @@
         font-size: 10px;
     }
 
+.navbar.navbar-fixed-top {
+    min-height: 40px;
+}
+
+.navbar>.container .navbar-brand {
+    height: 40px;
+}
+
+.navbar>.container .navbar-brand,
+.navbar-nav>li>a{
+padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.navbar-fixed-bottom {min-height:36px;height:36px;}
+
+.navbar-fixed-bottom .btn {
+margin:2px 0;}
+
 	.panel {
 		margin-bottom: 10px;
 		z-index: -1;
 	}
-	.panel-body {
-		overflow-x: hidden;
-	}
 
 	.panel-heading {
+		overflow-x: hidden;
 		font-size: 14px;
+	}
+
+	.panel-body {
+		overflow-x: hidden;
 	}
 
 	a {
@@ -46,13 +69,23 @@
 
 	body > #app > .container {
 	  max-width: 640px;
-	  padding: 65px 15px 52px;
+	  padding: 55px 15px 35px;
 	}
 
 	body > #app > .container > h2:first-child,
-	body > #app > .container > h3:first-child {
+	body > #app > .container > h3:first-child,
+	body > #app > .container > a > h3:first-child {
 	  margin-top: 0px;
+	  color: black;
 	}
+
+    #threads {
+        margin-bottom: 10px;
+    }
+
+    .refresh-threads-button {
+        margin-bottom: 10px;
+    }
 
 	.panel-body > h1:first-child,
 	.panel-body > h2:first-child,
@@ -102,7 +135,9 @@
     .post .name,
     .post .mail,
     .post .signature,
-    .post .timestamp {
+    .post .timestamp,
+    .post .timestamp,
+    .post .attachment {
         word-break: keep-all;
         white-space: nowrap;
         margin-bottom: 4px;
@@ -112,8 +147,15 @@
         padding-bottom: 6px;
     }
 
-    .post .id {
-        font-family: "Courier New", Courier, monospace;
+    .post .id,
+    .popup .id,
+    .anchor,
+    .bracket-link {
+        font-size: 14px;
+    }
+
+    .post .attachment,
+    .popup .attachment {
         font-size: 14px;
     }
 
@@ -245,24 +287,62 @@
 	}
 
 	.tooltip-inner {
-	  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif, 'Hiragino Kaku Gothic ProN', '�q���M�m�p�S ProN W3', Meiryo, ���C���I;
+	    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif, 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ;
 		font-size: 14px;
 	    text-align: left;
 		color: black;
-		background: #ffd;
-		max-width: 80%;
+    	background: #ffd;
 		border: solid 1px #dda;
 		padding:8px;
-		margin-left: 15px;
+		margin-left: 0px;
 		overflow: hidden;
 	}
 
-	.anchor {
-		background-color: #f5f5f5;
+    @media(min-width:320px) {
+	.tooltip-inner {
+		max-width: 320px;
+    }
+    }
+
+    @media(min-width:512px) {
+	.tooltip-inner {
+		max-width: 512px;
+    }
+    }
+
+    .tooltip.top .tooltip-arrow,
+    .tooltip.bottom .tooltip-arrow{
+	    border-top-color: #dda;
+	    border-bottom-color: #dda;
+	}
+
+	.popup-heading {
+	    background: #ebebc4;
+	    border: solid 1px #cc0;
+	    padding: 8px;
+	    margin-bottom: 8px;
+	}
+
+	.popup .anchor {
+	    background: #ebebc4;
+	    border: solid 1px #cc0;
+	}
+
+	.popup-heading > .btn {
+        background-color: #ffffcc;
+	    border: solid 1px #cc0;
+    }
+
+	.anchor,
+    .bracket-link {
 		display: inline-block;
 		padding: 0px 8px;
 		vertical-align: baseline;
 		margin: 2px;
+	}
+
+	.anchor {
+		background-color: #f5f5f5;
 	}
 
 	.tooltip-inner > .anchor {

@@ -46,6 +46,8 @@
                  ;[venantius/accountant "0.1.6"]
                  [jayq "2.5.4"]
                  [com.andrewmcveigh/cljs-time "0.3.14"]
+                 [org.clojure/data.codec "0.1.0"]
+                 [ring-middleware-format "0.7.0"]
                  ]
 
   :min-lein-version "2.0.0"
@@ -79,7 +81,10 @@
      :compiler
      {:output-to "target/cljsbuild/public/js/app.js"
       :output-dir "target/cljsbuild/public/js/out"
-      :externs ["react/externs/react.js"]
+      :externs ["react/externs/react.js"
+                "externs/jquery.js"
+                "externs/hoverIntent.js"
+                "externs/twitter-bootstrap.js"]
       :pretty-print true}}}}
   
   :profiles
