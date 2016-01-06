@@ -47,8 +47,7 @@
                  [jayq "2.5.4"]
                  [com.andrewmcveigh/cljs-time "0.3.14"]
                  [org.clojure/data.codec "0.1.0"]
-                 [ring-middleware-format "0.7.0"]
-                 ]
+                 [ring-middleware-format "0.7.0"]]
 
   :min-lein-version "2.0.0"
   :uberjar-name "ju.jar"
@@ -137,7 +136,7 @@
                                (pjstadig.humane-test-output/activate!)]
                   ;;when :nrepl-port is set the application starts the nREPL server on load
                   :env {:dev        true
-                        :port       3000
+                        :port       8888
                         :nrepl-port 7000
                         :log-level  :trace}}
    :project/test {:env {:test       true

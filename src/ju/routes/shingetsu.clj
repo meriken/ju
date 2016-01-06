@@ -710,9 +710,15 @@
                              (if (and record-short-id (pos? (count record-short-id)))
                                (db/get-records-in-file-by-short-id file-id record-short-id)
                                (db/get-records-on-page file-id page-size page-num))
-                             ))]
-               ;(timbre/info "Done")
-               {:body {:num-posts (:num-records file) :posts results}}))
+                             ))
+                   anchors (into [] (apply concat (map (fn [destnation]
+                                  ;(timbre/info file-id destnation (apply str (db/get-anchors file-id destnation)))
+                                  (db/get-anchors file-id destnation))
+                                (map :record-short-id results))))]
+               ;(timbre/info "anchors:" (apply str anchors))
+               {:body {:num-posts (:num-records file)
+                       :posts results
+                       :anchors anchors}}))
 
            (GET "/api/threads"
                 {:keys [headers params body server-name] :as request}
@@ -763,4 +769,3 @@
                (->
                  (ok (str @active-nodes))
                  (content-type "text/plain; charset=UTF-8")))))
-

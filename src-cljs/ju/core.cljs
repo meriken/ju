@@ -21,14 +21,20 @@
 
 
 (declare update-page)
+(declare fetch-threads!)
+(declare fetch-posts!)
 
 
 
 (def page-size 20)
-(def jump-command (atom nil))
+(def recaptcha-sitekey "6LfTLRQTAAAAAEQstJ4pYl1qzIvJfBJ2-WRRMmYR")
+(def jump-command (atom :top))
 (def history (atom nil))
 (def navbar-collapsed? (atom true))
-
+(def navbar-enabled? (atom true))
+(def navbar-bottom-enabled? (atom true))
+(def post-form-enabled? (atom true))
+(def posts-displayed? (atom false))
 
 
 (defn remove-tooltips
@@ -42,14 +48,16 @@
         href (.-href (.-target e))
         href (if href href (.-href (.-parentElement (.-target e))))
         path (.getPath (.parse Uri href))
+        query-string (.getQuery (.parse Uri href))
         title (.-title (.-target e))]
     ;(js/alert path)
-    ;(.log js/console path)
+    (.log js/console path)
     (.blur ($ (.-target e)))
     (when (and href path (not (= path "/status")))
       (. e preventDefault)
       (. e stopPropagation)
-      (. @history (setToken path title))
+      ;TODO
+      (. @history (setToken (str path "?dummy=1" (if (pos? (count query-string)) "&" "") query-string) title))
       (reset! navbar-collapsed? true)
       (remove-class (parent ($ (keyword "button[data-toggle=dropdown]"))) "open")
       (remove-tooltips)
@@ -63,7 +71,7 @@
 
 (defn process-jump-command
   []
-  (.log js/console (str "process-jump-command: " @jump-command))
+  ;(.log js/console (str "process-jump-command: " @jump-command))
   (cond
     (= @jump-command :top)
     (js/setTimeout #(.scrollTop ($ (keyword "html,body")) 0) 0)
@@ -72,8 +80,8 @@
   ;(reset! jump-command nil)
   )
 
-(defn uuid
-  "returns a type 4 random UUID: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+(defn my-uuid
+  "returns a type 4 random uuid: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
   []
   (let [r (repeatedly 30 (fn [] (.toString (rand-int 16) 16)))]
     (apply str (concat (take 8 r) ["-"]
@@ -95,6 +103,7 @@
   (let []
     (fn []
       [:nav.navbar.navbar-default.navbar-fixed-top
+       {:style {:display (if @navbar-enabled? "display" "none")}}
        [:div.container
         [:div.navbar-header
          [:button#navbar-toggle-button.navbar-toggle
@@ -112,18 +121,16 @@
          [:ul.nav.navbar-nav
           [nav-link "/" "目次" :home]
           [nav-link "/recent-threads" "スレッド一覧" :recent-threads]
-          [nav-link "/new-posts" "新着レスまとめ読み" :new-posts]
+          [nav-link "/new-posts?hoge=1" "新着レスまとめ読み" :new-posts]
           [nav-link "/create-new-thread" "新規スレッド作成" :create-new-thread]
           [nav-link "/status" "状態" :status]
           [nav-link "/help" "使い方" :help]]]]])))
-
-(declare fetch-threads!)
-(declare fetch-posts!)
 
 (defn navbar-bottom
   []
   (fn []
     [:nav.navbar.navbar-default.navbar-fixed-bottom
+     {:style {:display (if @navbar-bottom-enabled? "display" "none")}}
      [:div.container {:style {:text-align :center}}
       [:div.btn-group.btn-group-sm
        [:a.btn.btn-default.navbar-btn
@@ -144,21 +151,28 @@
                            :recent-threads
                            (fetch-threads! :recent-threads)
                            :thread
-                           (fetch-posts! (session/get :thread-title) (session/get :page-num) (session/get :record-short-id))
+                           (do
+                             (reset! jump-command :top)
+                             (fetch-posts! (session/get :thread-title) (session/get :page-num) (session/get :record-short-id)))
                            nil
                      ))}
         [:span.glyphicon.glyphicon-refresh]]
        [:a.btn.btn-default.navbar-btn
         {:on-click (fn [e] (.animate ($ (keyword "html,body")) (clj->js {:scrollTop 0}) "slow"))}
-        [:span.glyphicon.glyphicon-chevron-up]]
+        [:span.glyphicon.glyphicon-triangle-top]]
        [:a.btn.btn-default.navbar-btn
         {:on-click (fn [e] (.animate ($ (keyword "html,body")) (clj->js {:scrollTop (.height ($ js/document))}) "slow"))}
-        [:span.glyphicon.glyphicon-chevron-down]]
+        [:span.glyphicon.glyphicon-triangle-bottom]]
        [:a.btn.btn-default.navbar-btn
+        {:class (if (= (session/get :page) :thread) "" "disabled")
+         :on-click handle-click-on-link
+         :href (str (session/get :href-base) "?posts=0&post-form=1")}
         [:span.glyphicon.glyphicon-pencil] "書込"]]]]))
 
 (defn home-page []
-  [:div.container
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 "需"]
    [:p
     "「需」は新月ネットワークに参加しているP2P型の匿名掲示板です。"
@@ -179,8 +193,8 @@
       [:div.panel-heading "タグ一覧"]
       [:div.panel-body
        (map (fn [group]
-              [:div.btn-group.btn-group-sm {:role "group" :key (uuid)}
-               (map #(do [:a.btn.btn-success {:key (uuid)} %]) group)])
+              [:div.btn-group.btn-group-sm {:role "group" :key (my-uuid)}
+               (map #(do [:a.btn.btn-success {:key (my-uuid)} %]) group)])
             [["質問" "雑談" "ニュース" "実況"]
              ["生活", "料理", "日課"]
              ["画像", "動画", "二次元", "三次元", "18禁"]
@@ -191,10 +205,10 @@
              ["新月", "運用", "スレ一覧", "テスト"]
              ["きれいな新月", "裏"]])]]]]])
 
-(declare fetch-threads!)
-
 (defn recent-threads-page []
-  [:div.container
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 "最近更新されたスレッド"]
    [:div#content
     [:div.btn-group.btn-group-justified.refresh-threads-button
@@ -208,7 +222,9 @@
      [:span.glyphicon.glyphicon-refresh] "スレッド一覧を更新する"]]]])
 
 (defn threads-page []
-  [:div.container
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 "全てのスレッド"]
    [:div#content
     [:div.btn-group.btn-group-justified.refresh-threads-button
@@ -243,7 +259,7 @@
          (if (zero? (session/get :page-num)) "最新" (session/get :page-num)) "頁" [:span.glyphicon.glyphicon-triangle-bottom {:style {:font-size "9px"}}]]
         [:ul.dropdown-menu
          (doall (for [n (range 0 (session/get :num-pages))]
-                  [:li {:key (uuid)} [:a
+                  [:li {:key (my-uuid)} [:a
                                       {:href (str (session/get :href-base)
                                                   (if (zero? n) "" (str "/p" n)))
                                        :on-click handle-click-on-link}
@@ -298,7 +314,7 @@
        (if (zero? (session/get :page-num)) "最新" (session/get :page-num)) "頁" [:span.glyphicon.glyphicon-triangle-top {:style {:font-size "9px"}}]]
       [:ul.dropdown-menu
        (doall (for [n (range 0 (session/get :num-pages))]
-                [:li {:key (uuid)} [:a.jump-to-bottom
+                [:li {:key (my-uuid)} [:a.jump-to-bottom
                                     {:href (str (session/get :href-base)
                                                 (if (zero? n) "" (str "/p" n)))
                                      :on-click handle-click-on-link}
@@ -314,33 +330,96 @@
        :class (if (>= (session/get :page-num) (dec (session/get :num-pages))) "disabled" "")}
       "最初 " [:span.glyphicon.glyphicon-forward]]]])
 
+(defn post-form
+  []
+  (fn []
+  [:form#postarticle
+   {:name "postarticle"
+    :method "post"
+    :action "{{mobile_gateway_cgi}}"
+    :encType "multipart/form-data"
+    :role "form"
+    :style {:display (if @post-form-enabled? "display" "none")}}
+   [:div
+    [:input {:type "hidden" :name "cmd" :value "post"}]
+    [:input {:type "hidden" :name "file" :value "{{cache.datfile}}"}]
+    [:ul#post-form-tabs.nav.nav-tabs {:style {:border-bottom "none"}}
+     [:li#post-form-edit-tab.active    {:on-click #(js/switchTabsForPostForm "#post-form-edit-tab") :role "presentation"} [:a "編集"]]
+     [:li#post-form-emoji-tab   {:on-click #(js/switchTabsForPostForm "#post-form-emoji-tab") :role "presentation"} [:a "絵文字入力"]]
+     [:li#post-form-preview-tab {:on-click #(js/switchTabsForPostForm "#post-form-preview-tab") :role "presentation"} [:a "プレビュー"]]
+     ]
+    [:div.input-wrapper
+     [:div.wrapped-input.input-group
+      [:span.no-border.input-group-addon {:style {:border-radius "4px 0 0 0"}} [:span.glyphicon.glyphicon-user ]]
+      [:input#name.no-border.form-control  {:style {:border-radius "4px 0 0 0"} :name "name" :value "" :placeholder "名前"}]
+      ]
+     [:div.wrapped-input.input-group
+      [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-envelope ]]
+      [:input#mail.no-border.form-control {:name "mail" :value "" :placeholder "メール"}]
+      ]
+     ;{% if isadmin %}
+     [:div.wrapped-input.input-group
+      [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-pencil ]]
+      [:input#passwd.no-border.form-control {:type "password" :name "passwd" :value "" :placeholder "署名"}]
+      ]
+     ;{% endif %}
+     [:div.wrapped-input.input-group
+      [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-file ]]
+      [:span.no-border.btn.btn-block.btn-default.btn-file
+       [:img {:alt "" :src "" :style {:max-height "80px" :max-width "80px"}} [:span#attachment-file-name "添付ファイル"]
+        [:input#attach {:type "file" :multiple "" :name "attach"}]
+        ]]]
+       [:textarea#body.no-border.wrapped-input.form-control {:rows "5" :name "body" :placeholder "本文" :value  ""}]
+       [:div#post-preview {:style {:display "none"}}
+        "プレヴュー"
+        ]
+       [:div.form-actions
+        [:button.btn.btn-block.btn-primary.wrapped-input.no-border {:style {:border-radius "0 0 4px 4px"}}
+         "書き込み"
+         ]
+        ]
+       ]]
+   [:div#g-recaptcha]
+   [:a.btn.btn-default {:href "{{mobile_gateway_cgi}}/motd" :target "_blank" :style {:margin-bottom "10px"}} "新月ネットワーク利用規約"]
+   ]))
+
 (defn thread-page []
-    [:div.container
+    [(keyword (str "div.container"
+                   (if (not @navbar-enabled?) ".without-navbar")
+                   (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
      [:a
       {:on-click handle-click-on-link
        :href (session/get :href-base)}
       [:h3 (session/get :thread-title)]]
      [:div#content
-      (if (session/get :page-num)
-        [top-page-jump-buttons])
-      (session/get :posts)
-      (if (session/get :page-num)
-        [bottom-page-jump-buttons])]])
+      (if (and @posts-displayed? (session/get :page-num))
+        [#'top-page-jump-buttons])
+      (if @posts-displayed?
+        (session/get :posts))
+      (if (and @posts-displayed? (session/get :page-num))
+        [#'bottom-page-jump-buttons])]
+     [#'post-form]])
 
 (defn new-posts-page []
-  [:div.container
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 "新着まとめ読み"]
    [:div#content
     [:span.glyphicon.glyphicon-refresh.spinning.loading-page]]])
 
 (defn create-new-thread-page []
-  [:div.container
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 "新規スレッド作成"]
    [:div#content
     [:span.glyphicon.glyphicon-refresh.spinning.loading-page]]])
 
 (defn help-page []
-  [:div.container
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 "使い方"]
    [:div#content
     [:span.glyphicon.glyphicon-refresh.spinning.loading-page]]])
@@ -391,7 +470,7 @@
          [:a.list-group-item
           {:href (file-name-to-path (:file-name %))
            :on-click handle-click-on-link
-           :key (uuid)}
+           :key (my-uuid)}
           (unhexify (clojure.string/replace (:file-name %) #"^thread_" ""))
           [:span {:style {:border "solid 1px #ddd" :background-color "#eee"  :border-radius "4px" :margin-left "4px" :font-size 12  :padding "0 6px" :font-weight :normal}} (:num-records %)]
           [:span.glyphicon.glyphicon-chevron-right.pull-right]])
@@ -406,7 +485,7 @@
         :params {:n (if (= dest :recent-threads) 100 nil)}}))
 
 (defn process-anchors
-  [s]
+  [s thread-title]
   (let [match (re-find #"^(.*?)>>([0-9a-f]{8})(.*)$" s)]
     (if-not match
       s
@@ -414,13 +493,13 @@
                [:a.btn.btn-default.btn-sm.anchor
                 {;:href (str (session/get :href-base) "/" (nth match 2))
                  ;:on-click handle-click-on-link
-                 :key (uuid)
+                 :key (my-uuid)
                  :data-toggle "tooltip"
                  :data-container "body"
+                 :data-thread-title thread-title
                  :data-record-short-id (nth match 2)}
                 ">>" (nth match 2)]]
-              (process-anchors (nth match 3))))
-    ))
+              (process-anchors (nth match 3) thread-title)))))
 
 (defn process-bracket-links
   [s]
@@ -428,52 +507,66 @@
     (if-not match
       s
       (concat [(nth match 1)
-               [:a.btn.btn-default.btn-sm.bracket-link
-                {:href (str "/thread/" (js/decodeURIComponent (nth match 2)))
-                 :on-click handle-click-on-link
-                 :key (uuid)
-                 ;:data-toggle "tooltip"
-                 ;:data-container "body"
-                 ;:data-record-short-id (nth match 3)
-                 }
-                "[[" (nth match 2) "]]"]]
-              (process-anchors (nth match 3))))
-    ))
+               (if (and (nth match 3) (pos? (count (nth match 3))))
+                 [:a.btn.btn-default.btn-sm.bracket-link.anchor
+                  {:href     (str "/thread/" (js/decodeURIComponent (nth match 2)))
+                   :on-click handle-click-on-link
+                   :key      (my-uuid)
+                   :data-toggle "tooltip"
+                   :data-container "body"
+                   :data-thread-title (nth match 2)
+                   :data-record-short-id (clojure.string/replace (nth match 3) #"^/" "")}
+                  "[[" (nth match 2) (nth match 3) "]]"]
+                 [:a.btn.btn-default.btn-sm.bracket-link
+                  {:href     (str "/thread/" (js/decodeURIComponent (nth match 2)))
+                   :on-click handle-click-on-link
+                   :key      (my-uuid)}
+                  "[[" (nth match 2) "]]"])]
+              (process-bracket-links (nth match 4))))))
+
+(defn process-links
+  [s]
+  (let [match (re-find #"^(.*?)(https?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))(.*)$" s)]
+    (if-not match
+      s
+      (concat [(nth match 1)
+               [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} (nth match 2)]]
+               (process-links (last match))))))
 
 (defn generate-html-for-post
-  [post context]
+  [post context thread-title anchors]
   (let
     [name (and (:name post)
                (-> (:name post)
-                   (clojure.string/replace #"&amp;" "&")
                    (clojure.string/replace #"&gt;" ">")
-                   (clojure.string/replace #"&lt;" "<")))
+                   (clojure.string/replace #"&lt;" "<")
+                   (clojure.string/replace #"&amp;" "&")))
      mail (and (:mail post)
                (-> (:mail post)
-                   (clojure.string/replace #"&amp;" "&")
                    (clojure.string/replace #"&gt;" ">")
-                   (clojure.string/replace #"&lt;" "<")))
+                   (clojure.string/replace #"&lt;" "<")
+                   (clojure.string/replace #"&amp;" "&")))
      body (drop-last
             (apply concat
                    (map
                      #(list
                        (-> %
-                           (clojure.string/replace #"&amp;" "&")
                            (clojure.string/replace #"&gt;" ">")
-                           (clojure.string/replace #"&lt;" "<"))
-                       [:br {:key (uuid)}])
+                           (clojure.string/replace #"&lt;" "<")
+                           (clojure.string/replace #"&amp;" "&"))
+                       [:br {:key (my-uuid)}])
                      (clojure.string/split (:body post) #"<br>"))))
-     body (map #(if (string? %) (process-anchors %) %) body)
+     body (map #(if (string? %) (process-links %) %) body)
+     body (map #(if (string? %) (process-anchors % thread-title) %) body)
      body (map #(if (string? %) (process-bracket-links %) %) body)
      md5 (Md5.)
      _ (.update md5 (:pubkey post) (count (:pubkey post)))
-     src (str "/thread/"
-              (js/decodeURIComponent (session/get :thread-title))
-              "/"
+     href-base (str "/thread/" (js/decodeURIComponent thread-title))
+     src (str href-base "/"
               (:record-short-id post)
               "." (:suffix post))
      heading [[:a.btn.btn-xs.btn-default.id
-               {:href (str (session/get :href-base) "/" (:record-short-id post))
+               {:href (str href-base "/" (:record-short-id post))
                 :on-click handle-click-on-link}
                [:span.glyphicon.glyphicon-tag] " " (take 8 (:record-short-id post))] " "
               (if (and (:name post) (pos? (count (:name post)))) [:span.name [:span.glyphicon.glyphicon-user] name]) " "
@@ -482,37 +575,50 @@
               [:span.timestamp
                [:span.glyphicon.glyphicon-time]
                (cljs-time.format/unparse
-                 (cljs-time.format/formatter "yyyy-MM-dd HH:mm")
+                 (cljs-time.format/formatter "yyyy-MM-dd HH:mm (Z)")
                  (cljs-time.core/to-default-time-zone (cljs-time.coerce/from-long (* (:stamp post) 1000))))] " "
               (if (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
                 [:a.btn.btn-xs.btn-default.attachment
                  {:href src}
                  [:span.glyphicon.glyphicon-paperclip] (str " " (:record-short-id post) "." (:suffix post))])]
+     body-exists? (pos? (count body))
+     thumbnail-exists? (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
+     reverse-anchors (remove nil? (map #(if (= (:destination %) (:record-short-id post)) (:source %) nil) anchors))
      body-with-image [body
-                      (if (pos? (count body)) [:br])
-                      (if (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
+                      (if body-exists? [:br])
+                      (if thumbnail-exists?
                         [:img {:height 210
                                :src src
                                :on-click #(let [links (clj->js [src])
                                                 options (clj->js {:useBootstrapModal false})]
                                            (.toggleClass ($ :#blueimp-gallery) "blueimp-gallery-controls" true)
-                                           (.Gallery js/blueimp links options))
-                               }])]]
+                                           (.Gallery js/blueimp links options))}])
+                      (if (pos? (count reverse-anchors))
+                        [:div.reverse-anchors [:hr]
+                         [:div
+                          (map #(do [:a.btn.btn-default.btn-sm.anchor.reverse-anchor
+                                     {:data-record-short-id %
+                                      :data-thread-title thread-title
+                                      :key (my-uuid)}
+                                     "└" %])
+                               reverse-anchors)]])]
+
+     ]
     (case context
       :popup
-      [:div.popup {:key (uuid)}
+      [:div.popup {:key (my-uuid)}
        (into [] (concat [:div.well.well-sm.popup-heading] heading))
        (into [] (concat [:div] body-with-image))]
 
-      [:div.panel.panel-default.post {:key (uuid)}
+      [:div.panel.panel-default.post {:key (my-uuid)}
        (into [] (concat [:div.panel-heading] heading))
-       (into [] (concat [:div.panel-body] body-with-image))])))
+       (into [] (concat [(if (pos? (count reverse-anchors)) :div.panel-body.with-reverse-anchors :div.panel-body)] body-with-image))])))
 
 (defn posts-handler
   [response]
   (let [num-posts (:num-posts response)
         num-pages (+ (quot num-posts page-size) (if (pos? (rem num-posts page-size)) 1 0))]
-    (.log js/console "posts-handler:" num-posts num-pages)
+    ;(.log js/console "posts-handler:" num-posts num-pages (clj->js (:anchors response)))
     (session/put! :num-posts num-posts)
     (session/put! :num-pages num-pages)
     (session/put!
@@ -520,43 +626,94 @@
       [:div#posts
        (doall
          (map
-           #(generate-html-for-post % :thread)
+           #(generate-html-for-post % :thread (session/get :thread-title) (:anchors response))
            (:posts response)))])))
+
+(defn posts-error-handler
+  [response]
+  (let []
+    (session/put! :num-posts 0)
+    (session/put! :num-pages 0)
+    (session/put!
+      :posts
+      [:div#posts
+       [:div.alert.alert-danger {:role "alert"}
+        [:span.glyphicon.glyphicon-exclamation-sign]
+        "レスの読み込みに失敗しました。"]])))
 
 (defn fetch-posts!
   [thread-title page-num record-short-id]
-  (.log js/console "fetch-posts!:" thread-title page-num record-short-id)
+  ;(.log js/console "fetch-posts!:" thread-title page-num record-short-id)
   (session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
   (POST (str "/api/thread" )
        {:handler posts-handler
+        :error-handler posts-error-handler
         :format :json
         :response-format :json
         :keywords? true
         :params {:thread-title thread-title :page-num page-num :page-size page-size :record-short-id record-short-id}}))
 
-(secretary/defroute "/" [] (reset! jump-command :top) (session/put! :page :home))
-(secretary/defroute "/threads" [] (reset! jump-command nil) (session/put! :page :threads))
-(secretary/defroute "/recent-threads" [] (reset! jump-command nil) (session/put! :page :recent-threads))
-(secretary/defroute "/new-posts" [] (session/put! :page :new-posts))
-(secretary/defroute "/create-new-thread" [] (session/put! :page :create-new-thread))
-(secretary/defroute "/help" [] (session/put! :page :help))
+(defn process-query-string
+  []
+  (try
+    (let [href (-> js/window .-location .-href)
+          new-href (clojure.string/replace href #"(\?[^\?]+)\?[^\?]+$" "$1")
+          new-href (clojure.string/replace new-href #"\?dummy=1$" "")
+          new-href (clojure.string/replace new-href #"\?dummy=1&" "?")]
+      (.replaceState (.-history js/window) "" (.-title js/document) new-href))
+    (let [href (-> js/window .-location .-href)
+          query (apply merge (map
+                               #(let [match (re-find #"^(.*?)=(.*)" %)]
+                                 {(keyword (nth match 1)) (nth match 2)})
+                               (clojure.string/split (second (re-find #"^.*?\?(.*)$" href)) #"&")))]
+
+      (reset! navbar-enabled?
+              (or
+                (nil? (:navbar query))
+                (not  (= (:navbar query) "0"))))
+      (reset! navbar-bottom-enabled?
+              (or
+                (nil? (:navbar-bottom query))
+                (not  (= (:navbar-bottom query) "0"))))
+      (reset! post-form-enabled?
+              (and
+                (:post-form query)
+                (not  (= (:post-form query) "0"))))
+      (reset! posts-displayed?
+              (or
+                (nil? (:posts query))
+                (not  (= (:posts query) "0"))))
+      query)
+    (catch js/Error e (.log js/console e) {})))
+
+(secretary/defroute "/" [] (process-query-string) (reset! jump-command :top) (session/put! :page :home))
+(secretary/defroute "/threads" [] (process-query-string) (reset! jump-command nil) (session/put! :page :threads))
+(secretary/defroute "/recent-threads" [] (process-query-string) (reset! jump-command nil) (session/put! :page :recent-threads))
+(secretary/defroute "/new-posts" [] (process-query-string) (session/put! :page :new-posts))
+(secretary/defroute "/create-new-thread" [] (process-query-string) (session/put! :page :create-new-thread))
+(secretary/defroute "/help" [] (process-query-string) (session/put! :page :help))
 
 (secretary/defroute
   "/thread/:thread-title"
   [thread-title]
-  (fetch-posts! thread-title 0 nil)
+  (.log js/console (clj->js (process-query-string)))
+  (if @posts-displayed?
+    (fetch-posts! thread-title 0 nil))
   (session/put! :thread-title thread-title)
   (session/put! :page-num 0)
+  (session/put! :record-short-id nil)
   (session/put! :href-base (str "/thread/" (js/decodeURIComponent thread-title)))
   (session/put! :page :thread))
 
 (secretary/defroute
   "/thread/:thread-title/:qualifier"
   [thread-title qualifier]
+  (process-query-string)
   (let [page-num (nth (re-find #"^p([0-9]+)$" qualifier) 1 nil)
         page-num (and page-num (js/parseInt page-num))
         record-short-id (nth (re-find #"^([0-9a-f]{8})$" qualifier) 1 nil)]
-    (fetch-posts! thread-title page-num record-short-id)
+    (if @posts-displayed?
+      (fetch-posts! thread-title page-num record-short-id))
     (session/put! :thread-title thread-title)
     (session/put! :page-num page-num)
     (session/put! :record-short-id record-short-id)
@@ -564,15 +721,47 @@
     (session/put! :page :thread)))
 
 (defn mount-components []
+  (session/put! :navbar-enabled? true)
+  (session/put! :navbar-bottom-enabled? true)
   (reagent/render [#'navbar] (.getElementById js/document "navbar"))
   (reagent/render [#'page] (.getElementById js/document "app"))
   (reagent/render [#'navbar-bottom] (.getElementById js/document "navbar-bottom")))
+
+(defn keep-popups-within-view
+  []
+  (let [tooltip-top (atom nil)
+        tooltip-bottom (atom nil)]
+    (.each ($ :.tooltip)
+           (fn [index element]
+             (let
+               [$element ($ element)
+                top (+ (.-top (.offset $element)) 5)
+                bottom (+ top (.height $element))]
+               (reset! tooltip-top
+                       (cond
+                         (nil? @tooltip-top) top
+                         (< top @tooltip-top) top
+                         :else @tooltip-top))
+               (reset! tooltip-bottom bottom))))
+    ;(.log js/console @tooltip-top (.scrollTop ($ js/document)))
+    (cond
+      (and @tooltip-top
+           (or (< (- @tooltip-bottom @tooltip-top) (.height ($ js/window)))
+               (has-class (.last ($ :.tooltip)) "top"))
+           (< @tooltip-top (.scrollTop ($ js/document))))
+      (.animate ($ (keyword "html, body")) (clj->js {:scrollTop @tooltip-top}) "fast")
+
+      (and @tooltip-bottom
+           (or (< (- @tooltip-bottom @tooltip-top) (.height ($ js/window)))
+               (has-class (.last ($ :.tooltip)) "bottom"))
+           (> @tooltip-bottom (+ (.scrollTop ($ js/document)) (.height ($ js/window)))))
+      (.animate ($ (keyword "html, body")) (clj->js {:scrollTop (- @tooltip-bottom (.height ($ js/window)))}) "fast"))))
 
 (defn update-page []
   (js/setTimeout
     ; For some strange reasons, ($) does not work properly without setTimeout.
     (fn []
-      (.log js/console "update-page:" (.-length ($ :.anchor)))
+      ;(.log js/console "update-page:" (.-length ($ :.anchor)))
       (.each ($ (keyword ".popup"))
              (fn[index element]
                (-> ($ element)
@@ -602,24 +791,32 @@
                      #())
                    (.tooltip
                      (clj->js {:trigger	"manual"
-                               :placement "auto top"
+                               :placement (if (has-class ($ element) "reverse-anchor") "auto bottom" "auto top")
+                               :opacity 1
                                :html true
                                :title (fn []
                                         (let [result (atom nil)
                                               _ (ajax "/api/thread"
                                                       {:method "POST"
-                                                       :success (fn [response] (reset! result response))
+                                                       :success (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
                                                        :error (fn [] (reset! result "ERROR"))
                                                        :async false
                                                        :dataType "json"
-                                                       :data {:thread-title (session/get :thread-title)
+                                                       :data {:thread-title (attr ($ element) "data-thread-title")
                                                               :page-num nil
                                                               :page-size nil
                                                               :record-short-id (attr ($ element) "data-record-short-id")}})
-                                              post (first (:posts (clojure.walk/keywordize-keys (js->clj @result))))]
+                                              post (first (:posts @result))]
                                           (reset! jump-command nil)
-                                          (js/setTimeout update-page 0)
-                                          (reagent.core/render-component-to-string (generate-html-for-post post :popup))))})))))
+                                          (update-page)
+                                          (reagent.core/render-component-to-string
+                                            (generate-html-for-post post :popup (attr ($ element) "data-thread-title") (:anchors @result)))))})))))
+      (try
+        (if (zero? (.-length ($ :#g-recaptcha>div)))
+          (.render js/grecaptcha "g-recaptcha" (clj->js {:sitekey recaptcha-sitekey})))
+        (catch js/Error e
+          (.log js/console e)))
+      (keep-popups-within-view)
       (process-jump-command))
     0))
 
@@ -629,6 +826,8 @@
                     (events/listen
                       EventType/NAVIGATE
                       (fn [event]
+                        (.log js/console "token:" (.-token event))
+                        (.log js/console "href:" (-> js/window .-location .-href))
                         (secretary/dispatch! (.-token event))))
                     (.setUseFragment false)
                     (.setPathPrefix "")

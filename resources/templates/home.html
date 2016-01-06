@@ -10,6 +10,7 @@
 
     <title>需</title>
     <meta name="google-site-verification" content="KSGoiHTZ-9sCCb_zjC8ugnxMI6a0zS18es7g19tyEMM" />
+    <script src='https://www.google.com/recaptcha/api.js'></script>
 </head>
 
 
@@ -17,6 +18,10 @@
 <body>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+<link rel="stylesheet" href="/blueimp-gallery/css/blueimp-gallery.min.css">
+<link rel="stylesheet" href="/bootstrap-image-gallery/css/bootstrap-image-gallery.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/emojione/1.5.2/assets/css/emojione.min.css"/>
+<link rel="stylesheet" href="/emojionearea/css/emojionearea.css">
 {% style "/css/screen.css" %}
 
 <div id="navbar"></div>
@@ -62,7 +67,6 @@
     </div>
 </div>
 
-
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>    {% style "/assets/bootstrap/css/bootstrap.min.css" %}
 <script src="http://getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script>
@@ -72,11 +76,8 @@
 <script src="/jquery/jquery.qrcode.min.js"></script>
 <script src="//cdn.jsdelivr.net/emojione/1.5.2/lib/js/emojione.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/js-cookie/2.0.4/js.cookie.min.js"></script>
+<script src="/emojionearea/js/emojionearea.js"></script>
 
-<link rel="stylesheet" href="/blueimp-gallery/css/blueimp-gallery.min.css">
-<link rel="stylesheet" href="/bootstrap-image-gallery/css/bootstrap-image-gallery.css">
-<link rel="stylesheet" href="//cdn.jsdelivr.net/emojione/1.5.2/assets/css/emojione.min.css"/>
-<link rel="stylesheet" href="/emojionearea/css/emojionearea.css">
 {% style "/css/screen.css" %}
 
 <script type="text/javascript">
@@ -85,6 +86,7 @@
 {% script "/js/app.js" %}
 
 <script>
+    // TODO: Rewrite the following code in ClojureScript.
 	$(document).ready(function() {
 		var currentMousePos = { x: -1, y: -1 };
         var timer;
@@ -111,7 +113,14 @@
                         keepTooltips = true;
                         return false;
                     } else if ($(element).hasClass('tooltip-inner')) {
-                        $(element).parent().nextAll('.tooltip').remove();
+                        // $(element).parent().nextAll('.tooltip').remove();
+                        var removeFlag = false;
+                        $('.tooltip').each(function (index, elementInnerLoop) {
+                            if (removeFlag)
+                                $(elementInnerLoop).remove();
+                            if ($(element).parent()[0] == elementInnerLoop)
+                                removeFlag = true;
+                        });
                         keepTooltips = true;
                         return false;
                     }
@@ -124,6 +133,42 @@
             }, 250)
         });
     });
+
+    // Post Form
+    function switchTabsForPostForm (newActiveTab) {
+        var prevActiveTabID = $("#post-form-tabs > li.active").attr('id');
+        if ($(newActiveTab).hasClass("active"))
+            return;
+        $("#post-form-tabs > li").removeClass('active');
+        $(newActiveTab).addClass("active");
+
+        if (prevActiveTabID == 'post-form-emoji-tab') {
+            $("form#postarticle .input-group").hide();
+            $("form#postarticle .emojionearea").hide();
+        } else if (prevActiveTabID == 'post-form-edit-tab') {
+            $("form#postarticle .input-group").hide();
+            $("form#postarticle textarea#body").hide();
+            $("form#postarticle .emojionearea").hide();
+        } else if (prevActiveTabID == 'post-form-preview-tab') {
+            $("#post-preview").hide();
+        }
+
+        if ($(newActiveTab).attr('id') == 'post-form-emoji-tab') {
+            $("form#postarticle .input-group").show();
+            $("form#postarticle textarea#body").emojioneArea({
+                // options
+                autoHideFilters: false,
+                hideSource: true,
+                // shortnames: true,
+                useSprite: false,
+            })[0].emojioneArea.setText($("form#postarticle textarea").val());
+            $("form#postarticle .emojionearea").show();
+        } else if ($(newActiveTab).attr('id') == 'post-form-edit-tab') {
+            $("form#postarticle .input-group").show();
+            $("form#postarticle textarea#body").show();
+        } else if ($(newActiveTab).attr('id') == 'post-form-preview-tab') {
+        }
+    }
 </script>
 </body>
 </html>

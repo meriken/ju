@@ -241,6 +241,18 @@
         [:size         bigint "NOT NULL"]
         [:tags varchar "DEFAULT NULL"]))))
 
+(defn create-anchors-table
+  [db-spec]
+  (let [{:keys [id bigint blob varchar varchar-unique varchar-ignorecase-unique]} (db-types db-spec)]
+    (sql/db-do-commands
+      db-spec
+      (sql/create-table-ddl
+        :anchors
+        [:id           id]
+        [:file_id      bigint "NOT NULL"]
+        [:source       varchar "NOT NULL"]
+        [:destination  varchar "NOT NULL"]))))
+
 (defn create-update-commands-table
   [db-spec]
   (let [{:keys [id bigint blob varchar varchar-unique varchar-ignorecase-unique]} (db-types db-spec)]
@@ -266,6 +278,7 @@
   (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_index   ON records ( file_id, record_short_id      );") (catch Throwable _ (timbre/info "Failed to create records_record_short_id_index")))
   (try (sql/db-do-commands db-spec "CREATE INDEX update_commands_index           ON update_commands ( stamp                 );") (catch Throwable _ (timbre/info "Failed to create update_commands_index")))
   (try (sql/db-do-commands db-spec "CREATE INDEX update_commands_file_name_index ON update_commands ( file_name             );") (catch Throwable _ (timbre/info "Failed to create update_commands_file_name_index")))
+  (try (sql/db-do-commands db-spec "CREATE INDEX anchors_index                   ON anchors         ( file_id, destination  );") (catch Throwable _ (timbre/info "Failed to create anchors_index")))
   )
 
 ; TODO
@@ -281,6 +294,7 @@
   (create-files-table db-spec)
   (create-records-table db-spec)
   (create-update-commands-table db-spec)
+  (create-anchors-table db-spec)
   (create-indexes db-spec))
 
 (defn drop-tables

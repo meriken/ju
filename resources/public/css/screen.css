@@ -29,13 +29,13 @@
         font-size: 10px;
     }
 
-.navbar.navbar-fixed-top {
-    min-height: 40px;
-}
+    .navbar.navbar-fixed-top {
+        min-height: 40px;
+    }
 
-.navbar>.container .navbar-brand {
-    height: 40px;
-}
+    .navbar>.container .navbar-brand {
+        height: 40px;
+    }
 
 .navbar>.container .navbar-brand,
 .navbar-nav>li>a{
@@ -43,10 +43,13 @@ padding-top: 10px;
     padding-bottom: 10px;
 }
 
-.navbar-fixed-bottom {min-height:36px;height:36px;}
+    .navbar-fixed-bottom {
+        min-height:36px;height:36px;
+    }
 
-.navbar-fixed-bottom .btn {
-margin:2px 0;}
+    .navbar-fixed-bottom .btn {
+        margin:2px 0;
+    }
 
 	.panel {
 		margin-bottom: 10px;
@@ -62,6 +65,10 @@ margin:2px 0;}
 		overflow-x: hidden;
 	}
 
+	.panel-body.with-reverse-anchors {
+		padding-bottom: 5px;
+	}
+
 	a {
 	    word-break: break-all;
 	    cursor: pointer;
@@ -69,7 +76,15 @@ margin:2px 0;}
 
 	body > #app > .container {
 	  max-width: 640px;
-	  padding: 55px 15px 35px;
+	  padding: 55px 15px 39px;
+	}
+
+	body > #app > .container.without-navbar {
+	  padding-top: 15px;
+	}
+
+	body > #app > .container.without-navbar-bottom {
+	  padding-bottom: 5px;
 	}
 
 	body > #app > .container > h2:first-child,
@@ -102,6 +117,10 @@ margin:2px 0;}
   	#tag-menu-column {
   	    padding-left: 7.5px;
   	}
+    }
+
+    .alert {
+        margin-bottom: 10px;
     }
 
 	#main-menu {
@@ -137,7 +156,14 @@ margin:2px 0;}
     .post .signature,
     .post .timestamp,
     .post .timestamp,
-    .post .attachment {
+    .post .attachment,
+    .popup .id,
+    .popup .name,
+    .popup .mail,
+    .popup .signature,
+    .popup .timestamp,
+    .popup .timestamp,
+    .popup .attachment {
         word-break: keep-all;
         white-space: nowrap;
         margin-bottom: 4px;
@@ -280,8 +306,6 @@ margin:2px 0;}
 		max-width: 1;
 	}
 
-
-
 	.tooltip.in {
 		opacity: 1;
 	}
@@ -316,10 +340,20 @@ margin:2px 0;}
 	    border-bottom-color: #dda;
 	}
 
+	.reverse-anchors > hr {
+	    margin-top: 10px;
+	    margin-bottom: 5px;
+	}
+
+	.reverse-anchors > div {
+	    padding-left: 32px;
+	}
+
 	.popup-heading {
 	    background: #ebebc4;
 	    border: solid 1px #cc0;
 	    padding: 8px;
+	    padding-bottom: 4px;
 	    margin-bottom: 8px;
 	}
 
@@ -356,8 +390,13 @@ margin:2px 0;}
 	}
 	*/
 
-	textarea {
+	#postarticle textarea {
 		resize: vertical;
+		height: 200px;
+	}
+
+	#g-recaptcha {
+	    margin-bottom: 10px;
 	}
 
 	.input-wrapper {
@@ -432,36 +471,40 @@ margin:2px 0;}
         margin-right: auto;
     }
 
-		img.emojione,
-		.emojionearea .emojionearea-tabs .emojionearea-tab .emojibtn,
-		.emojionearea .emojionearea-tabs .emojionearea-tab .emojibtn img,
-		.emojionearea .emojionearea-editor [class*=emojione-], .emojionearea .emojionearea-editor .emojione {
-			width:16px; height: 16px; min-width: 16px; min-height: 16px;
-		}
-		.emojionearea .emojionearea-filters .emojionearea-filter,
-		.emojionearea .emojionearea-filters .emojionearea-filter img {
-			width:22px; height: 22px; min-width: 22px; min-height: 22px;
-		}
-		.emojionearea .emojionearea-filters .emojionearea-filter
-		{
-			border: 6px solid #e5e5e5;
-		}
-		.emojionearea .emojionearea-filters,
-		.emojionearea .emojionearea-filters .emojionearea-filters-scroll {
-			height: 35px;
-		}
-		.emojionearea, .emojionearea.form-control {
-			border: none;
-			border-radius: 0;
-		}
-		.emojionearea .emojionearea-editor {
-			height: 165px;
-		}
-		#post-preview {
-			height: 303px;
-			padding: 10px;
-			overflow-y: auto;
-		}
+    #post-form-tabs .active {
+        border-bottom: 1px solid lightgray;
+    }
+
+    img.emojione,
+    .emojionearea .emojionearea-tabs .emojionearea-tab .emojibtn,
+    .emojionearea .emojionearea-tabs .emojionearea-tab .emojibtn img,
+    .emojionearea .emojionearea-editor [class*=emojione-], .emojionearea .emojionearea-editor .emojione {
+        width:16px; height: 16px; min-width: 16px; min-height: 16px;
+    }
+    .emojionearea .emojionearea-filters .emojionearea-filter,
+    .emojionearea .emojionearea-filters .emojionearea-filter img {
+        width:22px; height: 22px; min-width: 22px; min-height: 22px;
+    }
+    .emojionearea .emojionearea-filters .emojionearea-filter
+    {
+        border: 6px solid #e5e5e5;
+    }
+    .emojionearea .emojionearea-filters,
+    .emojionearea .emojionearea-filters .emojionearea-filters-scroll {
+        height: 35px;
+    }
+    .emojionearea, .emojionearea.form-control {
+        border: none;
+        border-radius: 0;
+    }
+    .emojionearea .emojionearea-editor {
+        height: 165px;
+    }
+    #post-preview {
+        height: 303px;
+        padding: 10px;
+        overflow-y: auto;
+    }
 
 .glyphicon.spinning {
     animation: spin 1s infinite linear;

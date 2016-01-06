@@ -109,6 +109,7 @@
 (defentity files (normalize-keys))
 (defentity records (transform convert-blobs) (normalize-keys))
 (defentity update_commands (normalize-keys))
+(defentity anchors (normalize-keys))
 
 
 
@@ -242,6 +243,38 @@
 
 
 
+(declare add-anchor)
+(declare get-all-records)
+(declare get-all-records-in-file)
+
+(defn add-anchor-in-post
+  [file-id body record-short-id]
+  ;(timbre/debug "add-anchor-in-post" file-id (String. body "UTF-8") record-short-id)
+  (let [elements (->> (clojure.string/split (String. body "UTF-8") #"<>")
+                      (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                      (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                      (apply merge))
+        elements (assoc elements :attach (true? (:attach elements)))
+        matches (and (:body elements) (re-seq #"&gt;&gt;[0-9a-f]{8}" (:body elements)))]
+    ;(map #(do {:file-id (:file-id record) :source (:record-short-id record) :destination (clojure.string/replace % #"^&gt;&gt;" "")}) matches
+    (doall (map #(add-anchor file-id record-short-id (clojure.string/replace % #"^&gt;&gt;" "")) matches))))
+
+(defn search-for-anchors-in-file
+  [file-id]
+  (let [results (doall (apply concat (map
+                                       (fn [record]
+                                         (add-anchor-in-post (:file-id record) (:body record) (:record-short-id record)))
+                                       (get-all-records-in-file file-id))))]
+    results))
+
+(defn search-for-anchors
+  []
+  (let [results (doall (apply concat (map
+                                       (fn [record]
+                                         (add-anchor-in-post (:file-id record) (:body record) (:record-short-id record)))
+                                       (get-all-records))))]
+    results))
+
 (defn add-record [file-id stamp record-id body]
   (if (zero? (count (select files (where {:id file-id}))))
     (throw (IllegalArgumentException. "Invalid file ID.")))
@@ -259,9 +292,9 @@
                        :record_short_id (second (re-find #"^([0-9a-f]{8})" record-id))
                        :body body
                        :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))
-                       :size (+ 10 2 32 2 (count body) 1)})))))
-
-
+                       :size (+ 10 2 32 2 (count body) 1)}))
+      (add-anchor-in-post file-id body (second (re-find #"^([0-9a-f]{8})" record-id)))
+      )))
 
 (defn get-all-records-in-file
   [file-id]
@@ -420,3 +453,21 @@
     (nil? end)   (select update_commands (where {:stamp [>= start]})                            (order :stamp :DESC))
     (nil? start) (select update_commands                              (where {:stamp [<= end]}) (order :stamp :DESC))
     :else         (select update_commands (where {:stamp [>= start]}) (where {:stamp [<= end]}) (order :stamp :DESC))))
+
+
+
+(defn add-anchor
+  [file-id source destination]
+  ;(timbre/debug "add-anchor" file-id source destination)
+  (transaction
+    (when (zero? (count (select anchors (where { :file_id file-id :source source :destination destination}))))
+      (insert anchors
+              (values {:file_id file-id
+                       :source source
+                       :destination destination})))))
+
+(defn get-anchors
+  [file-id destination]
+  (select anchors
+          (where {:file_id file-id :destination destination})))
+

@@ -41,7 +41,7 @@
           (timbre/error t "failed to start nREPL"))))))
 
 (defn http-port [port]
-  (parse-port (or port (env :port) 3000)))
+  (parse-port (or port (env :port) 8888)))
 
 (defonce http-server (atom nil))
 
@@ -82,4 +82,3 @@
     (do (migrations/migrate args) (System/exit 0))
     :else
     (start-app args)))
-  
