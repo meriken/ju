@@ -41,5 +41,6 @@
            (GET "/create-new-thread" [] (home-page))
            ; (GET "/status" [] (home-page))
            (GET "/help" [] (home-page))
+           (GET "/terms" [] (home-page))
 
            (GET "/docs" [] (ok (-> "docs/docs.md" io/resource slurp))))

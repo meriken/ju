@@ -144,10 +144,12 @@
 
 
 
+(defn known-node? [node-name]
+  (pos? (count (select nodes (where {:node_name node-name})))))
+
 (defn add-node [node-name]
   (transaction
-    (if (zero? (count (select nodes
-                              (where {:node_name node-name}))))
+    (if-not (known-node? node-name)
       (insert nodes
               (values {:node-name node-name
                        :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))})))))
@@ -293,8 +295,7 @@
                        :body body
                        :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))
                        :size (+ 10 2 32 2 (count body) 1)}))
-      (add-anchor-in-post file-id body (second (re-find #"^([0-9a-f]{8})" record-id)))
-      )))
+      (add-anchor-in-post file-id body (second (re-find #"^([0-9a-f]{8})" record-id))))))
 
 (defn get-all-records-in-file
   [file-id]
@@ -306,8 +307,7 @@
   [file-id short-id]
   (select records
           (where {:file_id file-id
-                  :record_short_id short-id})
-          (limit 1)))
+                  :record_short_id short-id})))
 
 (defn get-record-in-file-by-short-id
   [file-id short-id]

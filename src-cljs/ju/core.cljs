@@ -57,7 +57,7 @@
       (. e preventDefault)
       (. e stopPropagation)
       ;TODO
-      (. @history (setToken (str path "?dummy=1" (if (pos? (count query-string)) "&" "") query-string) title))
+      (. @history (setToken (str path "?_=1" (if (pos? (count query-string)) "&" "") query-string) title))
       (reset! navbar-collapsed? true)
       (remove-class (parent ($ (keyword "button[data-toggle=dropdown]"))) "open")
       (remove-tooltips)
@@ -121,7 +121,7 @@
          [:ul.nav.navbar-nav
           [nav-link "/" "目次" :home]
           [nav-link "/recent-threads" "スレッド一覧" :recent-threads]
-          [nav-link "/new-posts?hoge=1" "新着レスまとめ読み" :new-posts]
+          [nav-link "/new-posts" "新着レスまとめ読み" :new-posts]
           [nav-link "/create-new-thread" "新規スレッド作成" :create-new-thread]
           [nav-link "/status" "状態" :status]
           [nav-link "/help" "使い方" :help]]]]])))
@@ -176,7 +176,7 @@
    [:h3 "需"]
    [:p
     "「需」は新月ネットワークに参加しているP2P型の匿名掲示板です。"
-    "新月ネットワーク規約を守った上で、自由に利用してください。"]
+    [:a {:href "/terms" :on-click handle-click-on-link} "新月ネットワーク利用規約"] "を守った上で、自由に利用してください。"]
 
    [:div.row
     [:div#main-menu-column.col-sm-6
@@ -330,58 +330,57 @@
        :class (if (>= (session/get :page-num) (dec (session/get :num-pages))) "disabled" "")}
       "最初 " [:span.glyphicon.glyphicon-forward]]]])
 
+(defn recaptcha []
+  (fn []
+    [:div#g-recaptcha.g-recaptcha {:sitekey recaptcha-sitekey})))}])
+;    [(with-meta #(do [:div#g-recaptcha])
+;                {:component-did-mount (fn [this] (.render js/grecaptcha "g-recaptcha" (clj->js {:sitekey recaptcha-sitekey})))})]))
+
+(defn submit-post
+  [e]
+  (.preventDefault e)
+  (let [result (atom nil)
+        _ (ajax "/api/post"
+                {:method "POST"
+                 :success (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
+                 :error (fn [] (reset! result "ERROR"))
+                 :async false
+                 :contentType false
+                 :processData false
+                 :data (js/FormData. (.getElementById js/document "post-form"))})]
+    ))
+
 (defn post-form
   []
   (fn []
-  [:form#postarticle
-   {:name "postarticle"
-    :method "post"
-    :action "{{mobile_gateway_cgi}}"
-    :encType "multipart/form-data"
-    :role "form"
-    :style {:display (if @post-form-enabled? "display" "none")}}
-   [:div
-    [:input {:type "hidden" :name "cmd" :value "post"}]
-    [:input {:type "hidden" :name "file" :value "{{cache.datfile}}"}]
-    [:ul#post-form-tabs.nav.nav-tabs {:style {:border-bottom "none"}}
-     [:li#post-form-edit-tab.active    {:on-click #(js/switchTabsForPostForm "#post-form-edit-tab") :role "presentation"} [:a "編集"]]
-     [:li#post-form-emoji-tab   {:on-click #(js/switchTabsForPostForm "#post-form-emoji-tab") :role "presentation"} [:a "絵文字入力"]]
-     [:li#post-form-preview-tab {:on-click #(js/switchTabsForPostForm "#post-form-preview-tab") :role "presentation"} [:a "プレビュー"]]
-     ]
-    [:div.input-wrapper
-     [:div.wrapped-input.input-group
-      [:span.no-border.input-group-addon {:style {:border-radius "4px 0 0 0"}} [:span.glyphicon.glyphicon-user ]]
-      [:input#name.no-border.form-control  {:style {:border-radius "4px 0 0 0"} :name "name" :value "" :placeholder "名前"}]
-      ]
-     [:div.wrapped-input.input-group
-      [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-envelope ]]
-      [:input#mail.no-border.form-control {:name "mail" :value "" :placeholder "メール"}]
-      ]
-     ;{% if isadmin %}
+    [:form#post-form
+     {:style {:display (if @post-form-enabled? "display" "none")}}
+     [:input {:type "hidden" :name "thread-title" :value (session/get :thread-title)}]
+     [:div
+      [:ul#post-form-tabs.nav.nav-tabs {:style {:border-bottom "none"}}
+       [:li#post-form-edit-tab.active {:on-click #(js/switchTabsForPostForm "#post-form-edit-tab") :role "presentation"} [:a "編集"]]
+       [:li#post-form-emoji-tab {:on-click #(js/switchTabsForPostForm "#post-form-emoji-tab") :role "presentation"} [:a "絵文字入力"]]
+       [:li#post-form-preview-tab {:on-click #(js/switchTabsForPostForm "#post-form-preview-tab") :role "presentation"} [:a "プレビュー"]]]
+      [:div.input-wrapper
+       [:div.wrapped-input.input-group
+        [:span.no-border.input-group-addon {:style {:border-radius "4px 0 0 0"}} [:span.glyphicon.glyphicon-user ]]
+        [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "name" :placeholder "名前"}]]
+       [:div.wrapped-input.input-group
+        [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-envelope ]]
+        [:input#mail.no-border.form-control {:name "mail" :placeholder "メール"}]]
      [:div.wrapped-input.input-group
       [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-pencil ]]
-      [:input#passwd.no-border.form-control {:type "password" :name "passwd" :value "" :placeholder "署名"}]
-      ]
-     ;{% endif %}
-     [:div.wrapped-input.input-group
-      [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-file ]]
-      [:span.no-border.btn.btn-block.btn-default.btn-file
-       [:img {:alt "" :src "" :style {:max-height "80px" :max-width "80px"}} [:span#attachment-file-name "添付ファイル"]
-        [:input#attach {:type "file" :multiple "" :name "attach"}]
-        ]]]
-       [:textarea#body.no-border.wrapped-input.form-control {:rows "5" :name "body" :placeholder "本文" :value  ""}]
-       [:div#post-preview {:style {:display "none"}}
-        "プレヴュー"
-        ]
-       [:div.form-actions
-        [:button.btn.btn-block.btn-primary.wrapped-input.no-border {:style {:border-radius "0 0 4px 4px"}}
-         "書き込み"
-         ]
-        ]
-       ]]
-   [:div#g-recaptcha]
-   [:a.btn.btn-default {:href "{{mobile_gateway_cgi}}/motd" :target "_blank" :style {:margin-bottom "10px"}} "新月ネットワーク利用規約"]
-   ]))
+      [:input#password.no-border.form-control {:type "password" :name "password" :placeholder "署名"}]]
+       [:div.wrapped-input.input-group
+        [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-paperclip ]]
+        [:span.no-border.btn.btn-block.btn-default.btn-file
+         [:img {:alt "" :src "" :style {:max-height "80px" :max-width "80px"}} [:span#attachment-file-name "添付ファイル"]
+          [:input#attachment {:type "file" :multiple "" :name "attachment"}]]]]
+       [:textarea#body.no-border.wrapped-input.form-control {:rows "5" :name "body" :placeholder "本文"}]
+       [:div#post-preview {:style {:display "none"}} "プレビュー"]
+       [:button.btn.btn-block.btn-primary.wrapped-input.no-border {:on-click submit-post :style {:border-radius "0 0 4px 4px"}} "書き込み"]]]
+     [recaptcha]
+     [:a.btn.btn-default {:href "/terms" :on-click handle-click-on-link :style {:margin-bottom "10px"}} "新月ネットワーク利用規約"]]))
 
 (defn thread-page []
     [(keyword (str "div.container"
@@ -424,6 +423,34 @@
    [:div#content
     [:span.glyphicon.glyphicon-refresh.spinning.loading-page]]])
 
+(defn terms-page []
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
+   [:h3 "新月ネットワーク利用規約"]
+   [:div#content
+    "新月 - P2P anonymous BBS" [:br]
+    "http://shingetsu.info/" [:br] [:br]
+    "次の利用規約に同意した方のみ新月ネットワークに参加できます。" [:br] [:br]
+    "(投稿者の責任または免責)" [:br]
+    "1. 投稿者は投稿した記事に使用、改変または再配布の条件を記述しなければならない。"  [:br]
+    [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "条件は新月の仕組みに矛盾するものであってはならない。" [:br]
+    "2. 第1項の条件の記述がない場合には、利用者は投稿者が使用、" [:br]
+    [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "改変または再配布を制限しないことに同意したものとみなすことができる。" [:br]
+    "3. 投稿者は第1項の条件または第2項の同意が正しいことに責任を持つ。" [:br]
+    "4. 投稿者は法律に定めのない限り、個別の記事で宣言しない限り、" [:br]
+    [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "かつ第3項に反しない限り、記事の内容が正しいこと、役に立つこと、" [:br]
+    [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "または不愉快でないことなどについて保証しない。" [:br] [:br]
+    "(ノード管理者の責任または免責)" [:br]
+    "5. ノード管理者は記事または掲示板を自由に編集または削除できる。" [:br]
+    "6. ノード管理者は法律に定めのない限り、" [:br]
+    [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "ノードを管理・運営することで知った情報についての守秘義務を負わない。" [:br]
+    "7. ノード管理者は法律に定めのない限り、記事の内容が正しいこと、役に立つこと、" [:br]
+    [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "または不愉快でないことなどについて保証しない。" [:br]
+    "8. ノード管理者は自分の管理するノードに対して、" [:br]
+    [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "特定のユーザ、特定のノード、全ての利用者または全てのノードが" [:br]
+    [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "一時的または永続的に接続できることを保証しない。"]])
+
 (def pages
   {:home #'home-page
    :threads #'threads-page
@@ -431,7 +458,8 @@
    :thread #'thread-page
    :new-posts #'new-posts-page
    :create-new-thread #'create-new-thread-page
-   :help #'help-page})
+   :help #'help-page
+   :terms #'terms-page})
 
 ; https://groups.google.com/forum/#!topic/clojurescript/5WWfXAf4EDI
 ; http://stackoverflow.com/questions/27602592/reagent-component-did-mount
@@ -585,7 +613,7 @@
      thumbnail-exists? (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
      reverse-anchors (remove nil? (map #(if (= (:destination %) (:record-short-id post)) (:source %) nil) anchors))
      body-with-image [body
-                      (if body-exists? [:br])
+                      (if (and body-exists? thumbnail-exists?) [:hr])
                       (if thumbnail-exists?
                         [:img {:height 210
                                :src src
@@ -658,8 +686,8 @@
   (try
     (let [href (-> js/window .-location .-href)
           new-href (clojure.string/replace href #"(\?[^\?]+)\?[^\?]+$" "$1")
-          new-href (clojure.string/replace new-href #"\?dummy=1$" "")
-          new-href (clojure.string/replace new-href #"\?dummy=1&" "?")]
+          new-href (clojure.string/replace new-href #"\?_=1$" "")
+          new-href (clojure.string/replace new-href #"\?_=1&" "?")]
       (.replaceState (.-history js/window) "" (.-title js/document) new-href))
     (let [href (-> js/window .-location .-href)
           query (apply merge (map
@@ -687,11 +715,26 @@
     (catch js/Error e (.log js/console e) {})))
 
 (secretary/defroute "/" [] (process-query-string) (reset! jump-command :top) (session/put! :page :home))
-(secretary/defroute "/threads" [] (process-query-string) (reset! jump-command nil) (session/put! :page :threads))
-(secretary/defroute "/recent-threads" [] (process-query-string) (reset! jump-command nil) (session/put! :page :recent-threads))
 (secretary/defroute "/new-posts" [] (process-query-string) (session/put! :page :new-posts))
 (secretary/defroute "/create-new-thread" [] (process-query-string) (session/put! :page :create-new-thread))
 (secretary/defroute "/help" [] (process-query-string) (session/put! :page :help))
+(secretary/defroute "/terms" [] (process-query-string) (session/put! :page :terms))
+
+(secretary/defroute
+  "/threads" []
+  (process-query-string)
+  (reset! jump-command nil)
+  (if (nil? (session/get :threads))
+    (fetch-threads! :threads))
+  (session/put! :page :threads))
+
+(secretary/defroute
+  "/recent-threads" []
+  (process-query-string)
+  (reset! jump-command nil)
+  (if (nil? (session/get :recent-threads))
+    (fetch-threads! :recent-threads))
+  (session/put! :page :recent-threads))
 
 (secretary/defroute
   "/thread/:thread-title"
@@ -811,11 +854,6 @@
                                           (update-page)
                                           (reagent.core/render-component-to-string
                                             (generate-html-for-post post :popup (attr ($ element) "data-thread-title") (:anchors @result)))))})))))
-      (try
-        (if (zero? (.-length ($ :#g-recaptcha>div)))
-          (.render js/grecaptcha "g-recaptcha" (clj->js {:sitekey recaptcha-sitekey})))
-        (catch js/Error e
-          (.log js/console e)))
       (keep-popups-within-view)
       (process-jump-command))
     0))
@@ -826,15 +864,15 @@
                     (events/listen
                       EventType/NAVIGATE
                       (fn [event]
-                        (.log js/console "token:" (.-token event))
-                        (.log js/console "href:" (-> js/window .-location .-href))
+                        ;(.log js/console "token:" (.-token event))
+                        ;(.log js/console "href:" (-> js/window .-location .-href))
                         (secretary/dispatch! (.-token event))))
                     (.setUseFragment false)
                     (.setPathPrefix "")
                     (.setEnabled true)))
   (mount-components)
-  (fetch-threads! :recent-threads)
-  (js/setTimeout #(fetch-threads! :threads) 3000)
+  (session/put! :recent-threads nil)
+  (session/put! :threads nil)
 
   (-> ($ js/document)
       (.on "mouseup touchend"
