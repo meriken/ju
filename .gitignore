@@ -17,5 +17,5 @@ ju.hsqldb.*
 ju.log
 /projectFilesBackup
 /out/
-/figwheel_server.log
+figwheel_server.log
 
