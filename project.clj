@@ -83,7 +83,8 @@
       :externs ["react/externs/react.js"
                 "externs/jquery.js"
                 "externs/hoverIntent.js"
-                "externs/twitter-bootstrap.js"]
+                "externs/twitter-bootstrap.js"
+                "externs/blueimp.js"]
       :pretty-print true}}}}
   
   :profiles

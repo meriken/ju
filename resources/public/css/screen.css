@@ -14,8 +14,14 @@
 
 	body {
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif, 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ;
-	    font-family: 'Lucida Grande', 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ, sans-serif
+	    font-family: 'Lucida Grande', 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ, sans-serif;
 	}
+
+    /* For BootstrapModal */
+    body {
+        padding-right:0px !important;
+        margin-right:0px !important;
+    }
 
     #navbar-toggle-button {
         padding-top: 6px;
@@ -37,11 +43,11 @@
         height: 40px;
     }
 
-.navbar>.container .navbar-brand,
-.navbar-nav>li>a{
-padding-top: 10px;
-    padding-bottom: 10px;
-}
+    .navbar>.container .navbar-brand,
+    .navbar-nav>li>a{
+    padding-top: 10px;
+        padding-bottom: 10px;
+    }
 
     .navbar-fixed-bottom {
         min-height:36px;
@@ -214,6 +220,10 @@ padding-top: 10px;
     .post .glyphicon.glyphicon-time {
         top: 2px;
     }
+
+	.post img {
+	    cursor: pointer;
+	}
 
     .post hr {
 	    margin-top: 15px;

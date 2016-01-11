@@ -10,7 +10,8 @@
             [cljs-time.format]
             [cljs-time.coerce]
             [cljs-time.local]
-            [goog.crypt.base64])
+            [goog.crypt.base64]
+            [goog.string])
   (:use     [jayq.core :only [$ parent attr on off html add-class remove-class has-class ajax]])
   (:use-macros [jayq.macros :only [ready]])
   (:import [goog.history Html5History]
@@ -42,6 +43,14 @@
   (.tooltip ($ (keyword "[data-toggle=\"tooltip\"]")) "hide")
   (.remove ($ :.tooltip)))
 
+(defn open-internal-page
+  ([path title new-jump-command]
+   (.setToken @history (if (re-find #"\?" path) path (str path "?_=1")) title)
+   (reset! navbar-collapsed? true)
+   (remove-class (parent ($ (keyword "button[data-toggle=dropdown]"))) "open")
+   (remove-tooltips)
+   (reset! jump-command new-jump-command)))
+
 (defn handle-click-on-link [e]
   (.log js/console "handle-click-on-link" e)
   (let [$target ($ (.-target e))
@@ -56,18 +65,13 @@
     (when (and href path (not (= path "/status")))
       (. e preventDefault)
       (. e stopPropagation)
-      ;TODO
-      (. @history (setToken (str path "?_=1" (if (pos? (count query-string)) "&" "") query-string) title))
-      (reset! navbar-collapsed? true)
-      (remove-class (parent ($ (keyword "button[data-toggle=dropdown]"))) "open")
-      (remove-tooltips)
-      (reset! jump-command
-              (cond
-                (has-class $target "jump-to-bottom") :bottom
-                (has-class (parent $target) "jump-to-bottom") :bottom
-                :else :top))
-      ;(process-jump-command)
-      )))
+      (open-internal-page
+        (str path (if (pos? (count query-string)) "?" "") query-string)
+        title
+        (cond
+          (has-class $target "jump-to-bottom") :bottom
+          (has-class (parent $target) "jump-to-bottom") :bottom
+          :else :top)))))
 
 (defn process-jump-command
   []
@@ -182,7 +186,7 @@
     [:div#main-menu-column.col-sm-6
      [:div#main-menu.list-group
       [:a {:on-click handle-click-on-link :href "/recent-threads" :class "list-group-item"} "最近更新されたスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
-      [:a {:on-click handle-click-on-link :href "/threads" :class "list-group-item"} "すべてのスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      [:a {:on-click handle-click-on-link :href "/threads" :class "list-group-item"} "全てのスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/new-posts" :class "list-group-item"} "新着レスまとめ読み" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/create-new-thread" :class "list-group-item"} "新規スレッド作成" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:href "/status" :class "list-group-item"} "状態" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
@@ -218,8 +222,9 @@
     (session/get :recent-threads)
     [:div.btn-group.btn-group-justified.refresh-threads-button
     [:a.btn.btn-default
-     {:on-click #(do (reset! jump-command :bottom) (fetch-threads! :recent-threads))}
-     [:span.glyphicon.glyphicon-refresh] "スレッド一覧を更新する"]]]])
+     {:on-click handle-click-on-link
+      :href "/threads"}
+     "全てのスレッドを表示する"]]]])
 
 (defn threads-page []
   [(keyword (str "div.container"
@@ -231,11 +236,7 @@
     [:a.btn.btn-default
      {:on-click #(do (reset! jump-command :top) (fetch-threads! :threads))}
      [:span.glyphicon.glyphicon-refresh] "スレッド一覧を更新する"]]
-    (session/get :threads)
-    [:div.btn-group.btn-group-justified.refresh-threads-button
-    [:a.btn.btn-default
-     {:on-click #(do (reset! jump-command :top) (fetch-threads! :threads))}
-     [:span.glyphicon.glyphicon-refresh] "スレッド一覧を更新する"]]]])
+    (session/get :threads)]])
 
 (defn top-page-jump-buttons
   []
@@ -330,25 +331,40 @@
        :class (if (>= (session/get :page-num) (dec (session/get :num-pages))) "disabled" "")}
       "最初 " [:span.glyphicon.glyphicon-forward]]]])
 
+; This is rather tricky.
 (defn recaptcha []
   (fn []
-    [:div#g-recaptcha.g-recaptcha {:sitekey recaptcha-sitekey})))}])
-;    [(with-meta #(do [:div#g-recaptcha])
-;                {:component-did-mount (fn [this] (.render js/grecaptcha "g-recaptcha" (clj->js {:sitekey recaptcha-sitekey})))})]))
+    [(with-meta #(do [:div#g-recaptcha.g-recaptcha {:data-sitekey recaptcha-sitekey}])
+                {:component-did-mount (fn [this]
+                                        (try
+                                          (.render js/grecaptcha
+                                                   "g-recaptcha"
+                                                   (clj->js {:sitekey recaptcha-sitekey}))
+                                          (.removeClass ($ :#g-recaptcha) "g-recaptcha")
+                                          (catch js/Error _)))})]))
 
 (defn submit-post
   [e]
   (.preventDefault e)
   (let [result (atom nil)
-        _ (ajax "/api/post"
-                {:method "POST"
-                 :success (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
-                 :error (fn [] (reset! result "ERROR"))
-                 :async false
-                 :contentType false
-                 :processData false
-                 :data (js/FormData. (.getElementById js/document "post-form"))})]
-    ))
+                _ (ajax "/api/post"
+                        {:method      "POST"
+                         :success     (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
+                         :error       (fn [] (reset! result :error))
+                         :async       false
+                         :contentType false
+                         :processData false
+                         :data        (js/FormData. (.getElementById js/document "post-form"))})]
+    (if (= @result :error)
+      (.show js/BootstrapDialog (clj->js
+                                  {:type (.-TYPE_DANGER js/BootstrapDialog)
+                                   :title "エラー"
+                                   :message "書き込みに失敗しました。"
+                                   :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
+      (open-internal-page
+        (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
+        (session/get :thread-title)
+        :bottom))))
 
 (defn post-form
   []
@@ -505,7 +521,8 @@
        response)]))
 
 (defn fetch-threads! [dest]
-  (session/put! dest [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
+  ;(session/put! dest [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
+  (session/put! dest nil)
   (GET "/api/threads"
        {:handler #(thread-list-handler % dest)
         :response-format :json
@@ -565,23 +582,14 @@
   [post context thread-title anchors]
   (let
     [name (and (:name post)
-               (-> (:name post)
-                   (clojure.string/replace #"&gt;" ">")
-                   (clojure.string/replace #"&lt;" "<")
-                   (clojure.string/replace #"&amp;" "&")))
+               (goog.string/unescapeEntities (:name post)))
      mail (and (:mail post)
-               (-> (:mail post)
-                   (clojure.string/replace #"&gt;" ">")
-                   (clojure.string/replace #"&lt;" "<")
-                   (clojure.string/replace #"&amp;" "&")))
+               (goog.string/unescapeEntities (:mail post)))
      body (drop-last
             (apply concat
                    (map
                      #(list
-                       (-> %
-                           (clojure.string/replace #"&gt;" ">")
-                           (clojure.string/replace #"&lt;" "<")
-                           (clojure.string/replace #"&amp;" "&"))
+                       (goog.string/unescapeEntities %)
                        [:br {:key (my-uuid)}])
                      (clojure.string/split (:body post) #"<br>"))))
      body (map #(if (string? %) (process-links %) %) body)
@@ -605,7 +613,7 @@
                (cljs-time.format/unparse
                  (cljs-time.format/formatter "yyyy-MM-dd HH:mm (Z)")
                  (cljs-time.core/to-default-time-zone (cljs-time.coerce/from-long (* (:stamp post) 1000))))] " "
-              (if (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
+              (if (:suffix post)
                 [:a.btn.btn-xs.btn-default.attachment
                  {:href src}
                  [:span.glyphicon.glyphicon-paperclip] (str " " (:record-short-id post) "." (:suffix post))])]
@@ -618,7 +626,8 @@
                         [:img {:height 210
                                :src src
                                :on-click #(let [links (clj->js [src])
-                                                options (clj->js {:useBootstrapModal false})]
+                                                options (clj->js {:useBootstrapModal false
+                                                                  :hidePageScrollbars false})]
                                            (.toggleClass ($ :#blueimp-gallery) "blueimp-gallery-controls" true)
                                            (.Gallery js/blueimp links options))}])
                       (if (pos? (count reverse-anchors))
@@ -629,9 +638,8 @@
                                       :data-thread-title thread-title
                                       :key (my-uuid)}
                                      "└" %])
-                               reverse-anchors)]])]
+                               reverse-anchors)]])]]
 
-     ]
     (case context
       :popup
       [:div.popup {:key (my-uuid)}
@@ -672,7 +680,8 @@
 (defn fetch-posts!
   [thread-title page-num record-short-id]
   ;(.log js/console "fetch-posts!:" thread-title page-num record-short-id)
-  (session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
+  ;(session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
+  (session/put! :posts nil)
   (POST (str "/api/thread" )
        {:handler posts-handler
         :error-handler posts-error-handler

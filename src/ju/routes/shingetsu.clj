@@ -11,14 +11,29 @@
             [taoensso.timbre :as timbre]
             [clj-http.client :as client]
             [ju.db.core :as db]
-            [pandect.algo.md5 :refer :all])
-  (:import (java.util.regex Pattern)))
+            [pandect.algo.md5 :refer :all]
+            [clojure.data.codec.base64])
+  (:import (java.nio.file Files)))
 
 
 
 ; (def http-params { :headers {"Accept-Encoding" ""} :socket-timeout (* 5 60 1000) :conn-timeout (* 30 60 1000)})
-(def http-params {:socket-timeout (* 5 60 1000) :conn-timeout (* 30 60 1000)})
-(def http-params-for-quick-commands {:socket-timeout 60000 :conn-timeout 60000})
+(def http-params
+  {:socket-timeout (* 5 60 1000)
+   :conn-timeout (* 30 60 1000)
+   :retry-handler (fn [ex try-count http-context]
+                    ;(timbre/info "HTTP(S) connection failed:" try-count http-context)
+                    ;(Thread/sleep 10000)
+                    (if (> try-count 4) false true))})
+
+(def http-params-for-quick-commands
+  {:socket-timeout 60000
+   :conn-timeout 60000
+   :retry-handler (fn [ex try-count http-context]
+                    ;(timbre/info "HTTP(S) connection failed:" try-count http-context)
+                    ;(Thread/sleep 10000)
+                    (if (> try-count 4) false true))})
+
 (defonce http-server-port (atom nil))
 (def server-path "/server")
 (def initial-nodes ["node.shingetsu.info:8000/server.cgi" "node.fuktommy.com:8000/server.cgi"])
@@ -1562,25 +1577,28 @@
       (catch Exception e
         nil))))
 
-(defn check-nodes []
-  ;(timbre/info "Checking nodes..")
-  (try
-    (if (pos? (count @active-nodes))
-      (bye (first (shuffle @active-nodes))))
-    (if (pos? (count @search-nodes))
-      (swap! search-nodes #(clojure.set/difference % #{(first (shuffle @search-nodes))})))
+(defn check-nodes
+  ([]
+   (check-nodes false))
+  ([burst-mode]
+   (timbre/info "Checking nodes..")
+   (try
+     (if (pos? (count @active-nodes))
+       (bye (first (shuffle @active-nodes))))
+     (if (pos? (count @search-nodes))
+       (swap! search-nodes #(clojure.set/difference % #{(first (shuffle @search-nodes))})))
 
-    (let [nodes (db/get-all-nodes)]
-      (if (zero? (count nodes))
-        (doall (map #(try (check-node %1) (catch Throwable t)) initial-nodes))
-        (doall (map #(try (check-node %1) (catch Throwable t)) (shuffle (map :node-name nodes))))))
+     (let [nodes (db/get-all-nodes)]
+       (if (zero? (count nodes))
+         (doall ((if burst-mode pmap map) #(try (check-node %1) (catch Throwable t)) initial-nodes))
+         (doall ((if burst-mode pmap map) #(try (check-node %1) (catch Throwable t)) (shuffle (map :node-name nodes))))))
 
-    (while (> (count @active-nodes) max-num-active-nodes)
-      (bye (first (shuffle @active-nodes))))
+     (while (> (count @active-nodes) max-num-active-nodes)
+       (bye (first (shuffle @active-nodes))))
 
-    (catch Exception e
-      ;(timbre/error e)
-      nil)))
+     (catch Exception e
+       ;(timbre/error e)
+       nil))))
 
 (defn start-node-monitor []
   (do
@@ -1588,14 +1606,13 @@
       (timbre/info "Node monitor started.")
       (try
         (doall (map #(db/add-file %) known-files))
-        (doall (map #(try (ping %1) (catch Throwable t)) initial-nodes))
-        (doall (map #(try (ping %1) (catch Throwable t)) (map :node-name (db/get-all-nodes))))
+        (check-nodes true)
         (catch Throwable t))
       (while true
+        (Thread/sleep check-nodes-interval)
         (try
           (check-nodes)
-          (catch Throwable t))
-        (Thread/sleep check-nodes-interval)))))
+          (catch Throwable t))))))
 
 (defn get-files-with-recent-command []
   (let [records (clojure.string/split (apply str (pmap #(try (recent %1 "0-") (catch Throwable _)) @search-nodes)) #"\n")
@@ -2062,10 +2079,25 @@
                                                      (clojure.string/replace #"<" "&lt;")
                                                      (clojure.string/replace #">" "&gt;")))
                      body (if body body "")
+                     attachment? (and attachment
+                                      (:filename attachment)
+                                      (pos? (count (:filename attachment)))
+                                      (:size attachment)
+                                      (pos? (:size attachment))
+                                      (:tempfile attachment))
+                     _ (if (and (zero? (count body)) (not attachment?))
+                         (throw (Exception. "The post is empty.")))
                      record-body (str
                                    "body:" (clojure.string/replace (escape-special-characters body) #"\r?\n" "<br>")
                                    (if (and name (pos? (count name))) (str "<>name:" (escape-special-characters name)))
-                                   (if (and mail (pos? (count mail))) (str "<>mail:" (escape-special-characters mail))))
+                                   (if (and mail (pos? (count mail))) (str "<>mail:" (escape-special-characters mail)))
+                                   (if attachment?
+                                     (str
+                                       "<>attach:"
+                                       (String. (clojure.data.codec.base64/encode (Files/readAllBytes (.toPath (:tempfile attachment)))) "ASCII")
+                                       "<>suffix:"
+                                       (let [match (re-find #"\.([a-zA-Z0-9]+)$" (:filename attachment))]
+                                         (if match (second match) "bin")))))
                      record-id (md5 record-body)
                      entry {:file-name (:file-name file) :stamp stamp :record-id record-id}]
                  (db/add-record file-id stamp record-id (.getBytes record-body "UTF-8"))
