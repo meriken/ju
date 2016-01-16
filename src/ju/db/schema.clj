@@ -95,9 +95,9 @@
 ; MySQL
 (def mysql-db-spec {:classname   "com.mysql.jdbc.Driver"
                     :subprotocol "mysql"
-                    :subname     "//127.0.0.1:3306/merikens_2ch_browser" ; ?zeroDateTimeBehavior=convertToNull"
+                    :subname     "//127.0.0.1:3306/ju" ; ?zeroDateTimeBehavior=convertToNull"
                     :delimiters  "`"
-                    :user        "merikens_2ch_browser"
+                    :user        "ju"
                     :password    ""
                     :make-pool?  true
                     :naming      {:keys   clojure.string/lower-case
@@ -106,9 +106,9 @@
 ; PostgreSQL
 (def postgresql-db-spec {:classname   "org.postgresql.Driver"
                          :subprotocol "postgresql"
-                         :subname     "//127.0.0.1:5432/merikens_2ch_browser" ; ?zeroDateTimeBehavior=convertToNull"
+                         :subname     "//127.0.0.1:5432/ju" ; ?zeroDateTimeBehavior=convertToNull"
                          :delimiters  ""
-                         :user        "merikens_2ch_browser"
+                         :user        "ju"
                          :password    ""
                          :make-pool?  true
                          :naming      {:keys   clojure.string/lower-case
