@@ -47,7 +47,10 @@
                  [jayq "2.5.4"]
                  [com.andrewmcveigh/cljs-time "0.3.14"]
                  [org.clojure/data.codec "0.1.0"]
-                 [ring-middleware-format "0.7.0"]]
+                 [ring-middleware-format "0.7.0"]
+                 [digest "1.4.4"]
+                 [org.clojure/math.numeric-tower "0.0.4"]
+                 ]
 
   :min-lein-version "2.0.0"
   :uberjar-name "ju.jar"

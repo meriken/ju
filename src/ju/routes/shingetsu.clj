@@ -12,6 +12,9 @@
             [clj-http.client :as client]
             [ju.db.core :as db]
             [pandect.algo.md5 :refer :all]
+            [clojure.data.codec.base64]
+            [clojure.math.numeric-tower :refer [expt]]
+            [digest]
             [clojure.data.codec.base64])
   (:import (java.nio.file Files)))
 
@@ -1439,7 +1442,7 @@
 
 (defn valid-node-name? [node-name]
   (and
-    (re-find #"^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])):[0-9]+(/[a-zA-Z0-9.]+)+$" node-name)
+    (re-find #"^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])):[0-9]+(/[a-zA-Z0-9._]+)+$" node-name)
     (not (re-find #"^192\." node-name))
     (not (re-find #"^128\." node-name))
     (not (re-find #"^localhost:" node-name))))
@@ -1794,6 +1797,108 @@
 
 
 
+;;;;;;;;;;;;;;
+; Signatures ;
+;;;;;;;;;;;;;;
+
+(def int-to-base64-char-table
+  {0 "A" 16 "Q" 32 "g" 48 "w"
+   1 "B" 17 "R" 33 "h" 49 "x"
+   2 "C" 18 "S" 34 "i" 50 "y"
+   3 "D" 19 "T" 35 "j" 51 "z"
+   4 "E" 20 "U" 36 "k" 52 "0"
+   5 "F" 21 "V" 37 "l" 53 "1"
+   6 "G" 22 "W" 38 "m" 54 "2"
+   7 "H" 23 "X" 39 "n" 55 "3"
+   8 "I" 24 "Y" 40 "o" 56 "4"
+   9 "J" 25 "Z" 41 "p" 57 "5"
+   10 "K" 26 "a" 42 "q" 58 "6"
+   11 "L" 27 "b" 43 "r" 59 "7"
+   12 "M" 28 "c" 44 "s" 60 "8"
+   13 "N" 29 "d" 45 "t" 61 "9"
+   14 "O" 30 "e" 46 "u" 62 "+"
+   15 "P" 31 "f" 47 "v" 63 "/" })
+
+(def base64-char-to-int-table (clojure.set/map-invert int-to-base64-char-table))
+
+(defn- expt-mod [b e n] (bigint (.modPow (biginteger b) (biginteger e) (biginteger n))))
+
+(defn- hex-string-to-bigint
+  [s]
+  (apply +
+         (map
+           (fn [[x y] n] (* (bigint (Integer/parseInt (str x y) 16)) (expt 256 n)))
+           (partition 2 s)
+           (range (/ (count s) 2)))))
+
+(defn- is-nth-bit-on? [num n] (pos? (rem (quot num (expt 2 (dec n))) 2)))
+
+(defn- bigint-to-base64-
+  [n]
+  (if (>= n 64)
+    (concat (list (get int-to-base64-char-table (rem n 64))) (bigint-to-base64- (quot n 64)))
+    (list (get int-to-base64-char-table n))))
+
+(defn- add-padding [s] (str s (apply str (repeat (- 86 (count s)) "A"))))
+
+(defn- bigint-to-base64
+  [n]
+  (add-padding (apply str (bigint-to-base64- n))))
+
+(defn- base64-to-bigint
+  [s]
+  (apply +
+         (map (fn [c n] (* (bigint (get base64-char-to-int-table (str c))) (expt 64 n)))
+              s
+              (range (count s)))))
+
+(defn get-prime-numbers-for-signature
+  [password]
+  (let [hashs (str (digest/md5 password)
+                   (digest/md5 (str password "pad1"))
+                   (digest/md5 (str password "pad2"))
+                   (digest/md5 (str password "pad3")))
+        match (re-find #"^(.{56})(.{72})$" hashs)
+        p (hex-string-to-bigint (nth match 1))
+        q (hex-string-to-bigint (nth match 2))
+        p (if (is-nth-bit-on? p 216) p (+ p (expt 2 215)))
+        q (if (is-nth-bit-on? p 280) q (+ q (expt 2 279)))
+        p (bigint (.nextProbablePrime (biginteger p)))
+        q (bigint (.nextProbablePrime (biginteger q)))
+        t 30531
+        e 65537]
+    (loop [p p
+           q q]
+      (let [n (* p q)
+            d (bigint (.modInverse (biginteger e) (biginteger (* (dec p) (dec q)))))]
+        (if (= (expt-mod t (* e d) n) t)
+          [n d]
+          (recur (+ p 2) (+ q 2)))))))
+
+(defn- md5-string-to-bigint
+  [s]
+  (apply +
+         (map
+           (fn [c n] (* (bigint (int c)) (expt 256 n)))
+           s
+           (range (count s)))))
+
+(defn sign-post
+  [target password]
+  (let [[n d] (get-prime-numbers-for-signature password)
+        public-key (bigint-to-base64 n)
+        secret-key (bigint-to-base64 d)
+        target-bigint (md5-string-to-bigint (digest/md5 target))
+        c (expt-mod target-bigint d n)
+        signature (add-padding (apply str (bigint-to-base64 c)))]
+    {:public-key public-key :signature signature}))
+
+(defn verify-signature
+  [target public-key signature]
+  (= (md5-string-to-bigint (digest/md5 target))
+     (expt-mod (base64-to-bigint signature) 65537 (base64-to-bigint public-key))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Shingetsu Protocol Commands ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2058,12 +2163,14 @@
                 {:keys [headers params body server-name] :as request}
              (let [n (:n params)
                    n (if (zero? (count n)) nil n)]
-               (remove #(or
-                         (some #{(:file-name %)} known-corrupt-files)
-                         (zero? (:num-records %)))
-                       (if n
-                         (db/get-files-with-limit (Integer/parseInt n))
-                         (db/get-all-files)))))
+               (->> (if n
+                      (db/get-files-with-limit (Integer/parseInt n))
+                      (db/get-all-files))
+                    (remove #(or
+                              (some #{(:file-name %)} known-corrupt-files)
+                              (zero? (:num-records %))))
+                    (map #(assoc % :time-updated (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000))))
+                    )))
 
            (POST "/api/post"
                  request
@@ -2072,7 +2179,7 @@
                      _ (timbre/debug "/api/post" thread-title name mail password body g-recaptcha-response attachment)
                      file-id (db/get-file-id-by-thread-title thread-title)
                      file (db/get-file-by-id file-id)
-                     stamp (int (/ (clj-time.coerce/to-long (clj-time.core/now)) 1000))
+                     stamp (long (/ (clj-time.coerce/to-long (clj-time.core/now)) 1000))
                      escape-special-characters (fn [s]
                                                  (-> s
                                                      (clojure.string/replace #"&" "&amp;")
@@ -2123,7 +2230,7 @@
                        "ファイルの数: " (db/count-all-files) "\n"
                        "レコードの数: " (db/count-all-records) "\n"
                        "削除されたレコードの数: " (db/count-all-deleted-records) "\n"
-                       "キャッシュサイズ: " (int (/ total-size 1000000)) "MB\n\n"
+                       "キャッシュサイズ: " (long (/ total-size 1000000)) "MB\n\n"
                        "隣接ノード:\n"
                        (apply str (map #(str % "\n") (sort @active-nodes)))
                        "計" (count @active-nodes) "個" "\n"
