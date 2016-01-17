@@ -148,7 +148,7 @@
   (pos? (count (select nodes (where {:node_name node-name})))))
 
 (defn add-node [node-name]
-  (transaction
+  (transaction {:isolation :serializable}
     (if-not (known-node? node-name)
       (insert nodes
               (values {:node-name node-name
@@ -203,6 +203,15 @@
       (pos? (count files))
       (first files))))
 
+(defn get-file-by-thread-number
+  [thread-number]
+  (let [ts (java.sql.Timestamp. (* (- (Long/parseLong thread-number) (* 9 60 60)) 1000))
+        files (select files (where {:time_first_post ts}))]
+    (and
+      files
+      (pos? (count files))
+      (first files))))
+
 (defn hexify [s]
   (apply str (map #(format "%02X" %) (.getBytes s "UTF-8"))))
 
@@ -219,7 +228,7 @@
   (if-not (re-find #"^[a-zA-Z0-9]+_[a-zA-Z0-9_]+$" file-name)
     (throw (IllegalArgumentException. "Invalid file name.")))
 
-  (transaction
+  (transaction {:isolation :serializable}
     (if-not (get-file-id file-name)
       (insert files
               (values {:file-name file-name
@@ -285,7 +294,7 @@
   (if-not (= (md5 body) record-id)
     (throw (IllegalArgumentException. (str "Invalid record ID:" record-id))))
 
-  (transaction
+  (transaction {:isolation :serializable}
     (when (zero? (count (select records (where { :file_id file-id :stamp stamp :record_id record-id }))))
       (insert records
               (values {:file_id file-id
@@ -300,21 +309,35 @@
 (defn get-all-records-in-file
   [file-id]
   (select records
-          (where {:file_id file-id})
+          (where {:file_id file-id
+                  :deleted false})
           (order :stamp :ASC)))
 
 (defn get-records-in-file-by-short-id
   [file-id short-id]
   (select records
           (where {:file_id file-id
-                  :record_short_id short-id})))
+                  :record_short_id short-id
+                  :deleted false})))
+
+(defn get-records-by-short-id
+  [short-id]
+  (select records
+          (where {:record_short_id short-id
+                  :deleted false})))
+
+(defn get-record-by-id
+  [id]
+  (first (select records (where {:id id
+                                 :deleted false}))))
 
 (defn get-record-in-file-by-short-id
   [file-id short-id]
   (first
     (select records
             (where {:file_id file-id
-                    :record_short_id short-id})
+                    :record_short_id short-id
+                    :deleted false})
             (limit 1))))
 
 (defn get-records-on-page
@@ -323,18 +346,30 @@
         num-pages (+ (quot num-records page-size) (if (pos? (rem num-records page-size)) 1 0))
         record-offset (- num-records page-size (* page-num page-size))
         record-offset (if (neg? record-offset) 0 record-offset)]
-    (select records
-          (where {:file_id file-id})
+    ; This is very slow on MySQL.
+    (comment select records
+          (where {:file_id file-id
+                  :deleted false})
           (order :stamp :ASC)
           (offset record-offset)
-          (limit page-size))))
+          (limit page-size))
+    ; This is faster.
+    (->> (select records
+                 (where {:file_id file-id
+                         :deleted false})
+                 (fields :id :stamp))
+         (sort-by #(:stamp %))
+         (drop record-offset)
+         (take page-size)
+         (map #(:id %))
+         (map get-record-by-id))))
 
 (defn get-records-in-file-with-range
   [file-id start end]
   (cond
-    (nil? end)   (select records (where {:file_id file-id}) (where {:stamp [>= start]})                            (order :stamp :ASC))
-    (nil? start) (select records (where {:file_id file-id})                              (where {:stamp [<= end]}) (order :stamp :ASC))
-    :else         (select records (where {:file_id file-id}) (where {:stamp [>= start]}) (where {:stamp [<= end]}) (order :stamp :ASC))))
+    (nil? end)   (select records (where {:file_id file-id :deleted false}) (where {:stamp [>= start]})                            (order :stamp :ASC))
+    (nil? start) (select records (where {:file_id file-id :deleted false})                              (where {:stamp [<= end]}) (order :stamp :ASC))
+    :else         (select records (where {:file_id file-id :deleted false}) (where {:stamp [>= start]}) (where {:stamp [<= end]}) (order :stamp :ASC))))
 
 (defn count-records-in-file
   [file-id]
@@ -365,7 +400,7 @@
   (nth
     (select records
             (fields :id :file_id :stamp :record_id :record_short_id :time_created :size)
-            (where {:file_id file-id :stamp stamp :record_id record-id}))
+            (where {:file_id file-id :stamp stamp :record_id record-id :deleted false}))
     0
     nil))
 
@@ -373,21 +408,24 @@
   [file-id]
   (select records
           (fields :id :file_id :stamp :record_id :record_short_id :time_created :size)
-          (where {:file_id file-id})))
+          (where {:file_id file-id :deleted false})))
 
 (defn get-all-records-without-bodies
   []
   (select records
+          (where {:deleted false})
           (fields :id :file_id :stamp :record_id :record_short_id :time_created :size)))
 
 (defn get-all-records
   []
-  (select records))
+  (select records
+          (where {:deleted false})))
 
 
 
 (defn update-file
   [file-id]
+  ;(timbre/debug "update-file:" file-id)
   (update
     files
     (set-fields {:num_records (count-records-in-file file-id)})
@@ -400,13 +438,26 @@
     files
     (set-fields {:time_updated (try
                                  (java.sql.Timestamp. (* 1000 (:stamp
-                                                        (nth
-                                                          (select records
-                                                                  (where {:file_id file-id :deleted false})
-                                                                  (order :stamp :DESC)
-                                                                  (limit 1))
-                                                          0
-                                                          nil))))
+                                                                (nth
+                                                                  (select records
+                                                                          (where {:file_id file-id :deleted false})
+                                                                          (order :stamp :DESC)
+                                                                          (limit 1))
+                                                                  0
+                                                                  nil))))
+                                 (catch Throwable t nil))})
+    (where {:id file-id}))
+  (update
+    files
+    (set-fields {:time_first_post (try
+                                 (java.sql.Timestamp. (* 1000 (:stamp
+                                                                (nth
+                                                                  (select records
+                                                                          (where {:file_id file-id :deleted false})
+                                                                          (order :stamp :ASC)
+                                                                          (limit 1))
+                                                                  0
+                                                                  nil))))
                                  (catch Throwable t nil))})
     (where {:id file-id}))
   (update
@@ -421,7 +472,7 @@
   (dorun
     (map
       #(update-file %)
-      (map :id (select files (fields :id))))))
+      (sort (map :id (select files (fields :id)))))))
 
 
 
@@ -434,7 +485,7 @@
   (if-not (re-find #"^[a-f0-9]{32}$" record-id)
     (throw (IllegalArgumentException. (str "Invalid record ID: " record-id))))
 
-  (transaction
+  (transaction {:isolation :serializable}
     (let [existing-update-command (try (first (select update_commands (where {:file_name file-name :stamp stamp :record_id record-id}))) (catch Throwable _ nil))]
       (if (nil? existing-update-command)
       (insert update_commands
@@ -459,7 +510,7 @@
 (defn add-anchor
   [file-id source destination]
   ;(timbre/debug "add-anchor" file-id source destination)
-  (transaction
+  (transaction {:isolation :serializable}
     (when (zero? (count (select anchors (where { :file_id file-id :source source :destination destination}))))
       (insert anchors
               (values {:file_id file-id

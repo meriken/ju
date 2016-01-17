@@ -11,12 +11,15 @@
             [taoensso.timbre :as timbre]
             [clj-http.client :as client]
             [ju.db.core :as db]
-            [pandect.algo.md5 :refer :all]
-            [clojure.data.codec.base64]
             [clojure.math.numeric-tower :refer [expt]]
-            [digest]
-            [clojure.data.codec.base64])
-  (:import (java.nio.file Files)))
+            [clojure.data.codec.base64]
+            [clj-time.core]
+            [clj-time.coerce]
+            [clj-time.format]
+            [clj-time.predicates])
+  (:import (java.nio.file Files)
+           (java.security MessageDigest)
+           (java.net URLEncoder)))
 
 
 
@@ -1801,6 +1804,15 @@
 ; Signatures ;
 ;;;;;;;;;;;;;;
 
+(defn md5
+  [s]
+  (let [md (MessageDigest/getInstance "MD5")]
+    (.update md (cond
+                  (nil? s) (.getBytes "" "UTF-8")
+                  (string? s) (.getBytes s "UTF-8")
+                  :else s))
+    (apply str (map #(format "%02x" %) (.digest md)))))
+
 (def int-to-base64-char-table
   {0 "A" 16 "Q" 32 "g" 48 "w"
    1 "B" 17 "R" 33 "h" 49 "x"
@@ -1854,10 +1866,10 @@
 
 (defn get-prime-numbers-for-signature
   [password]
-  (let [hashs (str (digest/md5 password)
-                   (digest/md5 (str password "pad1"))
-                   (digest/md5 (str password "pad2"))
-                   (digest/md5 (str password "pad3")))
+  (let [hashs (str (md5 password)
+                   (md5 (str password "pad1"))
+                   (md5 (str password "pad2"))
+                   (md5 (str password "pad3")))
         match (re-find #"^(.{56})(.{72})$" hashs)
         p (hex-string-to-bigint (nth match 1))
         q (hex-string-to-bigint (nth match 2))
@@ -1888,14 +1900,14 @@
   (let [[n d] (get-prime-numbers-for-signature password)
         public-key (bigint-to-base64 n)
         secret-key (bigint-to-base64 d)
-        target-bigint (md5-string-to-bigint (digest/md5 target))
+        target-bigint (md5-string-to-bigint (md5 target))
         c (expt-mod target-bigint d n)
         signature (add-padding (apply str (bigint-to-base64 c)))]
     {:public-key public-key :signature signature}))
 
 (defn verify-signature
   [target public-key signature]
-  (= (md5-string-to-bigint (digest/md5 target))
+  (= (md5-string-to-bigint (md5 target))
      (expt-mod (base64-to-bigint signature) 65537 (base64-to-bigint public-key))))
 
 
@@ -1944,6 +1956,33 @@
                         "\n")))
                   (db/get-records-in-file-with-range file-id start end))))
           (content-type "text/plain; charset=UTF-8"))))))
+
+(defn process-record-body
+  [record]
+  (let [body (String. (:body record) "UTF-8")
+        elements (->> (clojure.string/split body #"<>")
+                      (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                      (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                      (apply merge))
+        target (and (:target elements)
+                    (clojure.string/join "<>"
+                                         (map #(str % ":" ((keyword %) elements))
+                                              (clojure.string/split (:target elements) #","))))
+        elements (if (or (nil? target)
+                         (and (verify-signature target (:pubkey elements) (:sign elements))
+                              (= (into #{} (map keyword (clojure.string/split (:target elements) #",")))
+                                 (clojure.set/difference
+                                   (into #{} (keys elements))
+                                   #{:sign :pubkey :target}))))
+                   elements
+                   (-> elements
+                       (assoc :sign nil)
+                       (assoc :pubkey nil)
+                       (assoc :target nil)))
+        elements (assoc elements :attach (if (:attach elements) true false))]
+    (-> record
+        (assoc :body nil)
+        (merge elements))))
 
 (defroutes shingetsu-routes
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2136,20 +2175,11 @@
                    ;page-size (Integer/parseInt page-size)
                    file-id (db/get-file-id-by-thread-title thread-title)
                    file (db/get-file-by-id file-id)
-                   results (doall (map
-                                    (fn [record]
-                                      (let [body (String. (:body record) "UTF-8")
-                                            elements (->> (clojure.string/split body #"<>")
-                                                          (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
-                                                          (map #(do {(keyword (nth % 1)) (nth % 2)}))
-                                                          (apply merge))
-                                            elements (assoc elements :attach (true? (:attach elements)))]
-                                        (-> record
-                                            (assoc :body nil)
-                                            (merge elements))))
-                                    (if (and record-short-id (pos? (count record-short-id)))
-                                      (db/get-records-in-file-by-short-id file-id record-short-id)
-                                      (db/get-records-on-page file-id page-size page-num))))
+                   results (pmap
+                             process-record-body
+                             (if (and record-short-id (pos? (count record-short-id)))
+                               (db/get-records-in-file-by-short-id file-id record-short-id)
+                               (db/get-records-on-page file-id page-size page-num)))
                    anchors (into [] (apply concat (map (fn [destnation]
                                                          ;(timbre/info file-id destnation (apply str (db/get-anchors file-id destnation)))
                                                          (db/get-anchors file-id destnation))
@@ -2169,8 +2199,7 @@
                     (remove #(or
                               (some #{(:file-name %)} known-corrupt-files)
                               (zero? (:num-records %))))
-                    (map #(assoc % :time-updated (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000))))
-                    )))
+                    (map #(assoc % :time-updated (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)))))))
 
            (POST "/api/post"
                  request
@@ -2205,8 +2234,20 @@
                                        "<>suffix:"
                                        (let [match (re-find #"\.([a-zA-Z0-9]+)$" (:filename attachment))]
                                          (if match (second match) "bin")))))
+                     record-body (if (or (nil? password) (zero? (count password)))
+                                   record-body
+                                   (let [{:keys [public-key signature]} (sign-post record-body password)]
+                                     (str
+                                       record-body
+                                       "<>pubkey:" public-key
+                                       "<>sign:" signature
+                                       "<>target:body"
+                                       (if (and name (pos? (count name))) ",name")
+                                       (if (and mail (pos? (count mail))) ",mail")
+                                       (if attachment? ",attach,suffix"))))
                      record-id (md5 record-body)
                      entry {:file-name (:file-name file) :stamp stamp :record-id record-id}]
+                 ;(timbre/debug record-body)
                  (db/add-record file-id stamp record-id (.getBytes record-body "UTF-8"))
                  (db/update-file file-id)
                  (db/process-update-command (:file-name file) stamp record-id)
@@ -2223,6 +2264,9 @@
                  (timbre/error t)
                  (internal-server-error "NG"))))
 
+
+
+
            (GET "/status" request
              (let [total-size (reduce + (map :size (db/get-all-files)))]
                (->
@@ -2238,4 +2282,84 @@
                        "探索ノード:\n"
                        (apply str (map #(str % "\n") (sort @search-nodes)))
                        "計" (count @search-nodes) "個"))
-                 (content-type "text/plain; charset=UTF-8")))))
+                 (content-type "text/plain; charset=UTF-8"))))
+
+
+           (GET "/2ch/subject.txt"
+                {:keys [headers params body server-name] :as request}
+             (let [files (db/get-all-files)
+                   lines (->> files
+                              (remove #(or
+                                        (not (= (:application "thread")))
+                                        (some #{(:file-name %)} known-corrupt-files)
+                                        (zero? (:num-records %))))
+                              (map #(try
+                                     (str
+                                       (+ (long (/ (clj-time.coerce/to-long (:time-first-post %)) 1000)) (* 9 60 60))
+                                       ".dat<>"
+                                       (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4
+                                         (unhexify (second (re-find #"^thread_(.*)$" (:file-name %)))))
+                                       " (" (:num-records %) ")\n")
+                                     (catch Throwable _ ""))))]
+               (->
+                 (ok (apply str lines))
+                 (content-type "text/plain; charset=Shift_JIS"))
+               ))
+
+           (GET "/2ch/dat/:dat-file-name"
+                 request
+             (timbre/debug request)
+             (let [{:keys [dat-file-name]} (:params request)
+                   [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)
+                   file (db/get-file-by-thread-number thread-number)
+                   results (pmap
+                             process-record-body
+                             (db/get-all-records-in-file (:id file)))
+                   anchor-map (apply merge (map #(assoc {} (str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2))
+                                                   results
+                                                   (range 1 (inc (count results)))))]
+               (->
+                 (ok (apply str (map #(let [name (if (nil? (:name %1)) "新月名無しさん" (:name %1))
+                                            mail (if (nil? (:mail %1)) "" (:mail %1))
+                                            local-time (clj-time.core/to-time-zone (clj-time.coerce/from-long (* (:stamp %1) 1000)) (clj-time.core/time-zone-for-offset +9))
+                                            ts (str
+                                                 (clj-time.format/unparse
+                                                   (clj-time.format/formatter "yyyy/MM/dd")
+                                                   local-time)
+                                                 (cond
+                                                   (clj-time.predicates/sunday? local-time) "(日)"
+                                                   (clj-time.predicates/monday? local-time) "(月)"
+                                                   (clj-time.predicates/tuesday? local-time) "(火)"
+                                                   (clj-time.predicates/wednesday? local-time) "(水)"
+                                                   (clj-time.predicates/thursday? local-time) "(木)"
+                                                   (clj-time.predicates/friday? local-time) "(金)"
+                                                   (clj-time.predicates/saturday? local-time) "(土)")
+                                                 (clj-time.format/unparse
+                                                   (clj-time.format/formatter " HH:mm:ss")
+                                                   local-time))
+                                            record-short-id (second (re-find #"^(.{8})" (:record-id %1)))
+                                            thread-title (unhexify (second (re-find #"^thread_(.*)$" (:file-name file))))]
+                                       (str name
+                                            "<>"
+                                            mail
+                                            "<>"
+                                            ts " ID:" record-short-id
+                                            "<>"
+                                            (if (:body %1)
+                                              (clojure.string/replace (:body %1) #"&gt;&gt;[a-f0-9]{8}" (fn [s] (get anchor-map s s))))
+                                            (if (:attach %1)
+                                              (str
+                                                (if (pos? (count (:body %1))) "<br>")
+                                                "http://"
+                                                (clojure.string/replace @server-node-name (re-pattern (str server-path "$")) "")
+                                                "/thread"
+                                                "/" (java.net.URLEncoder/encode thread-title "UTF-8")
+                                                "/" record-short-id "." (:suffix %1)
+                                                ))
+                                            (if (= %2 1)
+                                              (str "<>" (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
+                                            "\n"))
+                                     results
+                                     (range 1 (inc (count results))))))
+                 (content-type "text/plain; charset=Shift_JIS"))))
+           )

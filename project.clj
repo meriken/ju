@@ -50,6 +50,9 @@
                  [ring-middleware-format "0.7.0"]
                  [digest "1.4.4"]
                  [org.clojure/math.numeric-tower "0.0.4"]
+                 ;[commons-lang/commons-lang "2.6"]
+                 [org.apache.commons/commons-lang3 "3.1"]
+                 [log4j "1.2.17" :exclusions [javax.mail/mail javax.jms/jms com.sun.jdmk/jmxtools com.sun.jmx/jmxri]]
                  ]
 
   :min-lein-version "2.0.0"
@@ -57,7 +60,7 @@
   :jvm-opts ["-server"
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
-             "-Xmx8g"
+             "-Xmx1g"
              "-XX:+UseG1GC"
              "-XX:MaxGCPauseMillis=1000"]
   :resource-paths ["resources" "target/cljsbuild"]

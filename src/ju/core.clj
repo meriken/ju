@@ -62,8 +62,22 @@
   (db/shutdown)
   (shutdown-agents))
 
+(def config-file-loaded? (atom false)) ; TODO: Check to see if this is necessary.
+(def config-file-path "ju.clj")
+
+(defn load-config-file-if-necessary
+  []
+  (when (not @config-file-loaded?)
+    (try
+      (timbre/info "Loading configuration file...")
+      (load-file config-file-path)
+      (catch Throwable t
+        (timbre/info "Failed to load configuration file:" t)))
+    (reset! config-file-loaded? (atom true))))
+
 (defn start-app [[port]]
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app))
+  (load-config-file-if-necessary)
   ; Initialize the database if needed
   (if-not (schema/initialized?)
     (do

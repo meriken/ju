@@ -154,12 +154,12 @@
       [:div.btn-group.btn-group-sm
        [:a.btn.btn-default.navbar-btn
         {:on-click (fn [e]
-                     (reset! jump-command nil)
+                     (reset! jump-command :top)
                      (.back (.-history js/window)))}
         [:span.glyphicon.glyphicon-arrow-left]]
        [:a.btn.btn-default.navbar-btn
         {:on-click (fn [e]
-                     (reset! jump-command nil)
+                     (reset! jump-command :top)
                      (.forward (.-history js/window)))}
         [:span.glyphicon.glyphicon-arrow-right]]
        [:a.btn.btn-default.navbar-btn
@@ -171,7 +171,7 @@
                            (fetch-threads! :recent-threads)
                            :thread
                            (do
-                             (reset! jump-command :top)
+                             (reset! jump-command :first-new-post)
                              (fetch-posts! (session/get :thread-title) (session/get :page-num) (session/get :record-short-id)))
                            nil
                      ))}
@@ -539,7 +539,7 @@
                     new-posts? "list-group-item-danger"
                     thread-last-accessed "list-group-item-info"
                     :else "")}
-          thread-title
+          thread-title ; " (ID:" (str (:id %)) ")"
           [:span {:style {:border "solid 1px #ddd" :background-color "#eee"  :border-radius "4px" :margin-left "4px" :font-size 12  :padding "0 6px" :font-weight :normal}} (:num-records %)]
           [:span.glyphicon.glyphicon-chevron-right.pull-right]])
        response)]))
@@ -600,7 +600,7 @@
 
 (defn process-links
   [s]
-  (let [match (re-find #"^(.*?)(https?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))(.*)$" s)]
+  (let [match (re-find #"^(.*?)([htps]+://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))(.*)$" s)]
     (if-not match
       s
       (concat [(nth match 1)
@@ -940,5 +940,5 @@
                (.stopPropagation e)
                (remove-tooltips))))
 
-  (js/setInterval #(if (= (session/get :page) :recent-threads) (update-threads :recent-threads)) 60000)
-  (js/setInterval #(if (= (session/get :page) :threads) (update-threads :threads)) 60000))
+  (js/setInterval #(when (= (session/get :page) :recent-threads) (reset! jump-command nil) (update-threads :recent-threads)) 60000)
+  (js/setInterval #(when (= (session/get :page) :threads) (reset! jump-command nil) (update-threads :threads)) 180000))

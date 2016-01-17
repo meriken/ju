@@ -10,12 +10,13 @@ pom.xml.asc
 .lein-plugins/
 .lein-failures
 .nrepl-port
-ju.log.*
+/ju.log
+/ju.log.*
 /.idea
 .lein-env
 ju.hsqldb.*
-ju.log
 /projectFilesBackup
 /out/
-figwheel_server.log
-
+/figwheel_server.log
+/ju-log4j.log
+/ju.clj
