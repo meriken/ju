@@ -12,13 +12,14 @@
                  [metosin/ring-http-response "0.6.5"]
                  [bouncer "0.3.3"]
                  [org.clojure/tools.nrepl "0.2.12"]
-                 [org.webjars/bootstrap "3.3.6"]
-                 [org.webjars/jquery "2.1.4"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/timbre "4.1.4"]
                  [com.fzakaria/slf4j-timbre "0.2.1"]
                  [compojure "1.4.0"]
-                 [ring-webjars "0.1.1"]
+                 ;not compatible with launch4j
+                 ;[ring-webjars "0.1.1"]
+                 ;[org.webjars/bootstrap "3.3.6"]
+                 ;[org.webjars/jquery "2.1.4"]
                  [ring/ring-defaults "0.1.5"]
                  [ring "1.4.0" :exclusions [ring/ring-jetty-adapter]]
                  [mount "0.1.5"]
@@ -60,7 +61,7 @@
   :jvm-opts ["-server"
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
-             "-Xmx1g"
+             "-Xmx1G"
              "-XX:+UseG1GC"
              "-XX:MaxGCPauseMillis=1000"]
   :resource-paths ["resources" "target/cljsbuild"]
@@ -90,7 +91,8 @@
                 "externs/jquery.js"
                 "externs/hoverIntent.js"
                 "externs/twitter-bootstrap.js"
-                "externs/blueimp.js"]
+                "externs/blueimp.js"
+                "externs/highlight.js"]
       :pretty-print true}}}}
   
   :profiles

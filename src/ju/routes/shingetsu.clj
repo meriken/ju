@@ -2189,6 +2189,29 @@
                        :posts     results
                        :anchors   anchors}}))
 
+           (POST "/api/new-posts"
+                 request
+             (timbre/debug "/api/new-posts" request)
+             (let [{:keys [threads]} (:params request)
+                   _ (timbre/debug threads)
+                   results (remove nil?
+                                   (pmap (fn [thread]
+                                           (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))
+                                                 file (db/get-file-by-id file-id)
+                                                 posts (map process-record-body
+                                                            (db/get-new-records-in-file file-id (:time-last-accessed thread)))
+                                                 _ (timbre/debug thread (count posts))
+                                                 anchors (into [] (apply concat (map (fn [destnation]
+                                                                                       (db/get-anchors file-id destnation))
+                                                                                     (map :record-short-id posts))))]
+                                             (if (zero? (count posts))
+                                               nil
+                                               {:thread-title (:thread-title thread)
+                                                :posts posts
+                                                :anchors anchors})))
+                                         threads))]
+               {:body {:threads (into [] results)}}))
+
            (GET "/api/threads"
                 {:keys [headers params body server-name] :as request}
              (let [n (:n params)
@@ -2303,7 +2326,7 @@
                                      (catch Throwable _ ""))))]
                (->
                  (ok (apply str lines))
-                 (content-type "text/plain; charset=Shift_JIS"))
+                 (content-type "text/plain; charset=charset=windows-31j"))
                ))
 
            (GET "/2ch/dat/:dat-file-name"
@@ -2317,49 +2340,49 @@
                              (db/get-all-records-in-file (:id file)))
                    anchor-map (apply merge (map #(assoc {} (str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2))
                                                    results
-                                                   (range 1 (inc (count results)))))]
+                                                   (range 1 (inc (count results)))))
+                   posts-as-strings (map #(let [name (if (nil? (:name %1)) "新月名無しさん" (:name %1))
+                                                mail (if (nil? (:mail %1)) "" (:mail %1))
+                                                local-time (clj-time.core/to-time-zone (clj-time.coerce/from-long (* (:stamp %1) 1000)) (clj-time.core/time-zone-for-offset +9))
+                                                ts (str
+                                                     (clj-time.format/unparse
+                                                       (clj-time.format/formatter "yyyy/MM/dd")
+                                                       local-time)
+                                                     (cond
+                                                       (clj-time.predicates/sunday? local-time) "(日)"
+                                                       (clj-time.predicates/monday? local-time) "(月)"
+                                                       (clj-time.predicates/tuesday? local-time) "(火)"
+                                                       (clj-time.predicates/wednesday? local-time) "(水)"
+                                                       (clj-time.predicates/thursday? local-time) "(木)"
+                                                       (clj-time.predicates/friday? local-time) "(金)"
+                                                       (clj-time.predicates/saturday? local-time) "(土)")
+                                                     (clj-time.format/unparse
+                                                       (clj-time.format/formatter " HH:mm:ss")
+                                                       local-time))
+                                                record-short-id (second (re-find #"^(.{8})" (:record-id %1)))
+                                                thread-title (unhexify (second (re-find #"^thread_(.*)$" (:file-name file))))]
+                                           (str name
+                                                "<>"
+                                                mail
+                                                "<>"
+                                                ts " ID:" record-short-id
+                                                "<>"
+                                                (if (:body %1)
+                                                  (clojure.string/replace (:body %1) #"&gt;&gt;[a-f0-9]{8}" (fn [s] (get anchor-map s s))))
+                                                (if (:attach %1)
+                                                  (str
+                                                    (if (pos? (count (:body %1))) "<br>")
+                                                    "http://"
+                                                    (clojure.string/replace @server-node-name (re-pattern (str server-path "$")) "")
+                                                    "/thread"
+                                                    "/" (java.net.URLEncoder/encode thread-title "UTF-8")
+                                                    "/" record-short-id "." (:suffix %1)
+                                                    ))
+                                                (if (= %2 1)
+                                                  (str "<>" (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
+                                                "\n"))
+                                         results
+                                         (range 1 (inc (count results))))]
                (->
-                 (ok (apply str (map #(let [name (if (nil? (:name %1)) "新月名無しさん" (:name %1))
-                                            mail (if (nil? (:mail %1)) "" (:mail %1))
-                                            local-time (clj-time.core/to-time-zone (clj-time.coerce/from-long (* (:stamp %1) 1000)) (clj-time.core/time-zone-for-offset +9))
-                                            ts (str
-                                                 (clj-time.format/unparse
-                                                   (clj-time.format/formatter "yyyy/MM/dd")
-                                                   local-time)
-                                                 (cond
-                                                   (clj-time.predicates/sunday? local-time) "(日)"
-                                                   (clj-time.predicates/monday? local-time) "(月)"
-                                                   (clj-time.predicates/tuesday? local-time) "(火)"
-                                                   (clj-time.predicates/wednesday? local-time) "(水)"
-                                                   (clj-time.predicates/thursday? local-time) "(木)"
-                                                   (clj-time.predicates/friday? local-time) "(金)"
-                                                   (clj-time.predicates/saturday? local-time) "(土)")
-                                                 (clj-time.format/unparse
-                                                   (clj-time.format/formatter " HH:mm:ss")
-                                                   local-time))
-                                            record-short-id (second (re-find #"^(.{8})" (:record-id %1)))
-                                            thread-title (unhexify (second (re-find #"^thread_(.*)$" (:file-name file))))]
-                                       (str name
-                                            "<>"
-                                            mail
-                                            "<>"
-                                            ts " ID:" record-short-id
-                                            "<>"
-                                            (if (:body %1)
-                                              (clojure.string/replace (:body %1) #"&gt;&gt;[a-f0-9]{8}" (fn [s] (get anchor-map s s))))
-                                            (if (:attach %1)
-                                              (str
-                                                (if (pos? (count (:body %1))) "<br>")
-                                                "http://"
-                                                (clojure.string/replace @server-node-name (re-pattern (str server-path "$")) "")
-                                                "/thread"
-                                                "/" (java.net.URLEncoder/encode thread-title "UTF-8")
-                                                "/" record-short-id "." (:suffix %1)
-                                                ))
-                                            (if (= %2 1)
-                                              (str "<>" (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
-                                            "\n"))
-                                     results
-                                     (range 1 (inc (count results))))))
-                 (content-type "text/plain; charset=Shift_JIS"))))
-           )
+                 (ok (apply str posts-as-strings))
+                 (content-type "text/plain; charset=windows-31j")))))

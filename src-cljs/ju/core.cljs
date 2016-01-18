@@ -182,8 +182,8 @@
        [:a.btn.btn-default.navbar-btn
         {:on-click (fn [e] (.animate ($ (keyword "html,body")) (clj->js {:scrollTop (.height ($ js/document))}) "slow"))}
         [:span.glyphicon.glyphicon-triangle-bottom]]
-       [:a.btn.btn-primary.navbar-btn
-        {:class (if (= (session/get :page) :thread) "" "disabled")
+       [:a.btn.btn-default.navbar-btn
+        {:class (if (and (= (session/get :page) :thread) (not @post-form-enabled?)) "" "disabled")
          :on-click handle-click-on-link
          :href (str (session/get :href-base) "?posts=0&post-form=1")}
         [:span.glyphicon.glyphicon-pencil] "書き込み"]]]]))
@@ -234,12 +234,12 @@
     [:a.btn.btn-default
      {:on-click #(do (reset! jump-command :top) (fetch-threads! :recent-threads))}
      [:span.glyphicon.glyphicon-refresh] "スレッド一覧を更新する"]]
+    (session/get :recent-threads)
     [:div.btn-group.btn-group-sm.btn-group-justified.refresh-threads-button
      [:a.btn.btn-default
      {:on-click handle-click-on-link
       :href "/threads"}
      "全てのスレッドを表示する"]]
-    (session/get :recent-threads)
     ]])
 
 (defn threads-page []
@@ -352,7 +352,7 @@
   (fn []
     [(with-meta #(do [:div#g-recaptcha.g-recaptcha {:data-sitekey recaptcha-sitekey}])
                 {:component-did-mount (fn [this]
-                                        (try
+                                        (comment try
                                           (.render js/grecaptcha
                                                    "g-recaptcha"
                                                    (clj->js {:sitekey recaptcha-sitekey}))
@@ -437,15 +437,14 @@
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 "新着まとめ読み"]
    [:div#content
-    [:span.glyphicon.glyphicon-refresh.spinning.loading-page]]])
+    (session/get :posts)]])
 
 (defn create-new-thread-page []
   [(keyword (str "div.container"
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 "新規スレッド作成"]
-   [:div#content
-    [:span.glyphicon.glyphicon-refresh.spinning.loading-page]]])
+   [:div#content]])
 
 (defn help-page []
   [(keyword (str "div.container"
@@ -684,7 +683,7 @@
        (into [] (concat [:div.well.well-sm.popup-heading] heading))
        (into [] (concat [:div] body-with-image))]
 
-      [:div.panel.post {:key (my-uuid) :class (if new-post? "panel-danger new" "panel-default")}
+      [:div.panel.post {:key (my-uuid) :class (if (and new-post? (= context :thread)) "panel-danger new" "panel-default")}
        (into [] (concat [:div.panel-heading] heading))
        (into [] (concat [(if (pos? (count reverse-anchors)) :div.panel-body.with-reverse-anchors :div.panel-body)] body-with-image))])))
 
@@ -698,10 +697,10 @@
     (session/put!
       :posts
       [(with-meta (fn [] [:div#posts
-                              (doall
-                                (map
-                                  #(generate-html-for-post % :thread (session/get :thread-title) (:anchors response))
-                                  (:posts response)))])
+                          (doall
+                            (map
+                              #(generate-html-for-post % :thread (session/get :thread-title) (:anchors response))
+                              (:posts response)))])
                   {:component-did-mount
                    #(do
                      (process-jump-command)
@@ -710,6 +709,34 @@
                        (.setItem js/localStorage
                                  (str "thread-last-accessed-" (session/get :thread-title))
                                  (str (long (/ (.getTime (js/Date.)) 1000))))))})])))
+
+(defn new-posts-handler
+  [response]
+  (let []
+    ;(.log js/console "posts-handler:" num-posts num-pages (clj->js (:anchors response)))
+    (session/put!
+      :posts
+      [(with-meta (fn []
+                    (if (zero? (count (:threads response)))
+                      [:div.alert.alert-info "既読スレッドの新着レスはありません。"]
+                      [:div#new-posts
+                       (map
+                         (fn [thread]
+                           [:div.thread
+                            [:div.alert.alert-info.thread-title (:thread-title thread)]
+                            (map
+                              (fn [post]
+                                (generate-html-for-post post :new-posts (:thread-title thread) (:anchors thread)))
+                              (:posts thread))])
+                         (:threads response))]))
+                  {:component-did-mount
+                   (fn []
+                     (dorun
+                       (map
+                         #(.setItem js/localStorage
+                                    (str "thread-last-accessed-" (:thread-title %))
+                                    (str (long (/ (.getTime (js/Date.)) 1000))))
+                         (:threads response))))})])))
 
 (defn posts-error-handler
   [response]
@@ -721,7 +748,8 @@
       [:div#posts
        [:div.alert.alert-danger {:role "alert"}
         [:span.glyphicon.glyphicon-exclamation-sign]
-        "レスの読み込みに失敗しました。"]])))
+        "レスの読み込みに失敗しました。" [:br]
+        (str response)]])))
 
 (defn fetch-posts!
   [thread-title page-num record-short-id]
@@ -729,12 +757,30 @@
   ;(session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
   (session/put! :posts nil)
   (POST (str "/api/thread" )
-       {:handler posts-handler
-        :error-handler posts-error-handler
-        :format :json
-        :response-format :json
-        :keywords? true
-        :params {:thread-title thread-title :page-num page-num :page-size page-size :record-short-id record-short-id}}))
+        {:handler posts-handler
+         :error-handler posts-error-handler
+         :format :json
+         :response-format :json
+         :keywords? true
+         :params {:thread-title thread-title :page-num page-num :page-size page-size :record-short-id record-short-id}}))
+
+(defn fetch-new-posts!
+  []
+  ;(.log js/console "fetch-new-posts!:" thread-title page-num record-short-id)
+  ;(session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
+  (let [threads (remove nil?
+                        (map #(if (re-find #"^thread-last-accessed-" (.key js/localStorage %))
+                               {:thread-title (clojure.string/replace (.key js/localStorage %) #"^thread-last-accessed-" "")
+                                :time-last-accessed (js/parseInt (.getItem js/localStorage (.key js/localStorage %)))})
+                             (range (.-length js/localStorage))))]
+    (session/put! :posts nil)
+    (POST (str "/api/new-posts" )
+             {:handler new-posts-handler
+              :error-handler posts-error-handler
+              :format :json
+              :response-format :json
+              :keywords? true
+              :params {:threads threads}})))
 
 (defn process-query-string
   []
@@ -770,7 +816,7 @@
     (catch js/Error e (.log js/console e) {})))
 
 (secretary/defroute "/" [] (process-query-string) (reset! jump-command :top) (session/put! :page :home))
-(secretary/defroute "/new-posts" [] (process-query-string) (session/put! :page :new-posts))
+(secretary/defroute "/new-posts" [] (process-query-string) (fetch-new-posts!) (session/put! :page :new-posts))
 (secretary/defroute "/create-new-thread" [] (process-query-string) (session/put! :page :create-new-thread))
 (secretary/defroute "/help" [] (process-query-string) (session/put! :page :help))
 (secretary/defroute "/terms" [] (process-query-string) (session/put! :page :terms))

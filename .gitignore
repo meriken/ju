@@ -20,3 +20,4 @@ ju.hsqldb.*
 /figwheel_server.log
 /ju-log4j.log
 /ju.clj
+ju.iml

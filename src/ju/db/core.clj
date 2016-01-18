@@ -320,6 +320,14 @@
                   :record_short_id short-id
                   :deleted false})))
 
+(defn get-new-records-in-file
+  [file-id time-last-accessed]
+  (select records
+          (where {:file_id file-id
+                  :stamp [> time-last-accessed]
+                  :deleted false})
+          (order :stamp :ASC)))
+
 (defn get-records-by-short-id
   [short-id]
   (select records
@@ -346,23 +354,23 @@
         num-pages (+ (quot num-records page-size) (if (pos? (rem num-records page-size)) 1 0))
         record-offset (- num-records page-size (* page-num page-size))
         record-offset (if (neg? record-offset) 0 record-offset)]
-    ; This is very slow on MySQL.
-    (comment select records
-          (where {:file_id file-id
-                  :deleted false})
-          (order :stamp :ASC)
-          (offset record-offset)
-          (limit page-size))
-    ; This is faster.
-    (->> (select records
-                 (where {:file_id file-id
-                         :deleted false})
-                 (fields :id :stamp))
-         (sort-by #(:stamp %))
-         (drop record-offset)
-         (take page-size)
-         (map #(:id %))
-         (map get-record-by-id))))
+    ; The first version is faster on MySQL.
+    (if (= (:subprotocol ju.db.schema/db-spec) "mysql")
+      (->> (select records
+                   (where {:file_id file-id
+                           :deleted false})
+                   (fields :id :stamp))
+           (sort-by #(:stamp %))
+           (drop record-offset)
+           (take (if (>= page-num (dec num-pages)) (- num-records (* (dec num-pages) page-size)) page-size))
+           (map #(:id %))
+           (map get-record-by-id))
+      (select records
+              (where {:file_id file-id
+                      :deleted false})
+              (order :stamp :ASC)
+              (offset record-offset)
+              (limit (if (>= page-num (dec num-pages)) (- num-records (* (dec num-pages) page-size)) page-size))))))
 
 (defn get-records-in-file-with-range
   [file-id start end]

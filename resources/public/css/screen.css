@@ -157,6 +157,14 @@
         margin-bottom: 10px;
     }
 
+    #new-posts .alert.alert-info.thread-title {
+        font-size: 16px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
+
     .post .id,
     .post .name,
     .post .mail,
