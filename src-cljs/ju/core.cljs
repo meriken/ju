@@ -39,6 +39,7 @@
 (def post-form-enabled? (atom true))
 (def posts-displayed? (atom false))
 (def new-post-notification (atom false))
+(def server-status (atom nil))
 
 
 (defn remove-tooltips
@@ -65,7 +66,7 @@
     ;(js/alert path)
     (.log js/console path)
     (.blur ($ (.-target e)))
-    (when (and href path (not (= path "/status")))
+    (when (and href path)
       (. e preventDefault)
       (. e stopPropagation)
       (open-internal-page
@@ -220,7 +221,7 @@
        "新着レスまとめ読み"
        [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/create-new-thread" :class "list-group-item"} "新規スレッド作成" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
-      [:a {:href "/status" :class "list-group-item"} "状態" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      [:a {:on-click handle-click-on-link :href "/status" :class "list-group-item"} "状態" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/help" :class "list-group-item"} "使い方" [:span.glyphicon.glyphicon-chevron-right.pull-right]]]]
 
     [:div#tag-menu-column.col-sm-6
@@ -467,8 +468,7 @@
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 "使い方"]
-   [:div#content
-    [:span.glyphicon.glyphicon-refresh.spinning.loading-page]]])
+   [:div#content]])
 
 (defn terms-page []
   [(keyword (str "div.container"
@@ -498,6 +498,26 @@
     [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "特定のユーザ、特定のノード、全ての利用者または全てのノードが" [:br]
     [:span {:dangerouslySetInnerHTML {:__html "&nbsp;&nbsp;&nbsp;&nbsp;"}}] "一時的または永続的に接続できることを保証しない。"]])
 
+(defn status-page []
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
+   [:h3 "状態"]
+   [:div#content
+    "ファイルの数: " (:num-files @server-status) [:br]
+    "レコードの数: " (:num-records @server-status) [:br]
+    "削除されたレコードの数: " (:num-deleted-records @server-status) [:br]
+    "キャッシュサイズ: " (int (/ (:cache-size @server-status) 1000 1000)) "MB" [:br]
+    [:br]
+    "隣接ノード" [:br]
+    (map #(do [:span {:key (my-uuid)} % [:br]]) (:active-nodes @server-status))
+    "計" (str (count (:active-nodes @server-status))) "台" [:br]
+    [:br]
+    "探索ノード" [:br]
+    (map #(do [:span {:key (my-uuid)} % [:br]]) (:search-nodes @server-status))
+    "計" (str (count (:search-nodes @server-status))) "台"
+    ]])
+
 (def pages
   {:home #'home-page
    :threads #'threads-page
@@ -505,6 +525,7 @@
    :thread #'thread-page
    :new-posts #'new-posts-page
    :create-new-thread #'create-new-thread-page
+   :status #'status-page
    :help #'help-page
    :terms #'terms-page})
 
@@ -818,11 +839,18 @@
                              (range (.-length js/localStorage))))]
     (POST (str "/api/new-post-notification" )
           {:handler #(reset! new-post-notification (:result %))
-           :error-handler posts-error-handler
            :format :json
            :response-format :json
            :keywords? true
            :params {:threads threads}})))
+
+(defn fetch-server-status!
+  []
+  ;(.log js/console "fetch-server-status!" )
+  (GET (str "/api/status" )
+          {:handler #(if (= (session/get :page) :status) (reset! server-status (:status %)))
+           :response-format :json
+           :keywords? true}))
 
 (defn process-query-string
   []
@@ -862,6 +890,7 @@
 (secretary/defroute "/create-new-thread" [] (process-query-string) (session/put! :page :create-new-thread))
 (secretary/defroute "/help" [] (process-query-string) (session/put! :page :help))
 (secretary/defroute "/terms" [] (process-query-string) (session/put! :page :terms))
+(secretary/defroute "/status" [] (process-query-string) (fetch-server-status!) (session/put! :page :status))
 
 (secretary/defroute
   "/threads" []
@@ -1030,5 +1059,6 @@
 
   (check-new-post-notification!)
   (js/setInterval #(check-new-post-notification!) 30000)
+  (js/setInterval #(when (= (session/get :page) :status) (fetch-server-status!)) 30000)
   (js/setInterval #(when (= (session/get :page) :recent-threads) (reset! jump-command nil) (update-threads :recent-threads)) 60000)
   (js/setInterval #(when (= (session/get :page) :threads) (reset! jump-command nil) (update-threads :threads)) 180000))

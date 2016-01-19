@@ -2297,25 +2297,17 @@
                  (timbre/error t)
                  (internal-server-error "NG"))))
 
+           (GET "/api/status" request
+             (let [cache-size (reduce + (map :size (db/get-all-files)))]
+               {:body
+                {:status
+                 {:num-files (db/count-all-files)
+                 :num-records (db/count-all-records)
+                 :num-deleted-records (db/count-all-deleted-records)
+                 :cache-size cache-size
+                 :active-nodes (into [] (sort @active-nodes))
+                 :search-nodes (into [] (sort @search-nodes))}}}))
 
-
-
-           (GET "/status" request
-             (let [total-size (reduce + (map :size (db/get-all-files)))]
-               (->
-                 (ok (str
-                       "ファイルの数: " (db/count-all-files) "\n"
-                       "レコードの数: " (db/count-all-records) "\n"
-                       "削除されたレコードの数: " (db/count-all-deleted-records) "\n"
-                       "キャッシュサイズ: " (long (/ total-size 1000000)) "MB\n\n"
-                       "隣接ノード:\n"
-                       (apply str (map #(str % "\n") (sort @active-nodes)))
-                       "計" (count @active-nodes) "個" "\n"
-                       "\n"
-                       "探索ノード:\n"
-                       (apply str (map #(str % "\n") (sort @search-nodes)))
-                       "計" (count @search-nodes) "個"))
-                 (content-type "text/plain; charset=UTF-8"))))
 
 
            (GET "/2ch/subject.txt"

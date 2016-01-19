@@ -39,7 +39,7 @@
                     :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))))
            (GET "/new-posts" [] (home-page))
            (GET "/create-new-thread" [] (home-page))
-           ; (GET "/status" [] (home-page))
+           (GET "/status" [] (home-page))
            (GET "/help" [] (home-page))
            (GET "/terms" [] (home-page))
 
