@@ -2191,16 +2191,15 @@
 
            (POST "/api/new-posts"
                  request
-             (timbre/debug "/api/new-posts" request)
+             ;(timbre/debug "/api/new-posts" request)
              (let [{:keys [threads]} (:params request)
-                   _ (timbre/debug threads)
+                   ;_ (timbre/debug threads)
                    results (remove nil?
                                    (pmap (fn [thread]
                                            (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))
-                                                 file (db/get-file-by-id file-id)
                                                  posts (map process-record-body
                                                             (db/get-new-records-in-file file-id (:time-last-accessed thread)))
-                                                 _ (timbre/debug thread (count posts))
+                                                 ;_ (timbre/debug thread (count posts))
                                                  anchors (into [] (apply concat (map (fn [destnation]
                                                                                        (db/get-anchors file-id destnation))
                                                                                      (map :record-short-id posts))))]
@@ -2211,6 +2210,17 @@
                                                 :anchors anchors})))
                                          threads))]
                {:body {:threads (into [] results)}}))
+
+           (POST "/api/new-post-notification"
+                 request
+             ;(timbre/debug "/api/new-post-notification" request)
+             (let [{:keys [threads]} (:params request)
+                   result (remove zero?
+                                   (pmap (fn [thread]
+                                           (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))]
+                                             (db/count-new-records-in-file file-id (:time-last-accessed thread))))
+                                         threads))]
+               {:body {:result (if (pos? (count result)) true false)}}))
 
            (GET "/api/threads"
                 {:keys [headers params body server-name] :as request}

@@ -39,13 +39,20 @@
         min-height: 40px;
     }
 
+    #navbar #navbar-toggle-button.new-posts,
+    #navbar li.new-posts,
+    #navbar li.active.new-posts,
+    #navbar .navbar-default .navbar-nav > .active.new-posts > a {
+        background-color: #f2dede;
+        background-image: none;
+    }
     .navbar>.container .navbar-brand {
         height: 40px;
     }
 
     .navbar>.container .navbar-brand,
     .navbar-nav>li>a{
-    padding-top: 10px;
+        padding-top: 10px;
         padding-bottom: 10px;
     }
 

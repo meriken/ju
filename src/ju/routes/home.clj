@@ -22,11 +22,11 @@
            (GET "/thread/:thread-title" [] (home-page))
            (GET "/thread/:thread-title/:qualifier"
                 [thread-title qualifier]
-             (if (not (re-find #"^[a-f0-9]{8}\.[a-zA-Z0-9]+$" qualifier))
+             (if (not (re-find #"^[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier))
                (home-page)
                (let [file-id (db/get-file-id-by-thread-title thread-title)
-                     [_ short-id suffix] (re-find #"^([a-f0-9]{8})\.([a-zA-Z0-9]+)$" qualifier)
-                     record (db/get-record-in-file-by-short-id file-id short-id)
+                     [_ record-id suffix] (re-find #"^([a-f0-9]{32})\.([a-zA-Z0-9]+)$" qualifier)
+                     record (db/get-record-in-file-by-record-id file-id record-id)
                      body (String. (:body record) "UTF-8")
                      elements (->> (clojure.string/split body #"<>")
                                    (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))

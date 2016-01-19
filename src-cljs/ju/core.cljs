@@ -25,6 +25,7 @@
 (declare update-page)
 (declare fetch-threads!)
 (declare fetch-posts!)
+(declare fetch-new-posts!)
 
 
 
@@ -37,6 +38,7 @@
 (def navbar-bottom-enabled? (atom true))
 (def post-form-enabled? (atom true))
 (def posts-displayed? (atom false))
+(def new-post-notification (atom false))
 
 
 (defn remove-tooltips
@@ -113,7 +115,9 @@
 
 
 (defn nav-link [uri title page]
-  [:li {:class (when (= page (session/get :page)) "active")}
+  [:li {:class (str
+                 (when (= page (session/get :page)) "active")
+                 (when (and (= page :new-posts) @new-post-notification) " new-posts"))}
    [:a {:href uri
         :on-click #(do (handle-click-on-link %) (reset! navbar-collapsed? true))}
     title]])
@@ -126,7 +130,9 @@
        [:div.container
         [:div.navbar-header
          [:button#navbar-toggle-button.navbar-toggle
-          {:class         (when-not @navbar-collapsed? "collapsed")
+          {:class (str
+                    (when-not @navbar-collapsed? "collapsed")
+                    (when @new-post-notification " new-posts"))
            :data-toggle   "collapse"
            :aria-expanded @navbar-collapsed?
            :aria-controls "navbar"
@@ -173,6 +179,10 @@
                            (do
                              (reset! jump-command :first-new-post)
                              (fetch-posts! (session/get :thread-title) (session/get :page-num) (session/get :record-short-id)))
+                           :new-posts
+                           (do
+                             (reset! jump-command :top)
+                             (fetch-new-posts!))
                            nil
                      ))}
         [:span.glyphicon.glyphicon-refresh]]
@@ -202,7 +212,13 @@
      [:div#main-menu.list-group
       [:a {:on-click handle-click-on-link :href "/recent-threads" :class "list-group-item"} "最近更新されたスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/threads" :class "list-group-item"} "全てのスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
-      [:a {:on-click handle-click-on-link :href "/new-posts" :class "list-group-item"} "新着レスまとめ読み" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      [:a
+       {:on-click handle-click-on-link
+        :href     "/new-posts"
+        :class    (str "list-group-item"
+                       (if @new-post-notification " list-group-item-danger"))}
+       "新着レスまとめ読み"
+       [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/create-new-thread" :class "list-group-item"} "新規スレッド作成" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:href "/status" :class "list-group-item"} "状態" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/help" :class "list-group-item"} "使い方" [:span.glyphicon.glyphicon-chevron-right.pull-right]]]]
@@ -435,7 +451,7 @@
   [(keyword (str "div.container"
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
-   [:h3 "新着まとめ読み"]
+   [:h3 "新着レスまとめ読み"]
    [:div#content
     (session/get :posts)]])
 
@@ -597,13 +613,23 @@
                   "[[" (nth match 2) "]]"])]
               (process-bracket-links (nth match 4))))))
 
+(defn launch-image-viewer
+  [src]
+  (let [links (clj->js [src])
+        options (clj->js {:useBootstrapModal false
+                          :hidePageScrollbars false})]
+    (.toggleClass ($ :#blueimp-gallery) "blueimp-gallery-controls" true)
+    (.Gallery js/blueimp links options)))
+
 (defn process-links
   [s]
   (let [match (re-find #"^(.*?)([htps]+://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))(.*)$" s)]
     (if-not match
       s
       (concat [(nth match 1)
-               [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} (nth match 2)]]
+                (if (re-find #"\.(jpe?g|gif|bmp|png)$" (nth match 2))
+                    [:img {:src (nth match 2) :on-click #(launch-image-viewer (nth match 2)) :height 210}]
+                    [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} (nth match 2)])]
                (process-links (last match))))))
 
 (defn generate-html-for-post
@@ -634,12 +660,12 @@
      _ (.update md5 (:pubkey post) (count (:pubkey post)))
      href-base (str "/thread/" (js/decodeURIComponent thread-title))
      src (str href-base "/"
-              (:record-short-id post)
+              (:record-id post)
               "." (:suffix post))
      heading [[:a.btn.btn-xs.btn-default.id
                {:href (str href-base "/" (:record-short-id post))
                 :on-click handle-click-on-link}
-               [:span.glyphicon.glyphicon-tag] " " (take 8 (:record-short-id post))] " "
+               [:span.glyphicon.glyphicon-tag] " " (:record-short-id post)] " "
               (if (and (:name post) (pos? (count (:name post)))) [:span.name [:span.glyphicon.glyphicon-user] name]) " "
               (if (and (:mail post) (pos? (count (:mail post)))) [:span.mail [:span.glyphicon.glyphicon-envelope] mail]) " "
               (if (:pubkey post) [:span.signature [:span.glyphicon.glyphicon-pencil] (take 11 (goog.crypt.base64/encodeByteArray (.digest md5)))]) " "
@@ -651,7 +677,7 @@
               (if (:suffix post)
                 [:a.btn.btn-xs.btn-default.attachment
                  {:href src}
-                 [:span.glyphicon.glyphicon-paperclip] (str " " (:record-short-id post) "." (:suffix post))])]
+                 [:span.glyphicon.glyphicon-paperclip] (str " " (:record-id post) "." (:suffix post))])]
      body-exists? (pos? (count body))
      thumbnail-exists? (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
      reverse-anchors (remove nil? (map #(if (= (:destination %) (:record-short-id post)) (:source %) nil) anchors))
@@ -660,11 +686,7 @@
                       (if thumbnail-exists?
                         [:img {:height 210
                                :src src
-                               :on-click #(let [links (clj->js [src])
-                                                options (clj->js {:useBootstrapModal false
-                                                                  :hidePageScrollbars false})]
-                                           (.toggleClass ($ :#blueimp-gallery) "blueimp-gallery-controls" true)
-                                           (.Gallery js/blueimp links options))}])
+                               :on-click #(launch-image-viewer src)}])
                       (if (pos? (count reverse-anchors))
                         [:div.reverse-anchors [:hr]
                          [:div
@@ -723,7 +745,10 @@
                        (map
                          (fn [thread]
                            [:div.thread
-                            [:div.alert.alert-info.thread-title (:thread-title thread)]
+                            [:a
+                             {:href (str "/thread/" (js/encodeURIComponent (:thread-title thread)))
+                              :on-click handle-click-on-link}
+                             [:div.alert.alert-info.thread-title (:thread-title thread)]]
                             (map
                               (fn [post]
                                 (generate-html-for-post post :new-posts (:thread-title thread) (:anchors thread)))
@@ -731,6 +756,7 @@
                          (:threads response))]))
                   {:component-did-mount
                    (fn []
+                     (reset! new-post-notification false)
                      (dorun
                        (map
                          #(.setItem js/localStorage
@@ -775,12 +801,28 @@
                              (range (.-length js/localStorage))))]
     (session/put! :posts nil)
     (POST (str "/api/new-posts" )
-             {:handler new-posts-handler
-              :error-handler posts-error-handler
-              :format :json
-              :response-format :json
-              :keywords? true
-              :params {:threads threads}})))
+          {:handler new-posts-handler
+           :error-handler posts-error-handler
+           :format :json
+           :response-format :json
+           :keywords? true
+           :params {:threads threads}})))
+
+(defn check-new-post-notification!
+  []
+  ;(.log js/console "check-new-post-notification!!:" )
+  (let [threads (remove nil?
+                        (map #(if (re-find #"^thread-last-accessed-" (.key js/localStorage %))
+                               {:thread-title (clojure.string/replace (.key js/localStorage %) #"^thread-last-accessed-" "")
+                                :time-last-accessed (js/parseInt (.getItem js/localStorage (.key js/localStorage %)))})
+                             (range (.-length js/localStorage))))]
+    (POST (str "/api/new-post-notification" )
+          {:handler #(reset! new-post-notification (:result %))
+           :error-handler posts-error-handler
+           :format :json
+           :response-format :json
+           :keywords? true
+           :params {:threads threads}})))
 
 (defn process-query-string
   []
@@ -986,5 +1028,7 @@
                (.stopPropagation e)
                (remove-tooltips))))
 
+  (check-new-post-notification!)
+  (js/setInterval #(check-new-post-notification!) 30000)
   (js/setInterval #(when (= (session/get :page) :recent-threads) (reset! jump-command nil) (update-threads :recent-threads)) 60000)
   (js/setInterval #(when (= (session/get :page) :threads) (reset! jump-command nil) (update-threads :threads)) 180000))

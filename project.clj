@@ -61,7 +61,7 @@
   :jvm-opts ["-server"
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
-             "-Xmx1G"
+             "-Xmx2g"
              "-XX:+UseG1GC"
              "-XX:MaxGCPauseMillis=1000"]
   :resource-paths ["resources" "target/cljsbuild"]

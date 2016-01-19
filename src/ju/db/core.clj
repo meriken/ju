@@ -339,6 +339,10 @@
   (first (select records (where {:id id
                                  :deleted false}))))
 
+(defn get-record-in-file-by-record-id
+  [file-id record-id]
+  (first (select records (where {:file_id file-id :record_id record-id :deleted false}))))
+
 (defn get-record-in-file-by-short-id
   [file-id short-id]
   (first
@@ -384,6 +388,12 @@
   (count-keyword (first (clojure.java.jdbc/query
                           ju.db.schema/db-spec
                           ["SELECT COUNT(*) FROM records WHERE file_id=? AND deleted=FALSE" file-id]))))
+
+(defn count-new-records-in-file
+  [file-id time-last-accessed]
+  (count-keyword (first (clojure.java.jdbc/query
+                          ju.db.schema/db-spec
+                          ["SELECT COUNT(*) FROM records WHERE file_id=? AND deleted=FALSE AND stamp>?" file-id time-last-accessed]))))
 
 (defn count-all-records
   []
