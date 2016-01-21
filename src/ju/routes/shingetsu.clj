@@ -1463,6 +1463,67 @@
     (let [match (re-find #"^([0-9]+)-([0-9]+)$" range)]
       (and match (<= (Long/parseLong (nth match 1)) (Long/parseLong (nth match 2)))))))
 
+(defn unhexify [s]
+  (let [bytes (into-array Byte/TYPE
+                          (map (fn [[x y]]
+                                 (unchecked-byte (Integer/parseInt (str x y) 16)))
+                               (partition 2 s)))]
+    (String. bytes "UTF-8")))
+
+(defn is-post-spam?
+  [file-name stamp record-id elements]
+  (let  [thread-title (and (re-find #"^thread_(.*)$" file-name)
+                           (unhexify (second (re-find #"^thread_(.*)$" file-name))))]
+  (or (and thread-title
+           (:name elements) (pos? (count (:name elements)))
+           (:mail elements) (pos? (count (:mail elements))) (not (re-find #"^(?i)s?age$" (:mail elements)))
+           (:body elements)
+           (or (re-find #"^[^ぁ-ゞァ-ヶ]+$" (:body elements))
+               (re-find #"http://|href=" (:body elements))))
+      (and thread-title
+           stamp
+           (<= 1368259441 stamp) (<= stamp 1368334184)
+           (some #{thread-title}
+                 #{"新月を広める方法を考えよう～♪"
+                   "\"2ちゃんねるに代わる新たな新天地\"\"新月\"\"\""
+                   "【2ch】難民キャンプ【書き込み規制】"
+                   "SPAM"
+                   "雑談しながらリンクを貼るスレ"
+                   "新月の開発"
+                   "【ただひたすら書き込むスレ】"
+                   "雑談"
+                   "初心者用質問スレッド"
+                   "Twitterの真似事"
+                   "ここが新月かぁ～"
+                   "今日の天気を報告するスレ"
+                   "メニュー"
+                   "朔の「状態」を晒す"})
+           (not (some #{[stamp thread-title]}
+                      #{[1368269164 "朔の「状態」を晒す"]
+                        [1368288797 "朔の「状態」を晒す"]
+                        [1368322356 "朔の「状態」を晒す"]
+                        [1368269568 "雑談しながらリンクを貼るスレ"]
+                        [1368291561 "新月の開発"]
+                        [1368292773 "新月の開発"]
+                        [1368324146 "新月の開発"]
+                        [1368287598 "新月を広める方法を考えよう～♪"]
+                        [1368321534 "新月を広める方法を考えよう～♪"]
+                        [1368321715 "新月を広める方法を考えよう～♪"]
+                        [1368323070 "【2ch】難民キャンプ【書き込み規制】"]
+                        [1368334122 "【2ch】難民キャンプ【書き込み規制】"]
+                        [1368289606 "ここが新月かぁ～"]
+                        [1368289928 "ここが新月かぁ～"]
+                        [1368287843 "初心者用質問スレッド"]
+                        [1368294225 "初心者用質問スレッド"]
+                        [1368272890 "初心者用質問スレッド"]
+                        [1368274600 "初心者用質問スレッド"]
+                        [1368278013 "初心者用質問スレッド"]
+                        [1368278588 "初心者用質問スレッド"]
+                        [1368278882 "初心者用質問スレッド"]
+                        [1368280229 "初心者用質問スレッド"]
+                        [1368281312 "初心者用質問スレッド"]
+                        [1368282234 "初心者用質問スレッド"]
+                        [1368286488 "初心者用質問スレッド"]}))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1702,13 +1763,23 @@
              records (remove #(zero? (count %)) (clojure.string/split-lines file))]
          (dorun
            (map
-             #(try
-               (let [match (re-find #"^([0-9]+)<>([0-9a-f]{32})<>(.*)$" %)
-                     stamp (Long/parseLong (nth match 1))
-                     record-id (nth match 2)
-                     body (.getBytes (nth match 3) "UTF-8")]
-                 (db/add-record file-id stamp record-id body))
-               (catch Throwable _ (comment timbre/debug (str "download-file-from-node: Record skipped: " %))))
+             (fn [record]
+               (try
+                 (let [match (re-find #"^([0-9]+)<>([0-9a-f]{32})<>(.*)$" record)
+                       stamp (Long/parseLong (nth match 1))
+                       record-id (nth match 2)
+                       body (.getBytes (nth match 3) "UTF-8")
+                       elements (->> (clojure.string/split (nth match 3) #"<>")
+                                     (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                     (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                     (apply merge))]
+                   (db/add-record
+                     file-id
+                     stamp
+                     record-id
+                     body
+                     (is-post-spam? file-name stamp record-id elements)))
+                 (catch Throwable _ (comment timbre/debug (str "download-file-from-node: Record skipped: " record)))))
              records))
          (db/update-file file-id)
          ;(if-not (valid-file? file)
@@ -1916,15 +1987,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Shingetsu Protocol Commands ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn unhexify [s]
-  (let [bytes (into-array Byte/TYPE
-                          (map (fn [[x y]]
-                                 (unchecked-byte (Integer/parseInt (str x y) 16)))
-                               (partition 2 s)))]
-    (String. bytes "UTF-8")))
-
-
 
 (defn get-remote-address
   [request]
@@ -2284,7 +2346,7 @@
                      record-id (md5 record-body)
                      entry {:file-name (:file-name file) :stamp stamp :record-id record-id}]
                  ;(timbre/debug record-body)
-                 (db/add-record file-id stamp record-id (.getBytes record-body "UTF-8"))
+                 (db/add-record file-id stamp record-id (.getBytes record-body "UTF-8") false)
                  (db/update-file file-id)
                  (db/process-update-command (:file-name file) stamp record-id)
                  (do (future
@@ -2404,61 +2466,18 @@
                                      (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
                                      (map #(do {(keyword (nth % 1)) (nth % 2)}))
                                      (apply merge))
-                       thread-title (unhexify (second (re-find #"^thread_(.*)$" (:file-name (ju.db.core/get-file-by-id (:file-id record))) )))]
-                   (when (or (and (:name elements) (pos? (count (:name elements)))
-                                  (:mail elements) (pos? (count (:mail elements))) (not (re-find #"^(?i)s?age$" (:mail elements)))
-                                  (:body elements)
-                                  (or (re-find #"^[^ぁ-ゞァ-ヶ]+$" (:body elements))
-                                      (re-find #"http://|href=" (:body elements))))
-                             (and (<= 1368259441 (:stamp record)) (<= (:stamp record) 1368334184)
-                                  (some #{thread-title}
-                                        #{"新月を広める方法を考えよう～♪"
-                                          "\"2ちゃんねるに代わる新たな新天地\"\"新月\"\"\""
-                                          "【2ch】難民キャンプ【書き込み規制】"
-                                          "SPAM"
-                                          "雑談しながらリンクを貼るスレ"
-                                          "新月の開発"
-                                          "【ただひたすら書き込むスレ】"
-                                          "雑談"
-                                          "初心者用質問スレッド"
-                                          "Twitterの真似事"
-                                          "ここが新月かぁ～"
-                                          "今日の天気を報告するスレ"
-                                          "メニュー"
-                                          "朔の「状態」を晒す"})
-                                  (not (some #{[(:stamp record) thread-title]}
-                                             #{[1368269164 "朔の「状態」を晒す"]
-                                               [1368288797 "朔の「状態」を晒す"]
-                                               [1368322356 "朔の「状態」を晒す"]
-                                               [1368291561 "新月の開発"]
-                                               [1368292773 "新月の開発"]
-                                               [1368324146 "新月の開発"]
-                                               [1368287598 "新月を広める方法を考えよう～♪"]
-                                               [1368321534 "新月を広める方法を考えよう～♪"]
-                                               [1368321715 "新月を広める方法を考えよう～♪"]
-                                               [1368323070 "【2ch】難民キャンプ【書き込み規制】"]
-                                               [1368334122 "【2ch】難民キャンプ【書き込み規制】"]
-                                               [1368289606 "ここが新月かぁ～"]
-                                               [1368289928 "ここが新月かぁ～"]
-                                               [1368287843 "初心者用質問スレッド"]
-                                               [1368294225 "初心者用質問スレッド"]
-                                               [1368272890 "初心者用質問スレッド"]
-                                               [1368274600 "初心者用質問スレッド"]
-                                               [1368278013 "初心者用質問スレッド"]
-                                               [1368278588 "初心者用質問スレッド"]
-                                               [1368278882 "初心者用質問スレッド"]
-                                               [1368280229 "初心者用質問スレッド"]
-                                               [1368281312 "初心者用質問スレッド"]
-                                               [1368282234 "初心者用質問スレッド"]
-                                               [1368286488 "初心者用質問スレッド"]}))))
+                       file-name (:file-name (ju.db.core/get-file-by-id (:file-id record)))
+                       thread-title (and (re-find #"^thread_(.*)$" file-name)
+                                         (unhexify (second (re-find #"^thread_(.*)$" file-name))))]
+                   (when (and thread-title (is-post-spam? file-name (:stamp record) (:record-id record) elements))
                      (ju.db.core/mark-record-as-deleted (:id record))
                      (taoensso.timbre/info
-                                           (:id record)
-                                           (:stamp record)
-                                           thread-title
-                                           (:name elements)
-                                           (:mail elements)
-                                           (:body elements)))
+                       thread-title
+                       (:id record)
+                       (:stamp record)
+                       (:name elements)
+                       (:mail elements)
+                       (:body elements)))
                    (if (zero? (mod (:id record) 100))
                      (taoensso.timbre/info "Processed" (:id record) "records."))))
                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))

@@ -286,7 +286,7 @@
                                        (get-all-records))))]
     results))
 
-(defn add-record [file-id stamp record-id body]
+(defn add-record [file-id stamp record-id body deleted]
   (if (zero? (count (select files (where {:id file-id}))))
     (throw (IllegalArgumentException. "Invalid file ID.")))
   (if (< stamp 1000000000)
@@ -303,7 +303,8 @@
                        :record_short_id (second (re-find #"^([0-9a-f]{8})" record-id))
                        :body body
                        :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))
-                       :size (+ 10 2 32 2 (count body) 1)}))
+                       :size (+ 10 2 32 2 (count body) 1)
+                       :deleted deleted}))
       (add-anchor-in-post file-id body (second (re-find #"^([0-9a-f]{8})" record-id))))))
 
 (defn get-all-records-in-file
