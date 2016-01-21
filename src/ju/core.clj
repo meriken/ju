@@ -7,9 +7,10 @@
             [environ.core :refer [env]]
 
     ; Meriken
+            [ju.param :as param]
             [ju.db.core :as db]
             [ju.db.schema :as schema]
-            [ju.routes.shingetsu :refer [http-server-port start-node-monitor start-crawler]])
+            [ju.routes.shingetsu :as shingetsu])
   (:gen-class)
   (:import (java.awt Desktop)
            (java.net URI)))
@@ -43,13 +44,13 @@
           (timbre/error t "failed to start nREPL"))))))
 
 (defn http-port [port]
-  (parse-port (or port (env :port) 8888)))
+  (parse-port (or port (env :port) param/default-http-port)))
 
 (defonce http-server (atom nil))
 
 (defn start-http-server [port]
   (init)
-  (reset! http-server-port port)
+  (reset! shingetsu/http-server-port port)
   (reset! http-server (immutant/run app :host "0.0.0.0" :port port)))
 
 (defn stop-http-server []
@@ -92,8 +93,8 @@
       (timbre/info "Tables are being created...")
       (schema/create-tables schema/db-spec)))
   (start-nrepl)
-  (start-node-monitor)
-  (start-crawler)
+  (shingetsu/start-node-monitor)
+  (shingetsu/start-crawler)
   (start-http-server (http-port port))
   (open-web-browser port)
   (timbre/info "HTTP server started on port:" (:port @http-server)))

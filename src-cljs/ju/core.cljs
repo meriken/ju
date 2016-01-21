@@ -151,7 +151,7 @@
           [nav-link "/" "目次" :home]
           [nav-link "/recent-threads" "スレッド一覧" :recent-threads]
           [nav-link "/new-posts" "新着レスまとめ読み" :new-posts]
-          [nav-link "/create-new-thread" "新規スレッド作成" :create-new-thread]
+          ;[nav-link "/create-new-thread" "新規スレッド作成" :create-new-thread]
           [nav-link "/status" "状態" :status]
           [nav-link "/help" "使い方" :help]]]]])))
 

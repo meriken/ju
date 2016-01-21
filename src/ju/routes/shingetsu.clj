@@ -10,6 +10,7 @@
     ; Meriken
             [taoensso.timbre :as timbre]
             [clj-http.client :as client]
+            [ju.param :as param]
             [ju.db.core :as db]
             [clojure.math.numeric-tower :refer [expt]]
             [clojure.data.codec.base64]
@@ -18,8 +19,7 @@
             [clj-time.format]
             [clj-time.predicates])
   (:import (java.nio.file Files)
-           (java.security MessageDigest)
-           (java.net URLEncoder)))
+           (java.security MessageDigest)))
 
 
 
@@ -41,7 +41,6 @@
                     (if (> try-count 4) false true))})
 
 (defonce http-server-port (atom nil))
-(def server-path "/server")
 (def initial-nodes ["node.shingetsu.info:8000/server.cgi" "node.fuktommy.com:8000/server.cgi"])
 (defonce active-nodes (atom (hash-set)))
 (defonce search-nodes (atom (hash-set)))
@@ -1478,10 +1477,11 @@
   (try
     (let [response-body (:body (client/get (str "http://" node-name "/ping") http-params-for-quick-commands))
           new-server-node-name (second (re-find #"^PONG\n([^\n]+)\n?$" response-body))
-          new-server-node-name (str new-server-node-name ":" @http-server-port server-path)]
+          new-server-node-name (str new-server-node-name ":" @http-server-port param/server-path)]
       (if-not (valid-node-name? new-server-node-name)
         (throw (Exception. "Invalid node name.")))
-      (reset! server-node-name new-server-node-name)
+      (if (nil? param/static-server-node-name)
+        (reset! server-node-name new-server-node-name))
       (when (not (db/known-node? node-name))
         (db/add-node node-name)
         (db/mark-node-as-active node-name)
@@ -1607,6 +1607,8 @@
        nil))))
 
 (defn start-node-monitor []
+  (if param/static-server-node-name
+    (reset! server-node-name param/static-server-node-name))
   (do
     (future
       (timbre/info "Node monitor started.")
@@ -1989,7 +1991,7 @@
            ; Shingetsu Protocol Commands ;
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-           (GET (str server-path "/ping") request
+           (GET (str param/server-path "/ping") request
              ;(timbre/info "/ping command received:" (get-remote-address request))
              (->
                (ok
@@ -1998,13 +2000,13 @@
                    (or (get-in request [:headers "x-forwarded-for"]) (:remote-addr request))))
                (content-type "text/plain; charset=UTF-8")))
 
-           (GET (str server-path "/node") request
+           (GET (str param/server-path "/node") request
              ;(timbre/info "/node command received:" (get-remote-address request))
              (->
                (ok (try (rand-nth (into [] @search-nodes)) (catch Throwable _ "")))
                (content-type "text/plain; charset=UTF-8")))
 
-           (GET (str server-path "/join/:node-name")
+           (GET (str param/server-path "/join/:node-name")
                 {:keys [headers params body server-name] :as request}
              (let [{node-name :node-name} params
                    node-name (clojure.string/replace node-name #"\+" "/")
@@ -2025,7 +2027,7 @@
                    (ok "WELCOME")
                    (content-type "text/plain; charset=UTF-8")))))
 
-           (GET (str server-path "/bye/:node-name")
+           (GET (str param/server-path "/bye/:node-name")
                 {:keys [headers params body server-name] :as request}
              (let [{node-name :node-name} params
                    node-name (clojure.string/replace node-name #"\+" "/")]
@@ -2039,7 +2041,7 @@
                    (ok "BYEBYE")
                    (content-type "text/plain; charset=UTF-8")))))
 
-           (GET (str server-path "/update/:file-name/:stamp/:record-id/:node-name")
+           (GET (str param/server-path "/update/:file-name/:stamp/:record-id/:node-name")
                 {:keys [headers params body server-name] :as request}
              (try
                (let [{node-name :node-name
@@ -2094,7 +2096,7 @@
                  (timbre/error t)
                  nil)))
 
-           (GET (str server-path "/have/:file-name")
+           (GET (str param/server-path "/have/:file-name")
                 {:keys [headers params body server-name] :as request}
              ;(timbre/info "/have command received:" (get-remote-address request) (:file-name params))
              (let [{file-name :file-name} params
@@ -2103,22 +2105,22 @@
                  (ok (if (and file (not (:deleted file)) (pos? (:num-records file))) "YES" "NO"))
                  (content-type "text/plain; charset=UTF-8"))))
 
-           (GET (str server-path "/head/:file-name/:range")
+           (GET (str param/server-path "/head/:file-name/:range")
                 {:keys [headers params body server-name] :as request}
              ;(timbre/info "/head command received:" (get-remote-address request) (:file-name params) (:range params))
              (process-get-command request true))
 
-           (GET (str server-path "/get/:file-name/:range")
+           (GET (str param/server-path "/get/:file-name/:range")
                 {:keys [headers params body server-name] :as request}
              (timbre/info "/get command received:" (get-remote-address request) (:file-name params) (:range params))
              (process-get-command request false))
 
-           (GET (str server-path "/get/:file-name/:range/:record-id")
+           (GET (str param/server-path "/get/:file-name/:range/:record-id")
                 {:keys [headers params body server-name] :as request}
              (timbre/info "/get command received:" (get-remote-address request) (:file-name params) (:range params) (:record-id params))
              (process-get-command request false))
 
-           (GET (str server-path "/recent/:range")
+           (GET (str param/server-path "/recent/:range")
                 {:keys [headers params body server-name] :as request}
              (timbre/info "/recent command received:" (get-remote-address request) (:range params))
              (let [{:keys [range]} params]
@@ -2141,22 +2143,22 @@
            ; Extended Shingetsu Protocol Commands ;
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-           (GET (str server-path "/active-nodes") request
+           (GET (str param/server-path "/active-nodes") request
              (->
                (ok (apply str (sort (map #(str % "\n") @active-nodes))))
                (content-type "text/plain; charset=UTF-8")))
 
-           (GET (str server-path "/search-nodes") request
+           (GET (str param/server-path "/search-nodes") request
              (->
                (ok (apply str (sort (map #(str % "\n") @search-nodes))))
                (content-type "text/plain; charset=UTF-8")))
 
-           (GET (str server-path "/known-nodes") request
+           (GET (str param/server-path "/known-nodes") request
              (->
                (ok (apply str (sort (map #(str % "\n") (map :node-name (db/get-all-nodes))))))
                (content-type "text/plain; charset=UTF-8")))
 
-           (GET (str server-path "/files") request
+           (GET (str param/server-path "/files") request
              (->
                (ok (apply str (sort (map #(str % "\n") (map :file-name (db/get-all-files))))))
                (content-type "text/plain; charset=UTF-8")))
@@ -2377,7 +2379,7 @@
                                                   (str
                                                     (if (pos? (count (:body %1))) "<br>")
                                                     "http://"
-                                                    (clojure.string/replace @server-node-name (re-pattern (str server-path "$")) "")
+                                                    (clojure.string/replace @server-node-name (re-pattern (str param/server-path "$")) "")
                                                     "/thread"
                                                     "/" (java.net.URLEncoder/encode thread-title "UTF-8")
                                                     "/" record-short-id "." (:suffix %1)
