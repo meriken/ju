@@ -334,6 +334,12 @@
           (where {:record_short_id short-id
                   :deleted false})))
 
+(defn get-deleted-records-by-short-id
+  [short-id]
+  (select records
+          (where {:record_short_id short-id
+                  :deleted true})))
+
 (defn get-record-by-id
   [id]
   (first (select records (where {:id id
@@ -354,6 +360,7 @@
 
 (defn get-records-on-page
   [file-id page-size page-num]
+  ;(timbre/debug "get-records-on-page" file-id page-size page-num)
   (let [num-records (:num-records (get-file-by-id file-id))
         num-pages (+ (quot num-records page-size) (if (pos? (rem num-records page-size)) 1 0))
         record-offset (- num-records page-size (* page-num page-size))
@@ -362,7 +369,8 @@
     (if (= (:subprotocol ju.db.schema/db-spec) "mysql")
       (->> (select records
                    (where {:file_id file-id
-                           :deleted false})
+                           :deleted false
+                           })
                    (fields :id :stamp))
            (sort-by #(:stamp %))
            (drop record-offset)
@@ -393,7 +401,7 @@
   [file-id time-last-accessed]
   (count-keyword (first (clojure.java.jdbc/query
                           ju.db.schema/db-spec
-                          ["SELECT COUNT(*) FROM records WHERE file_id=? AND deleted=FALSE AND stamp>?" file-id time-last-accessed]))))
+                          ["SELECT COUNT(*) FROM records WHERE file_id=? AND stamp>? AND deleted=FALSE" file-id time-last-accessed]))))
 
 (defn count-all-records
   []
@@ -422,11 +430,11 @@
     0
     nil))
 
-(defn get-all-records-in-file-without-bodies
+(defn get-all-active-and-deleted-records-in-file-without-bodies
   [file-id]
   (select records
           (fields :id :file_id :stamp :record_id :record_short_id :time_created :size)
-          (where {:file_id file-id :deleted false})))
+          (where {:file_id file-id})))
 
 (defn get-all-records-without-bodies
   []
@@ -439,9 +447,46 @@
   (select records
           (where {:deleted false})))
 
+(defn get-all-records-with-ids-only
+  []
+  (select records
+          (where {:deleted false})
+          (fields :id)))
 
+(defn mark-record-as-active
+  [id]
+  (update
+    records
+    (set-fields {:deleted false})
+    (where {:id id})))
 
-(defn update-file
+(defn mark-record-as-deleted
+  [id]
+  (update
+    records
+    (set-fields {:deleted true})
+    (where {:id id})))
+
+(defn really-delete-record
+  [id]
+  (delete
+    records
+    (where {:id id})))
+
+(defn remove-duplicate-records
+  []
+  (let [duplicates (remove #(= (count %) 1)
+                           (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
+                                               (map #(:id %) (remove #(or
+                                                                       (not (= (:file-id %) (:file-id record)))
+                                                                       (not (= (:stamp %) (:stamp record)))
+                                                                       (not (= (:record-id %) (:record-id record))))
+                                                                     (ju.db.core/get-records-by-short-id (:record-short-id record))))))
+                                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))
+        duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))]
+    (dorun (map ju.db.core/really-delete-record duplicates))))
+
+ (defn update-file
   [file-id]
   ;(timbre/debug "update-file:" file-id)
   (update

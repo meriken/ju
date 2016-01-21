@@ -12,6 +12,7 @@
             [cljs-time.local]
             [goog.crypt.base64]
             [goog.string]
+            goog.string.format
             [markdown.core])
   (:use     [jayq.core :only [$ parent attr on off html add-class remove-class has-class ajax]])
   (:use-macros [jayq.macros :only [ready]])
@@ -26,6 +27,7 @@
 (declare fetch-threads!)
 (declare fetch-posts!)
 (declare fetch-new-posts!)
+(declare generate-html-for-post)
 
 
 
@@ -40,6 +42,7 @@
 (def posts-displayed? (atom false))
 (def new-post-notification (atom false))
 (def server-status (atom nil))
+(def server-node-name (atom nil))
 
 
 (defn remove-tooltips
@@ -431,6 +434,33 @@
      [recaptcha]
      [:a.btn.btn-default {:href "/terms" :on-click handle-click-on-link :style {:margin-bottom "10px"}} "新月ネットワーク利用規約"]]))
 
+(defn highlight-code-block
+  []
+  (.each ($ (keyword "pre code:not(.highlighted)"))
+         (fn [i block]
+           (.highlightBlock js/hljs block)
+           (.addClass ($ block) "highlighted"))))
+
+;TODO: Do something with attachment.
+(defn ^:export render-preview
+  []
+  (html ($ :#post-preview)
+        (reagent.core/render-component-to-string
+          (generate-html-for-post
+            {:record-id (apply str (repeat 32 "?"))
+             :record-short-id (apply str (repeat 8 "?"))
+             :name  (goog.string/htmlEscape (.val ($ :input#name)))
+             :mail  (goog.string/htmlEscape (.val ($ :input#mail)))
+             :stamp (int (/ (cljs-time.coerce/to-long (cljs-time.core/now)) 1000))
+             :body  (clojure.string/replace
+                      (goog.string/htmlEscape (.val ($ :textarea#body)))
+                      #"\n"
+                      "<br>")}
+            :preview
+            (session/get :thread-title)
+            '())))
+  (highlight-code-block))
+
 (defn thread-page []
     [(keyword (str "div.container"
                    (if (not @navbar-enabled?) ".without-navbar")
@@ -505,9 +535,11 @@
    [:h3 "状態"]
    [:div#content
     "ファイルの数: " (:num-files @server-status) [:br]
-    "レコードの数: " (:num-records @server-status) [:br]
+    "レコードの数: " (+ (:num-records @server-status) (:num-deleted-records @server-status)) [:br]
+    "有効なレコードの数: " (:num-records @server-status) [:br]
     "削除されたレコードの数: " (:num-deleted-records @server-status) [:br]
     "キャッシュサイズ: " (int (/ (:cache-size @server-status) 1000 1000)) "MB" [:br]
+    "自分自身のノード名: " @server-node-name [:br]
     [:br]
     "隣接ノード" [:br]
     (map #(do [:span {:key (my-uuid)} % [:br]]) (:active-nodes @server-status))
@@ -576,7 +608,16 @@
                     thread-last-accessed "list-group-item-info"
                     :else "")}
           thread-title ; " (ID:" (str (:id %)) ")"
-          [:span {:style {:border "solid 1px #ddd" :background-color "#eee"  :border-radius "4px" :margin-left "4px" :font-size 12  :padding "0 6px" :font-weight :normal}} (:num-records %)]
+          [:span {:style {:border "solid 1px #999"
+                          :background-color "#eee"
+                          :color "#000"
+                          :opacity 0.7
+                          :border-radius "4px"
+                          :margin-left "4px"
+                          :font-size 11
+                          :padding "0 6px"
+                          :font-weight :normal}}
+           (:num-records %)]
           [:span.glyphicon.glyphicon-chevron-right.pull-right]])
        response)]))
 
@@ -653,6 +694,18 @@
                     [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} (nth match 2)])]
                (process-links (last match))))))
 
+; Not particularly sophisticated, but it works.
+(defn thread-title-to-file-name
+  [thread-title]
+  (str "thread_"
+       (-> (js/encodeURIComponent thread-title)
+           (clojure.string/replace #"[^%]{2}[-A-Za-z0-9_.~]" (fn [s] (str (apply str (drop-last s)) "%" (clojure.string/upper-case (.toString (.charCodeAt (last s) 0) 16)))))
+           (clojure.string/replace #"[^%]{2}[-A-Za-z0-9_.~]" (fn [s] (str (apply str (drop-last s)) "%" (clojure.string/upper-case (.toString (.charCodeAt (last s) 0) 16)))))
+           (clojure.string/replace #"[^%]{2}[-A-Za-z0-9_.~]" (fn [s] (str (apply str (drop-last s)) "%" (clojure.string/upper-case (.toString (.charCodeAt (last s) 0) 16)))))
+           (clojure.string/replace #"^[^%]?[-A-Za-z0-9_.~]" (fn [s] (str (apply str (drop-last s)) "%" (clojure.string/upper-case (.toString (.charCodeAt (last s) 0) 16)))))
+           (clojure.string/replace #"^[^%]?[-A-Za-z0-9_.~]" (fn [s] (str (apply str (drop-last s)) "%" (clojure.string/upper-case (.toString (.charCodeAt (last s) 0) 16)))))
+           (clojure.string/replace  #"%" ""))))
+
 (defn generate-html-for-post
   [post context thread-title anchors]
   (let
@@ -679,28 +732,114 @@
                  (map #(if (string? %) (process-bracket-links %) %))))
      md5 (Md5.)
      _ (.update md5 (:pubkey post) (count (:pubkey post)))
-     href-base (str "/thread/" (js/decodeURIComponent thread-title))
+     href-base (str "/thread/" (js/encodeURIComponent thread-title))
      src (str href-base "/"
               (:record-id post)
               "." (:suffix post))
-     heading [[:a.btn.btn-xs.btn-default.id
-               {:href (str href-base "/" (:record-short-id post))
-                :on-click handle-click-on-link}
-               [:span.glyphicon.glyphicon-tag] " " (:record-short-id post)] " "
-              (if (and (:name post) (pos? (count (:name post)))) [:span.name [:span.glyphicon.glyphicon-user] name]) " "
-              (if (and (:mail post) (pos? (count (:mail post)))) [:span.mail [:span.glyphicon.glyphicon-envelope] mail]) " "
-              (if (:pubkey post) [:span.signature [:span.glyphicon.glyphicon-pencil] (take 11 (goog.crypt.base64/encodeByteArray (.digest md5)))]) " "
-              [:span.timestamp
-               [:span.glyphicon.glyphicon-time]
-               (cljs-time.format/unparse
-                 (cljs-time.format/formatter "yyyy-MM-dd HH:mm (Z)")
-                 (cljs-time.core/to-default-time-zone (cljs-time.coerce/from-long (* (:stamp post) 1000))))] " "
-              (if (:suffix post)
-                [:a.btn.btn-xs.btn-default.attachment
-                 {:href src}
-                 [:span.glyphicon.glyphicon-paperclip] (str " " (:record-id post) "." (:suffix post))])]
+     complete-src (and @server-node-name
+                       (str "http://" (clojure.string/replace @server-node-name #"/.*" "") src))
      body-exists? (pos? (count body))
      thumbnail-exists? (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
+     ascii2d-form-id (my-uuid)
+     tineye-form-id (my-uuid)
+     heading [{:style {:vertical-align "middle"}}
+              (if (not (= context :preview))
+                [:div.btn-group.btn-group-sm.pull-right
+                 [:a.btn.btn-default
+                  {:href (str "/thread/" (js/encodeURIComponent thread-title) "/" (:record-short-id post) "?post-form=1")
+                   :on-click handle-click-on-link}
+                  [:span.glyphicon.glyphicon-pencil
+                   {:style {:margin-left "2px"
+                            :margin-right "2px"
+                            :font-size "12px"}}]]
+                 [:a.btn.btn-default.dropdown-toggle
+                  {:data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "false"}
+                  [:span.glyphicon.glyphicon-cog
+                   {:style {:font-size "12px"}}]
+                  [:span.glyphicon.glyphicon-triangle-bottom
+                   {:style {:font-size "8px"
+                            :margin-left "2px"}}]]
+                 [:ul.dropdown-menu
+                  [:li [:a
+                        {:href (str "/thread/" (js/encodeURIComponent thread-title) "/" (:record-short-id post) "?post-form=1")
+                         :on-click handle-click-on-link}
+                        "このレスに返信する"]]
+                  [:li [:a
+                        {:href (str "/thread/" (js/encodeURIComponent thread-title) "/" (:record-short-id post) "?post-form=1")
+                         :on-click handle-click-on-link}
+                        "このレスに返信する(引用付き)"]]
+                  [:li.divider {:role "separator"}]
+                  (map #(do
+                         [:li [:a
+                               {:href (str % (js/encodeURIComponent thread-title) "/" (:record-short-id post))
+                                :target "_blank"}
+                               "このレスを" (nth (re-find #"^https?://([^/:]+)(:[0-9]+)?/.*/$" %) 1 %) "で開く"]])
+                       ["http://bbs.shingetsu.info/thread.cgi/"
+                        "http://rep4649.ddo.jp:8000/thread.cgi/"
+                        "http://opptape.iobb.net:8000/thread.cgi/"])
+                  [:li.divider {:role "separator"}]
+                  [:li [:a
+                   {:href (str "/server/get/"
+                               (thread-title-to-file-name thread-title)
+                               "/" (:stamp post)
+                               "/" (:record-id post))
+                    :target "_blank"}
+                   "このレスのレコードを表示する"]]
+                  (if thumbnail-exists?
+                    [:li.divider {:role "separator"}])
+                  (if thumbnail-exists?
+                    [:li [:a
+                          {:src src
+                           :on-click #(launch-image-viewer src)}
+                          "添付画像を表示する"]])
+                  (if (and thumbnail-exists? complete-src)
+                    [:li [:a
+                          {:href (str "https://images.google.co.jp/searchbyimage?image_url="
+                                      (js/encodeURIComponent complete-src))
+                           :target "_blank"}
+                          "「Google」で画像検索"]])
+;                  <form id="post-{{sid}}-menu-ascii2d-form" action="http://www.ascii2d.net/imagesearch/search" method="POST" target="_blank">
+;                  <input type="hidden" name="uri" value="{{image_url}}" />
+;</form>
+;<a class="post-menu-ascii2d" data-form-id="post-{{sid}}-menu-ascii2d-form" target="_blank">二次元画像詳細検索</a>
+                  (if (and thumbnail-exists? complete-src)
+                    [:li
+                     [:form
+                      {:id ascii2d-form-id :action "http://www.ascii2d.net/imagesearch/search" :method "POST" :target "_blank"}
+                      [:input {:type "hidden" :name "uri" :value complete-src}]]
+                     [:a
+                      {:on-click #(.submit (aget ($ (keyword (str "#" ascii2d-form-id))) 0)) :target "_blank"}
+                      "「二次元画像詳細検索」で画像検索"]])
+                  (if (and thumbnail-exists? complete-src)
+                    [:li
+                     [:form
+                      {:id tineye-form-id :action "https://www.tineye.com/search" :method "POST" :target "_blank"}
+                      [:input {:type "hidden" :name "url" :value complete-src}]]
+                     [:a
+                      {:on-click #(.submit (aget ($ (keyword (str "#" tineye-form-id))) 0)) :target "_blank"}
+                      "「TinEye」で画像検索"]])
+                  ]])
+              [:div
+               {:style {:vertical-align "middle"}}
+               [:a.btn.btn-xs.btn-default.id
+                {:href (str href-base "/" (:record-short-id post))
+                 :on-click handle-click-on-link}
+                [:span.glyphicon.glyphicon-tag] " " (:record-short-id post)] " "
+               (if (and (:name post) (pos? (count (:name post)))) [:span.name [:span.glyphicon.glyphicon-user] name]) " "
+               (if (and (:mail post) (pos? (count (:mail post)))) [:span.mail [:span.glyphicon.glyphicon-envelope] mail]) " "
+               (if (:pubkey post) [:span.signature [:span.glyphicon.glyphicon-pencil] (take 11 (goog.crypt.base64/encodeByteArray (.digest md5)))]) " "
+
+               [:span.timestamp
+                [:span.glyphicon.glyphicon-time]
+                (cljs-time.format/unparse
+                  (cljs-time.format/formatter "yyyy-MM-dd HH:mm:ss")
+                  (cljs-time.core/to-default-time-zone (cljs-time.coerce/from-long (* (:stamp post) 1000))))] " "
+               (if (:suffix post)
+                 [:a.btn.btn-xs.btn-default.attachment
+                  {:href src}
+                  [:span.glyphicon.glyphicon-paperclip] (str " " (clojure.string/replace (:record-id post) #".{16}$" "…") "." (:suffix post))])]
+
+              ]
      reverse-anchors (remove nil? (map #(if (= (:destination %) (:record-short-id post)) (:source %) nil) anchors))
      body-with-image [body
                       (if (and body-exists? thumbnail-exists?) [:hr])
@@ -734,7 +873,7 @@
   [response]
   (let [num-posts (:num-posts response)
         num-pages (+ (quot num-posts page-size) (if (pos? (rem num-posts page-size)) 1 0))]
-    ;(.log js/console "posts-handler:" num-posts num-pages (clj->js (:anchors response)))
+    (.log js/console "posts-handler:" num-posts num-pages (clj->js (:anchors response)))
     (session/put! :num-posts num-posts)
     (session/put! :num-pages num-pages)
     (session/put!
@@ -756,7 +895,7 @@
 (defn new-posts-handler
   [response]
   (let []
-    ;(.log js/console "posts-handler:" num-posts num-pages (clj->js (:anchors response)))
+    ;(.log js/console "new-posts-handler:" num-posts num-pages (clj->js (:anchors response)))
     (session/put!
       :posts
       [(with-meta (fn []
@@ -800,7 +939,7 @@
 
 (defn fetch-posts!
   [thread-title page-num record-short-id]
-  ;(.log js/console "fetch-posts!:" thread-title page-num record-short-id)
+  (.log js/console "fetch-posts!:" thread-title page-num record-short-id)
   ;(session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
   (session/put! :posts nil)
   (POST (str "/api/thread" )
@@ -848,7 +987,10 @@
   []
   ;(.log js/console "fetch-server-status!" )
   (GET (str "/api/status" )
-          {:handler #(if (= (session/get :page) :status) (reset! server-status (:status %)))
+          {:handler #(do
+                      (reset! server-node-name (:server-node-name (:status %)))
+                      (if (= (session/get :page) :status)
+                        (reset! server-status (:status %))))
            :response-format :json
            :keywords? true}))
 
@@ -977,22 +1119,22 @@
     (fn []
       ;(.log js/console "update-page:" (.-length ($ :.anchor)))
       (.each ($ (keyword ".popup"))
-             (fn[index element]
+             (fn [index element]
                (-> ($ element)
                    (.unbind "touchstart touchend mousedown mouseup click")
                    (.on "touchstart touchend moused mouseup" #(.stopPropagation %)))))
       (.each ($ (keyword ".popup a.btn:not(.attachment)"))
-             (fn[index element]
+             (fn [index element]
                (-> ($ element)
                    (.unbind "touchstart touchend mousedown mouseup click")
                    (.on "touchstart touchend moused mouseup" #(.stopPropagation %))
                    (.on "click"
-                     #(do
+                        #(do
                           (.preventDefault %)
                           (.stopPropagation %)
                           (handle-click-on-link %))))))
       (.each ($ :.anchor)
-             (fn[index element]
+             (fn [index element]
                (-> ($ element)
                    (.unbind "touchstart touchend mousedown mouseup click")
                    (.on "touchstart touchend moused mouseup" #(.stopPropagation %))
@@ -1004,35 +1146,40 @@
                      #(do (reset! jump-command nil) (.tooltip ($ element) "show"))
                      #())
                    (.tooltip
-                     (clj->js {:trigger	"manual"
+                     (clj->js {:trigger   "manual"
                                :placement (if (has-class ($ element) "reverse-anchor") "auto bottom" "auto top")
-                               :opacity 1
-                               :html true
-                               :title (fn []
-                                        (let [result (atom nil)
-                                              _ (ajax "/api/thread"
-                                                      {:method "POST"
-                                                       :success (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
-                                                       :error (fn [] (reset! result "ERROR"))
-                                                       :async false
-                                                       :dataType "json"
-                                                       :data {:thread-title (attr ($ element) "data-thread-title")
-                                                              :page-num nil
-                                                              :page-size nil
-                                                              :record-short-id (attr ($ element) "data-record-short-id")}})
-                                              post (first (:posts @result))]
-                                          (reset! jump-command nil)
-                                          (update-page)
-                                          (reagent.core/render-component-to-string
-                                            (generate-html-for-post post :popup (attr ($ element) "data-thread-title") (:anchors @result)))))})))))
+                               :opacity   1
+                               :html      true
+                               :title     (fn []
+                                            (let [result (atom nil)
+                                                  _ (ajax "/api/thread"
+                                                          {:method   "POST"
+                                                           :success  (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
+                                                           :error    (fn [] (reset! result "ERROR"))
+                                                           :async    false
+                                                           :dataType "json"
+                                                           :data     {:thread-title    (attr ($ element) "data-thread-title")
+                                                                      :page-num        nil
+                                                                      :page-size       nil
+                                                                      :record-short-id (attr ($ element) "data-record-short-id")}})
+                                                  post (first (:posts @result))]
+                                              (reset! jump-command nil)
+                                              (update-page)
+                                              (reagent.core/render-component-to-string
+                                                (generate-html-for-post post :popup (attr ($ element) "data-thread-title") (:anchors @result)))))})))))
       (keep-popups-within-view)
-      (.log js/console (.-length ($ (keyword "pre code:not(.highlighted)"))))
-      (.each ($ (keyword "pre code:not(.highlighted)"))
-             (fn [i block]
-               (.highlightBlock js/hljs block)
-               (.addClass ($ block) "highlighted")))
-      (process-jump-command))
-    0))
+      (highlight-code-block)
+      (process-jump-command)
+      (when (and (= (session/get :page) :thread)
+                 @post-form-enabled?)
+        (-> ($ :textarea#body) (.focus)))
+      (when (and
+              (= (session/get :page) :thread)
+              @post-form-enabled?
+              (session/get :record-short-id))
+        (-> ($ :textarea#body) (.val (str ">>" (session/get :record-short-id) "\n")))
+        (.setSelectionRange (aget ($ :textarea#body) 0) 22 22)) ;TODO: This routine does not work with Firefox.
+      ) 0))
 
 (defn init! []
   (enable-console-print!)
@@ -1058,7 +1205,8 @@
                (remove-tooltips))))
 
   (check-new-post-notification!)
-  (js/setInterval #(check-new-post-notification!) 30000)
-  (js/setInterval #(when (= (session/get :page) :status) (fetch-server-status!)) 30000)
+  (fetch-server-status!)
+  (js/setInterval check-new-post-notification! 30000)
+  (js/setInterval fetch-server-status! 30000)
   (js/setInterval #(when (= (session/get :page) :recent-threads) (reset! jump-command nil) (update-threads :recent-threads)) 60000)
   (js/setInterval #(when (= (session/get :page) :threads) (reset! jump-command nil) (update-threads :threads)) 180000))

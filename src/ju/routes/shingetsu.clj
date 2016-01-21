@@ -1665,7 +1665,7 @@
 
    (db/add-file file-name)
    (let [file-id (db/get-file-id file-name)
-         existing-records (and file-id (db/get-all-records-in-file-without-bodies file-id))]
+         existing-records (and file-id (db/get-all-active-and-deleted-records-in-file-without-bodies file-id))]
      (if (= range "0-")
        ; Use /head to find missing records.
        (let [file (:body (try-times max-num-retries (client/get (str "http://" node-name "/head/" file-name "/" range) http-params)))
@@ -1687,7 +1687,7 @@
              (try
                (download-file-from-node node-name file-name (str oldest "-" newest))
                (catch Throwable t))
-             (let [existing-records (map #(identity {:stamp (:stamp %) :record-id (:record-id %)}) (db/get-all-records-in-file-without-bodies file-id))
+             (let [existing-records (map #(identity {:stamp (:stamp %) :record-id (:record-id %)}) (db/get-all-active-and-deleted-records-in-file-without-bodies file-id))
                    records (clojure.set/difference (into #{} records) (into #{} existing-records))
                    stamps (map :stamp records)]
                (dorun (map #(download-file-from-node node-name file-name (str %)) stamps))))))
@@ -1772,7 +1772,7 @@
   (try
     (timbre/info "Crawler: Downloading lists of recently updated files...")
     (let [file-names (get-files-with-recent-command)]
-      (dorun (pmap #(db/add-file %) file-names)))
+      (dorun (map #(db/add-file %) file-names)))
     (dorun
       (pmap
         #(let [time-crawled (:time-crawled (db/get-node %))
@@ -2169,17 +2169,18 @@
 
            (POST "/api/thread"
                  request
-             (timbre/debug request)
+             (timbre/debug "/api/thread" request)
              (let [{:keys [thread-title page-num page-size record-short-id]} (:params request)
                    ;page-num (Integer/parseInt page-num)
                    ;page-size (Integer/parseInt page-size)
                    file-id (db/get-file-id-by-thread-title thread-title)
                    file (db/get-file-by-id file-id)
-                   results (pmap
+                   results (map
                              process-record-body
                              (if (and record-short-id (pos? (count record-short-id)))
                                (db/get-records-in-file-by-short-id file-id record-short-id)
                                (db/get-records-on-page file-id page-size page-num)))
+                   ;_ (timbre/debug (str (count results)))
                    anchors (into [] (apply concat (map (fn [destnation]
                                                          ;(timbre/info file-id destnation (apply str (db/get-anchors file-id destnation)))
                                                          (db/get-anchors file-id destnation))
@@ -2195,7 +2196,7 @@
              (let [{:keys [threads]} (:params request)
                    ;_ (timbre/debug threads)
                    results (remove nil?
-                                   (pmap (fn [thread]
+                                   (map (fn [thread]
                                            (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))
                                                  posts (map process-record-body
                                                             (db/get-new-records-in-file file-id (:time-last-accessed thread)))
@@ -2216,7 +2217,7 @@
              ;(timbre/debug "/api/new-post-notification" request)
              (let [{:keys [threads]} (:params request)
                    result (remove zero?
-                                   (pmap (fn [thread]
+                                   (map (fn [thread]
                                            (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))]
                                              (db/count-new-records-in-file file-id (:time-last-accessed thread))))
                                          threads))]
@@ -2304,7 +2305,8 @@
                  {:num-files (db/count-all-files)
                  :num-records (db/count-all-records)
                  :num-deleted-records (db/count-all-deleted-records)
-                 :cache-size cache-size
+                  :cache-size cache-size
+                  :server-node-name @server-node-name
                  :active-nodes (into [] (sort @active-nodes))
                  :search-nodes (into [] (sort @search-nodes))}}}))
 
@@ -2337,7 +2339,7 @@
              (let [{:keys [dat-file-name]} (:params request)
                    [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)
                    file (db/get-file-by-thread-number thread-number)
-                   results (pmap
+                   results (map
                              process-record-body
                              (db/get-all-records-in-file (:id file)))
                    anchor-map (apply merge (map #(assoc {} (str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2))
@@ -2388,3 +2390,61 @@
                (->
                  (ok (apply str posts-as-strings))
                  (content-type "text/plain; charset=windows-31j")))))
+
+
+
+(defn remove-spam
+  []
+  (dorun (map (fn [record]
+                 (let [record (ju.db.core/get-record-by-id (:id record))
+                       body (String. (:body record) "UTF-8")
+                       elements (->> (clojure.string/split body #"<>")
+                                     (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                     (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                     (apply merge))
+                       thread-title (unhexify (second (re-find #"^thread_(.*)$" (:file-name (ju.db.core/get-file-by-id (:file-id record))) )))]
+                   (when (or (and (:name elements) (pos? (count (:name elements)))
+                                  (:mail elements) (pos? (count (:mail elements)))
+                                  (:body elements)
+                                  (or (re-find #"^[^ぁ-ゞァ-ヶ]+$" (:body elements))
+                                      (re-find #"http://|href=" (:body elements))))
+                             (and (<= 1368259441 (:stamp record)) (<= (:stamp record) 1368334184)
+                                  (some #{thread-title}
+                                        #{"新月を広める方法を考えよう～♪"
+                                          "\"2ちゃんねるに代わる新たな新天地\"\"新月\"\"\""
+                                          "【2ch】難民キャンプ【書き込み規制】"
+                                          "SPAM"
+                                          "雑談しながらリンクを貼るスレ"
+                                          "新月の開発"
+                                          "【ただひたすら書き込むスレ】"
+                                          "雑談"
+                                          "初心者用質問スレッド"
+                                          "Twitterの真似事"
+                                          "ここが新月かぁ～"
+                                          "今日の天気を報告するスレ"
+                                          "メニュー"
+                                          "朔の「状態」を晒す"})
+                                  (not (some #{[(:stamp record) thread-title]}
+                                             #{[1368269164 "朔の「状態」を晒す"]
+                                               [1368288797 "朔の「状態」を晒す"]
+                                               [1368322356 "朔の「状態」を晒す"]
+                                               [1368291561 "新月の開発"]
+                                               [1368292773 "新月の開発"]
+                                               [1368324146 "新月の開発"]
+                                               [1368287598 "新月を広める方法を考えよう～♪"]
+                                               [1368321534 "新月を広める方法を考えよう～♪"]
+                                               [1368321715 "新月を広める方法を考えよう～♪"]
+                                               [1368323070 "【2ch】難民キャンプ【書き込み規制】"]
+                                               [1368289606 "ここが新月かぁ～"]
+                                               [1368289928 "ここが新月かぁ～"]
+                                               [1368287843 "初心者用質問スレッド"]
+                                               [1368294225 "初心者用質問スレッド"]}))))
+                     (ju.db.core/mark-record-as-deleted (:id record))
+                     (taoensso.timbre/info (:id record)
+                                           (:stamp record)
+                                           thread-title
+                                           (:body elements)))
+                   (if (zero? (mod (:id record) 100))
+                     (comment taoensso.timbre/info "Processed" (:id record) "records."))))
+               (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))
+  (ju.db.core/update-all-files))

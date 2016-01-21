@@ -67,11 +67,9 @@
 
 	.panel {
 		margin-bottom: 10px;
-		z-index: -1;
 	}
 
 	.panel-heading {
-		overflow-x: hidden;
 		font-size: 14px;
 	}
 
@@ -188,11 +186,35 @@
     .popup .attachment {
         word-break: keep-all;
         white-space: nowrap;
+        margin-top: 2px;
+        margin-bottom: 2px;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    @media(max-width:512px) {
+    .post .id,
+    .post .name,
+    .post .mail,
+    .post .signature,
+    .post .timestamp,
+    .post .timestamp,
+    .post .attachment,
+    .popup .id,
+    .popup .name,
+    .popup .mail,
+    .popup .signature,
+    .popup .timestamp,
+    .popup .timestamp,
+    .popup .attachment {
+        margin-top: 0px;
         margin-bottom: 4px;
+    }
     }
 
     .post .panel-heading {
-        padding-bottom: 6px;
+        padding: 8px 15px;
+        /*padding-bottom: 6px;*/
     }
 
     .post .id,
@@ -318,9 +340,9 @@
         .tooltip-inner {
             max-width: 320px;
         }
-        }
+    }
 
-        @media(min-width:512px) {
+    @media(min-width:512px) {
         .tooltip-inner {
             max-width: 512px;
         }
@@ -491,8 +513,9 @@
     .emojionearea .emojionearea-editor {
         height: 165px;
     }
+
     #post-preview {
-        height: 303px;
+        height: 338px;
         padding: 10px;
         overflow-y: auto;
     }

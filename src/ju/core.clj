@@ -6,11 +6,13 @@
             [taoensso.timbre :as timbre]
             [environ.core :refer [env]]
 
-            ; Meriken
+    ; Meriken
             [ju.db.core :as db]
             [ju.db.schema :as schema]
             [ju.routes.shingetsu :refer [http-server-port start-node-monitor start-crawler]])
-  (:gen-class))
+  (:gen-class)
+  (:import (java.awt Desktop)
+           (java.net URI)))
 
 (defonce nrepl-server (atom nil))
 
@@ -75,6 +77,11 @@
         (timbre/info "Failed to load configuration file:" t)))
     (reset! config-file-loaded? (atom true))))
 
+(defn open-web-browser
+  [port]
+  (if (Desktop/isDesktopSupported)
+    (.browse (Desktop/getDesktop) (URI. (str "http://localhost:" port)))))
+
 (defn start-app [[port]]
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app))
   (load-config-file-if-necessary)
@@ -88,7 +95,8 @@
   (start-node-monitor)
   (start-crawler)
   (start-http-server (http-port port))
-  (timbre/info "server started on port:" (:port @http-server)))
+  (open-web-browser port)
+  (timbre/info "HTTP server started on port:" (:port @http-server)))
 
 (defn -main [& args]
   (cond

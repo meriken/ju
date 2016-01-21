@@ -71,7 +71,8 @@
 
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-<script src="http://getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script>
+<!-- <script src="http://getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script> -->
+<script src="https://maxcdn.bootstrapcdn.com/js/ie10-viewport-bug-workaround.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
 <script src="/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
 <script src="/bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
@@ -208,6 +209,8 @@
             $("#post-form .input-group").show();
             $("#post-form textarea#body").show();
         } else if ($(newActiveTab).attr('id') == 'post-form-preview-tab') {
+            $("#post-preview").show();
+        　　ju.core.render_preview();
         }
     }
 </script>

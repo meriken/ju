@@ -278,32 +278,33 @@
   (try (sql/db-do-commands db-spec "CREATE INDEX files_time_updated_index        ON files   ( time_updated                  );")
        (catch Throwable _ (timbre/info "Failed to create files_time_updated_index")))
 
-  (try (sql/db-do-commands db-spec "CREATE INDEX records_index                   ON records ( file_id                       );")
+
+
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_index                   ON records ( file_id, deleted                       );")
        (catch Throwable _ (timbre/info "Failed to create records_index")))
 
-  (try (sql/db-do-commands db-spec "CREATE INDEX records_size_index                   ON records ( file_id, size                       );")
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_size_index                   ON records ( file_id, size, deleted                       );")
        (catch Throwable _ (timbre/info "Failed to create records_size_index")))
 
-  (try (sql/db-do-commands db-spec "CREATE INDEX records_deleted_index           ON records ( file_id, deleted              );")
-       (catch Throwable _ (timbre/info "Failed to create records_deleted_index")))
-
-  (try (sql/db-do-commands db-spec "CREATE INDEX records_stamp_index             ON records ( file_id, stamp                );")
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_stamp_index             ON records ( file_id, stamp, deleted                );")
        (catch Throwable _ (timbre/info "Failed to create records_stamp_index")))
 
-  (try (sql/db-do-commands db-spec "CREATE INDEX records_stamp_desc_index        ON records ( file_id, stamp DESC           );")
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_stamp_desc_index        ON records ( file_id, stamp DESC, deleted           );")
        (catch Throwable _ (timbre/info "Failed to create records_stamp_desc_index")))
 
-  (try (sql/db-do-commands db-spec "CREATE INDEX records_record_id_index ON records ( file_id, record_id );")
-       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_id_index ON records ( file_id, record_id(32) );")
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_record_id_index ON records ( file_id, record_id, deleted );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_id_index ON records ( file_id, record_id(32), deleted );")
                                (catch Throwable _ (timbre/info "Failed to create records_record_id_index")))))
 
-  (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_index   ON records ( file_id, record_short_id      );")
-       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_index   ON records ( file_id, record_short_id(8) );")
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_index   ON records ( file_id, record_short_id, deleted      );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_index   ON records ( file_id, record_short_id(8), deleted );")
                                (catch Throwable _ (timbre/info "Failed to create records_record_short_id_index")))))
 
-  (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_only_index   ON records ( record_short_id      );")
-       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_only_index   ON records ( record_short_id(8) );")
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_only_index   ON records ( record_short_id, deleted      );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_only_index   ON records ( record_short_id(8), deleted );")
                                (catch Throwable _ (timbre/info "Failed to create records_record_short_id_only_index")))))
+
+
 
   (try (sql/db-do-commands db-spec "CREATE INDEX update_commands_index           ON update_commands ( stamp                 );")
        (catch Throwable _ (timbre/info "Failed to create update_commands_index")))
