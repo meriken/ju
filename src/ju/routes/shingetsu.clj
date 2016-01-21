@@ -2441,13 +2441,23 @@
                                                [1368289606 "ここが新月かぁ～"]
                                                [1368289928 "ここが新月かぁ～"]
                                                [1368287843 "初心者用質問スレッド"]
-                                               [1368294225 "初心者用質問スレッド"]}))))
+                                               [1368294225 "初心者用質問スレッド"]
+                                               [1368272890 "初心者用質問スレッド"]
+                                               [1368274600 "初心者用質問スレッド"]
+                                               [1368278013 "初心者用質問スレッド"]
+                                               [1368278588 "初心者用質問スレッド"]
+                                               [1368278882 "初心者用質問スレッド"]
+                                               [1368280229 "初心者用質問スレッド"]
+                                               [1368281312 "初心者用質問スレッド"]
+                                               [1368282234 "初心者用質問スレッド"]
+                                               [1368286488 "初心者用質問スレッド"]}))))
                      (ju.db.core/mark-record-as-deleted (:id record))
-                     (taoensso.timbre/info (:id record)
+                     (taoensso.timbre/info
+                                           (:id record)
                                            (:stamp record)
+                                           thread-title
                                            (:name elements)
                                            (:mail elements)
-                                           thread-title
                                            (:body elements)))
                    (if (zero? (mod (:id record) 100))
                      (taoensso.timbre/info "Processed" (:id record) "records."))))
