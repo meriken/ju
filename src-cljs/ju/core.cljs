@@ -459,7 +459,7 @@
             :preview
             (session/get :thread-title)
             '())))
-  (highlight-code-block))
+  (js/setTimeout #(highlight-code-block) 0))
 
 (defn thread-page []
     [(keyword (str "div.container"

@@ -2406,7 +2406,7 @@
                                      (apply merge))
                        thread-title (unhexify (second (re-find #"^thread_(.*)$" (:file-name (ju.db.core/get-file-by-id (:file-id record))) )))]
                    (when (or (and (:name elements) (pos? (count (:name elements)))
-                                  (:mail elements) (pos? (count (:mail elements)))
+                                  (:mail elements) (pos? (count (:mail elements))) (not (re-find #"^(?i)s?age$" (:mail elements)))
                                   (:body elements)
                                   (or (re-find #"^[^ぁ-ゞァ-ヶ]+$" (:body elements))
                                       (re-find #"http://|href=" (:body elements))))
@@ -2437,6 +2437,7 @@
                                                [1368321534 "新月を広める方法を考えよう～♪"]
                                                [1368321715 "新月を広める方法を考えよう～♪"]
                                                [1368323070 "【2ch】難民キャンプ【書き込み規制】"]
+                                               [1368334122 "【2ch】難民キャンプ【書き込み規制】"]
                                                [1368289606 "ここが新月かぁ～"]
                                                [1368289928 "ここが新月かぁ～"]
                                                [1368287843 "初心者用質問スレッド"]
@@ -2444,9 +2445,11 @@
                      (ju.db.core/mark-record-as-deleted (:id record))
                      (taoensso.timbre/info (:id record)
                                            (:stamp record)
+                                           (:name elements)
+                                           (:mail elements)
                                            thread-title
                                            (:body elements)))
                    (if (zero? (mod (:id record) 100))
-                     (comment taoensso.timbre/info "Processed" (:id record) "records."))))
+                     (taoensso.timbre/info "Processed" (:id record) "records."))))
                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))
   (ju.db.core/update-all-files))
