@@ -9,21 +9,23 @@
             [taoensso.timbre :as timbre]
             [clojure.data.codec.base64 :as base64]
             [ju.db.core :as db]
-            [ring.util.mime-type])
+            [ring.util.mime-type]
+            [ju.param :as param])
   (:import (java.io ByteArrayInputStream)))
 
-(defn home-page []
-  (layout/render "home.html"))
+(defn home-page
+  [title]
+  (layout/render "home.html" {:title (str title " - " param/service-name)}))
 
 (defroutes home-routes
-           (GET "/" [] (home-page))
-           (GET "/threads" [] (home-page))
-           (GET "/recent-threads" [] (home-page))
-           (GET "/thread/:thread-title" [] (home-page))
+           (GET "/" [] (home-page "目次"))
+           (GET "/threads" [] (home-page "全てのスレッド"))
+           (GET "/recent-threads" [] (home-page "最近更新されたスレッド"))
+           (GET "/thread/:thread-title" [thread-title] (home-page thread-title))
            (GET "/thread/:thread-title/:qualifier"
                 [thread-title qualifier]
              (if (not (re-find #"^[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier))
-               (home-page)
+               (home-page (home-page "スレッド一覧"))
                (let [file-id (db/get-file-id-by-thread-title thread-title)
                      [_ record-id suffix] (re-find #"^([a-f0-9]{32})\.([a-zA-Z0-9]+)$" qualifier)
                      record (db/get-record-in-file-by-record-id file-id record-id)
@@ -37,10 +39,10 @@
                    {:status  200
                     :headers {"Content-Type" (ring.util.mime-type/ext-mime-type qualifier)}
                     :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))))
-           (GET "/new-posts" [] (home-page))
-           (GET "/create-new-thread" [] (home-page))
-           (GET "/status" [] (home-page))
-           (GET "/help" [] (home-page))
-           (GET "/terms" [] (home-page))
+           (GET "/new-posts" [] (home-page "新着レスまとめ読み"))
+           (GET "/create-new-thread" [] (home-page "新規スレッド作成"))
+           (GET "/status" [] (home-page "状態"))
+           (GET "/help" [] (home-page "使い方"))
+           (GET "/terms" [] (home-page "新月ネットワーク利用規約"))
 
            (GET "/docs" [] (ok (-> "docs/docs.md" io/resource slurp))))

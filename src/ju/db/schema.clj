@@ -325,7 +325,7 @@
 
 
 (defn create-tables
-  "Creates the database tables used by the application"
+    "Creates the database tables used by the application"
   [db-spec]
   (create-nodes-table db-spec)
   (create-files-table db-spec)

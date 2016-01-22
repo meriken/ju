@@ -3,6 +3,7 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
 
+  :source-paths ["src" "src-cljc"]
   :dependencies [; Luminus
                  [org.clojure/clojure "1.7.0"]
                  [selmer "0.9.5"]
@@ -61,9 +62,12 @@
   :jvm-opts ["-server"
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
-             "-Xmx2g"
-             "-XX:+UseG1GC"
-             "-XX:MaxGCPauseMillis=1000"]
+             "-Xmx4g"
+             "-XX:+UseParNewGC"
+             "-XX:+UseConcMarkSweepGC"
+             ;"-XX:+UseG1GC"
+             ;"-XX:MaxGCPauseMillis=1000"
+             ]
   :resource-paths ["resources" "target/cljsbuild"]
 
   :main ju.core
@@ -83,7 +87,7 @@
   :cljsbuild
   {:builds
    {:app
-    {:source-paths ["src-cljs"]
+    {:source-paths ["src-cljs" "src-cljc"]
      :compiler
      {:output-to "target/cljsbuild/public/js/app.js"
       :output-dir "target/cljsbuild/public/js/out"

@@ -252,6 +252,13 @@
                           ju.db.schema/db-spec
                           ["SELECT COUNT(*) FROM files WHERE deleted=FALSE AND num_records>0"]))))
 
+(defn really-delete-file
+  [file-id]
+  (transaction
+    {:isolation :serializable}
+    (delete files (where {:id file-id}))
+    (delete records (where {:file_id file-id}))
+    (delete anchors (where {:file_id file-id}))))
 
 
 (declare add-anchor)
@@ -585,4 +592,6 @@
   [file-id destination]
   (select anchors
           (where {:file_id file-id :destination destination})))
+
+
 
