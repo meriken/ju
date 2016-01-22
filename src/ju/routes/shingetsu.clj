@@ -1805,8 +1805,17 @@
   (timbre/info "Crawler: Crawling node:" node-name)
   (try
     ; Try to download a list of files.
-    (let [saku-api-url (str "http://" (nth (re-find #"^(.*)/server\.cgi$" node-name) 1) "/gateway.cgi/csv/changes/file")
-          file-names (clojure.string/split-lines (:body (client/get saku-api-url http-params)))
+    (let [file-names (concat
+                       ; Saku
+                       (try
+                         (clojure.string/split-lines
+                           (:body (client/get (str "http://" (nth (re-find #"^(.*)/server\.cgi$" node-name) 1) "/gateway.cgi/csv/changes/file") http-params)))
+                         (catch Throwable _ '()))
+                       ; Ju
+                       (try
+                         (clojure.string/split-lines
+                           (:body (client/get (str "http://" node-name "/files") http-params)))
+                         (catch Throwable _ '())))
           file-names (remove #(not (re-find #"^thread_[0-9A-F]+$" %)) file-names)]
       (if (zero? (count file-names))
         (throw (Exception.)))
