@@ -286,11 +286,11 @@
   []
   (fn []
       [:span
-       [:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
-        [:a.btn.btn-default
-         {:on-click handle-click-on-link
-          :href (str (session/get :href-base) "?download-thread=1")}
-         "このスレッドをダウンロード"]]
+       ;[:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
+       ; [:a.btn.btn-default
+       ;  {:on-click handle-click-on-link
+       ;   :href (str (session/get :href-base) "?download-thread=1")}
+       ;  "このスレッドをダウンロード"]]
 
        [:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
        [:a.btn.btn-default.first-page
