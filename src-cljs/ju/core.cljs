@@ -44,6 +44,8 @@
 (def navbar-bottom-enabled? (atom true))
 (def post-form-enabled? (atom true))
 (def posts-displayed? (atom false))
+(def download-thread? (atom false))
+
 (def new-post-notification (atom false))
 (def server-status (atom nil))
 (def server-node-name (atom nil))
@@ -284,6 +286,12 @@
   []
   (fn []
       [:span
+       [:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
+        [:a.btn.btn-default
+         {:on-click handle-click-on-link
+          :href (str (session/get :href-base) "?download-thread=1")}
+         "このスレッドをダウンロード"]]
+
        [:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
        [:a.btn.btn-default.first-page
         {:on-click handle-click-on-link
@@ -947,15 +955,16 @@
 (defn fetch-posts!
   [thread-title page-num record-short-id]
   (.log js/console "fetch-posts!:" thread-title page-num record-short-id)
-  ;(session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
-  (session/put! :posts nil)
+  (if @download-thread?
+    (session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
+    (session/put! :posts nil))
   (POST (str "/api/thread" )
         {:handler posts-handler
          :error-handler posts-error-handler
          :format :json
          :response-format :json
          :keywords? true
-         :params {:thread-title thread-title :page-num page-num :page-size page-size :record-short-id record-short-id}}))
+         :params {:thread-title thread-title :page-num page-num :page-size page-size :record-short-id record-short-id :download @download-thread?}}))
 
 (defn fetch-new-posts!
   []
@@ -1017,6 +1026,10 @@
                                  {(keyword (nth match 1)) (nth match 2)})
                                (clojure.string/split (second (re-find #"^.*?\?(.*)$" href)) #"&")))]
 
+      (reset! download-thread?
+              (and
+                (:download-thread query)
+                (not  (= (:download-thread query) "0"))))
       (reset! navbar-enabled?
               (or
                 (nil? (:navbar query))

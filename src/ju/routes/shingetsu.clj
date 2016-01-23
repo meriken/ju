@@ -422,7 +422,7 @@
      (throw (IllegalArgumentException. "Invalid range.")))
    (dorun
      (pmap
-       #(download-file-from-node % file-name range)
+       #(try (download-file-from-node % file-name range) (catch Throwable t (timbre/error t)))
        (shuffle @search-nodes)))
    true))
 
@@ -868,11 +868,13 @@
            (POST "/api/thread"
                  request
              (timbre/debug "/api/thread" request)
-             (let [{:keys [thread-title page-num page-size record-short-id]} (:params request)
+             (let [{:keys [thread-title page-num page-size record-short-id download]} (:params request)
                    ;page-num (Integer/parseInt page-num)
                    ;page-size (Integer/parseInt page-size)
                    file-id (db/get-file-id-by-thread-title thread-title)
                    file (db/get-file-by-id file-id)
+                   _ (if (and file download)
+                       (download-file (:file-name file)))
                    results (map
                              process-record-body
                              (if (and record-short-id (pos? (count record-short-id)))
