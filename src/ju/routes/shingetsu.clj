@@ -931,7 +931,7 @@
                     (remove #(or
                               (some #{(:file-name %)} param/known-corrupt-files)
                               (zero? (:num-records %))))
-                    (map #(assoc % :time-updated (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)))))))
+                    (map #(assoc % :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))))))
 
            (POST "/api/post"
                  request
