@@ -874,6 +874,14 @@
      thread-last-accessed (.getItem js/localStorage (str "thread-last-accessed-" thread-title))
      new-post? (or (nil? thread-last-accessed) (> (:stamp post) (js/parseInt thread-last-accessed)))]
 
+    (if (and (= context :thread)
+             (nil? (session/get :record-short-id))
+             (or (nil? (.getItem js/localStorage (str "thread-last-accessed-" thread-title)))
+                 (> (:stamp post) (js/parseInt (.getItem js/localStorage (str "thread-last-accessed-" thread-title))))))
+      (.setItem js/localStorage
+                (str "thread-last-accessed-" thread-title)
+                (str (:stamp post))))
+
     (case context
       :popup
       [:div.popup {:key (my-uuid)}
@@ -900,12 +908,7 @@
                               (:posts response)))])
                   {:component-did-mount
                    #(do
-                     (process-jump-command)
-                     (if (and (zero? (session/get :page-num))
-                              (nil? (session/get :record-short-id nil)))
-                       (.setItem js/localStorage
-                                 (str "thread-last-accessed-" (session/get :thread-title))
-                                 (str (long (/ (.getTime (js/Date.)) 1000))))))})])))
+                     (process-jump-command))})])))
 
 (defn new-posts-handler
   [response]
