@@ -1001,12 +1001,13 @@
                {:body
                 {:status
                  {:num-files (db/count-all-files)
-                 :num-records (db/count-all-records)
-                 :num-deleted-records (db/count-all-deleted-records)
+                  :num-records (db/count-all-records)
+                  :num-deleted-records (db/count-all-deleted-records)
                   :cache-size cache-size
                   :server-node-name @server-node-name
-                 :active-nodes (into [] (sort @active-nodes))
-                 :search-nodes (into [] (sort @search-nodes))}}}))
+                  :service-name param/service-name
+                  :active-nodes (into [] (sort @active-nodes))
+                  :search-nodes (into [] (sort @search-nodes))}}}))
 
 
 
@@ -1117,32 +1118,39 @@
                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))
   (ju.db.core/update-all-files))
 
-(defn find-duplicate-files
+(defn delete-duplicate-posts
   "Returns a set of records in file table that are special cases of duplicates.
   e.g. NHK総合実況 -> nhk総合実況"
   []
-  (into #{}
-        (remove nil?
-                (map (fn [file]
-                       (let [thread-title (ju.routes.shingetsu/file-name-to-thread-title (:file-name file))
-                             thread-title-lower-case (clojure.string/lower-case thread-title)]
-                         (if (not (= thread-title thread-title-lower-case))
-                           (let [records-in-original-file (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file))
-                                 file-lower-case (ju.db.core/get-file (ju.routes.shingetsu/thread-title-to-file-name thread-title-lower-case))
-                                 records-in-duplicate-file (and file-lower-case (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file-lower-case)))
-                                 num-duplicate-records (and file-lower-case (count (clojure.set/intersection
-                                                                                     (into #{} (map #(:record-id %) records-in-original-file))
-                                                                                     (into #{} (map #(:record-id %) records-in-duplicate-file))
-                                                                                     )))
-                                 ]
-                             (if (and file-lower-case num-duplicate-records (pos? num-duplicate-records) (= num-duplicate-records (count records-in-duplicate-file)))
-                               ;(str thread-title " -> " thread-title-lower-case " " (count records-in-original-file) " " (count records-in-duplicate-file) " " num-duplicate-records)
-                               file-lower-case
-                               )
-                             ))))
-                     (ju.db.core/get-all-files)))))
-
-(defn really-delete-duplicate-files
-  []
-  (doall (map #(db/really-delete-file (:id %))
-              (find-duplicate-files))))
+  (dorun
+    (into #{}
+          (remove nil?
+                  (map (fn [file]
+                         (let [thread-title (ju.routes.shingetsu/file-name-to-thread-title (:file-name file))
+                               thread-title-lower-case (clojure.string/lower-case thread-title)]
+                           (if (and thread-title thread-title-lower-case (not (= thread-title thread-title-lower-case)))
+                             (let [records-in-original-file (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file))
+                                   file-lower-case (ju.db.core/get-file (ju.routes.shingetsu/thread-title-to-file-name thread-title-lower-case))
+                                   records-in-duplicate-file (and file-lower-case (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file-lower-case)))
+                                   duplicate-records (if file-lower-case (clojure.set/intersection
+                                                                                   (into #{} (map #(:record-id %) records-in-original-file))
+                                                                                   (into #{} (map #(:record-id %) records-in-duplicate-file))
+                                                                                   )
+                                                                         #{})]
+                               (when (and
+                                       file-lower-case
+                                       duplicate-records
+                                       (pos? (count duplicate-records)))
+                                 (timbre/debug
+                                   (str
+                                     thread-title
+                                     " -> " thread-title-lower-case
+                                     " " (count records-in-original-file)
+                                     " " (count records-in-duplicate-file)
+                                     " " (count duplicate-records)))
+                                 (dorun
+                                   (map #(db/mark-record-in-file-with-record-id-as-deleted (:id file-lower-case) %)
+                                        duplicate-records))
+                                 (db/update-file (:id file-lower-case))
+                                 )))))
+                       (ju.db.core/get-all-files))))))

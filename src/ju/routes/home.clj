@@ -18,14 +18,14 @@
   (layout/render "home.html" {:title (str title " - " param/service-name)}))
 
 (defroutes home-routes
-           (GET "/" [] (home-page "–ÚŽŸ"))
-           (GET "/threads" [] (home-page "‘S‚Ä‚ÌƒXƒŒƒbƒh"))
-           (GET "/recent-threads" [] (home-page "Å‹ßXV‚³‚ê‚½ƒXƒŒƒbƒh"))
+           (GET "/" [] (home-page "ç›®æ¬¡"))
+           (GET "/threads" [] (home-page "å…¨ã¦ã®ã‚¹ãƒ¬ãƒƒãƒ‰"))
+           (GET "/recent-threads" [] (home-page "æœ€è¿‘æ›´æ–°ã•ã‚ŒãŸã‚¹ãƒ¬ãƒƒãƒ‰"))
            (GET "/thread/:thread-title" [thread-title] (home-page thread-title))
            (GET "/thread/:thread-title/:qualifier"
                 [thread-title qualifier]
              (if (not (re-find #"^[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier))
-               (home-page (home-page "ƒXƒŒƒbƒhˆê——"))
+               (home-page (home-page "ã‚¹ãƒ¬ãƒƒãƒ‰ä¸€è¦§"))
                (let [file-id (db/get-file-id-by-thread-title thread-title)
                      [_ record-id suffix] (re-find #"^([a-f0-9]{32})\.([a-zA-Z0-9]+)$" qualifier)
                      record (db/get-record-in-file-by-record-id file-id record-id)
@@ -39,10 +39,10 @@
                    {:status  200
                     :headers {"Content-Type" (ring.util.mime-type/ext-mime-type qualifier)}
                     :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))))
-           (GET "/new-posts" [] (home-page "V’…ƒŒƒX‚Ü‚Æ‚ß“Ç‚Ý"))
-           (GET "/create-new-thread" [] (home-page "V‹KƒXƒŒƒbƒhì¬"))
-           (GET "/status" [] (home-page "ó‘Ô"))
-           (GET "/help" [] (home-page "Žg‚¢•û"))
-           (GET "/terms" [] (home-page "VŒŽƒlƒbƒgƒ[ƒN—˜—p‹K–ñ"))
+           (GET "/new-posts" [] (home-page "æ–°ç€ãƒ¬ã‚¹ã¾ã¨ã‚èª­ã¿"))
+           (GET "/create-new-thread" [] (home-page "æ–°è¦ã‚¹ãƒ¬ãƒƒãƒ‰ä½œæˆ"))
+           (GET "/status" [] (home-page "çŠ¶æ…‹"))
+           (GET "/help" [] (home-page "ä½¿ã„æ–¹"))
+           (GET "/terms" [] (home-page "æ–°æœˆãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯åˆ©ç”¨è¦ç´„"))
 
            (GET "/docs" [] (ok (-> "docs/docs.md" io/resource slurp))))

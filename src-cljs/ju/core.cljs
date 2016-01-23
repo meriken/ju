@@ -31,6 +31,7 @@
 (declare fetch-posts!)
 (declare fetch-new-posts!)
 (declare generate-html-for-post)
+(declare set-title)
 
 
 
@@ -46,6 +47,8 @@
 (def new-post-notification (atom false))
 (def server-status (atom nil))
 (def server-node-name (atom nil))
+(def service-name (atom nil))
+
 
 
 (defn remove-tooltips
@@ -147,7 +150,7 @@
           [:span.glyphicon.glyphicon-menu-hamburger]
           ;[:span.glyphicon.glyphicon-triangle-bottom]
           ]
-         [:a.navbar-brand {:on-click handle-click-on-link :href "/"} param/service-name]]
+         [:a.navbar-brand {:on-click handle-click-on-link :href "/"} @service-name]]
         [:div.navbar-collapse.collapse
          (when-not @navbar-collapsed? {:class "in"})
          [:ul.nav.navbar-nav
@@ -209,9 +212,9 @@
   [(keyword (str "div.container"
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
-   [:h3 param/service-name]
+   [:h3 @service-name]
    [:p
-    "「" param/service-name "」は新月ネットワークに参加しているP2P型の匿名掲示板です。"
+    "「" @service-name "」は新月ネットワークに参加しているP2P型の匿名掲示板です。"
     [:a {:href "/terms" :on-click handle-click-on-link} "新月ネットワーク利用規約"] "を守った上で、自由に利用してください。"]
 
    [:div.row
@@ -611,7 +614,7 @@
                     new-posts? "list-group-item-danger"
                     thread-last-accessed "list-group-item-info"
                     :else "")}
-          thread-title  " (ID:" (str (:id %)) ")"
+          thread-title ; " (ID:" (str (:id %)) ")"
           [:span {:style {:border "solid 1px #999"
                           :background-color "#eee"
                           :color "#000"
@@ -993,6 +996,8 @@
   (GET (str "/api/status" )
           {:handler #(do
                       (reset! server-node-name (:server-node-name (:status %)))
+                      (reset! service-name (:service-name (:status %)))
+                      (set-title)
                       (if (= (session/get :page) :status)
                         (reset! server-status (:status %))))
            :response-format :json
@@ -1032,36 +1037,47 @@
     (catch js/Error e (.log js/console e) {})))
 
 (defn set-title
-  [title]
-  (set! (.-title js/document) (str title " - " param/service-name)))
+  [& [params]]
+  (set! (.-title js/document)
+        (if @service-name
+          (str (case (session/get :page)
+                 :home "目次"
+                 :threads "全てのスレッド"
+                 :recent-threads "最近更新されたスレッド"
+                 :thread (session/get :thread-title)
+                 :new-posts "新着レスまとめ読み"
+                 :create-new-thread "新規スレッド作成"
+                 :status "状態"
+                 :help "使い方"
+                 :terms "新月ネットワーク利用規約"
+                 "")
+               " - " @service-name))))
 
-(secretary/defroute "/" [] (process-query-string) (set-title "目次") (reset! jump-command :top) (session/put! :page :home))
-(secretary/defroute "/new-posts" [] (set-title "新着レスまとめ読み") (process-query-string) (fetch-new-posts!) (session/put! :page :new-posts))
-(secretary/defroute "/create-new-thread" [] (set-title "新規スレッド作成") (process-query-string) (session/put! :page :create-new-thread))
-(secretary/defroute "/help" [] (set-title "使い方") (process-query-string) (session/put! :page :help))
-(secretary/defroute "/terms" [] (set-title "新月ネットワーク利用規約") (process-query-string) (session/put! :page :terms))
-(secretary/defroute "/status" [] (set-title "状態") (process-query-string) (fetch-server-status!) (session/put! :page :status))
+(secretary/defroute "/" [] (process-query-string) (reset! jump-command :top) (session/put! :page :home) (set-title))
+(secretary/defroute "/new-posts" [] (process-query-string) (fetch-new-posts!) (session/put! :page :new-posts) (set-title))
+(secretary/defroute "/create-new-thread" [] (process-query-string) (session/put! :page :create-new-thread) (set-title))
+(secretary/defroute "/help" [] (process-query-string) (session/put! :page :help) (set-title))
+(secretary/defroute "/terms" [] (process-query-string) (session/put! :page :terms) (set-title))
+(secretary/defroute "/status" [] (process-query-string) (fetch-server-status!) (session/put! :page :status) (set-title))
 
 (secretary/defroute
   "/threads" []
-  (set-title "全てのスレッド")
   (process-query-string)
   (reset! jump-command nil)
-  (fetch-threads! :threads))
+  (fetch-threads! :threads)
+  (set-title))
 
 (secretary/defroute
   "/recent-threads" []
-  (set-title "最近更新されたスレッド")
   (process-query-string)
   (reset! jump-command nil)
   (fetch-threads! :recent-threads)
-  )
+  (set-title))
 
 (secretary/defroute
   "/thread/:thread-title"
   [thread-title]
   (process-query-string)
-  (set-title thread-title)
   (reset! jump-command :first-new-post)
   (if @posts-displayed?
     (fetch-posts! thread-title 0 nil))
@@ -1069,13 +1085,13 @@
   (session/put! :page-num 0)
   (session/put! :record-short-id nil)
   (session/put! :href-base (str "/thread/" (js/decodeURIComponent thread-title)))
-  (session/put! :page :thread))
+  (session/put! :page :thread)
+  (set-title))
 
 (secretary/defroute
   "/thread/:thread-title/:qualifier"
   [thread-title qualifier]
   (process-query-string)
-  (set-title thread-title)
   (let [page-num (nth (re-find #"^p([0-9]+)$" qualifier) 1 nil)
         page-num (and page-num (js/parseInt page-num))
         record-short-id (nth (re-find #"^([0-9a-f]{8})$" qualifier) 1 nil)]
@@ -1086,7 +1102,8 @@
     (session/put! :page-num page-num)
     (session/put! :record-short-id record-short-id)
     (session/put! :href-base (str "/thread/" (js/decodeURIComponent thread-title)))
-    (session/put! :page :thread)))
+    (session/put! :page :thread)
+    (set-title)))
 
 (defn mount-components []
   (session/put! :navbar-enabled? true)

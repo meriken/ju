@@ -92,6 +92,8 @@
       (timbre/info "Initializing the database...")
       (timbre/info "Tables are being created...")
       (schema/create-tables schema/db-spec)))
+  ;(timbre/info "Updating files...")
+  ;(db/update-all-files)
   (start-nrepl)
   (shingetsu/start-node-monitor)
   (shingetsu/start-crawler)

@@ -475,6 +475,14 @@
     (set-fields {:deleted true})
     (where {:id id})))
 
+(defn mark-record-in-file-with-record-id-as-deleted
+  [file-id record-id]
+  (update
+    records
+    (set-fields {:deleted true})
+    (where {:file_id file-id
+            :record_id record-id})))
+
 (defn really-delete-record
   [id]
   (delete
