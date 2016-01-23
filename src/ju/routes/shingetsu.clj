@@ -404,7 +404,7 @@
                      record-id
                      body
                      (is-post-spam? file-name stamp record-id elements)))
-                 (catch Throwable _ (comment timbre/debug (str "download-file-from-node: Record skipped: " record)))))
+                 (catch Throwable _  (timbre/info (str "Skipped record: " record)))))
              records))
          (db/update-file file-id)
          ;(if-not (valid-file? file)
