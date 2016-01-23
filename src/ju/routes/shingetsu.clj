@@ -1031,7 +1031,7 @@
                                      (catch Throwable _ ""))))]
                (->
                  (ok (apply str lines))
-                 (content-type "text/plain; charset=charset=windows-31j"))
+                 (content-type "text/plain; charset=windows-31j"))
                ))
 
            (GET "/2ch/dat/:dat-file-name"
