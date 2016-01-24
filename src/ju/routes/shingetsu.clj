@@ -342,8 +342,7 @@
 
   ([node-name file-name range]
    (if-not (= range "0-")
-     (timbre/info "Downloading file:" node-name file-name range)
-     )
+     (timbre/info "Downloading file:" node-name file-name range))
    (if-not (valid-node-name? node-name)
      (throw (IllegalArgumentException. "Invalid node name.")))
    (if-not (valid-file-name? file-name)
@@ -441,19 +440,28 @@
                          (clojure.string/split-lines
                            (:body (client/get (str "http://" node-name "/files") http-params)))
                          (catch Throwable _ '())))
-          file-names (remove #(not (re-find #"^thread_[0-9A-F]+$" %)) file-names)]
+          file-names (remove #(not (re-find #"^thread_[0-9A-F]+$" %)) file-names)
+
+          file-list (if (and file-names (pos? (count file-names)))
+                      (map (fn [file-name]
+                             (do {:file-name file-name
+                                  :time-updated (let [file (db/get-file file-name)]
+                                                  (if file (:time-updated file) nil))}))
+                           file-names)
+                      (db/get-all-files))
+          file-list (reverse (sort-by #(clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-updated %))) file-list))]
       (if (zero? (count file-names))
         (throw (Exception.)))
       ;(timbre/debug "crawl-node: Downloaded a list of files:" node-name)
       (dorun
         (map
           #(do
-            (db/add-file %)
+            (db/add-file (:file-name %))
             (try
-              (download-file-from-node node-name %)
+              (download-file-from-node node-name (:file-name %))
               (catch Throwable t
-                (timbre/info "Crawler: Failed to download file:" node-name %))))
-          (shuffle file-names)))
+                (timbre/info "Crawler: Failed to download file:" node-name (:file-name %)))))
+          file-list))
       (db/mark-node-as-crawled node-name)
       (timbre/info "Crawler: Done crawling node:" node-name)
       true)
@@ -474,7 +482,8 @@
           (timbre/error t)
           nil)))))
 
-(defn crawl-nodes []
+(defn crawl-nodes
+  [force-crawling]
   (timbre/info "Crawler: Crawling nodes...")
   (try
     (timbre/info "Crawler: Downloading lists of recently updated files...")
@@ -484,7 +493,8 @@
       (pmap
         #(let [time-crawled (:time-crawled (db/get-node %))
                time-elapsed (and time-crawled (- (clj-time.coerce/to-long (clj-time.core/now)) (.getTime time-crawled)))]
-          (if (or (nil? time-crawled)
+          (if (or force-crawling
+                  (nil? time-crawled)
                   (>= time-elapsed crawl-node-interval))
             (crawl-node %)
             (timbre/info "Crawler: Skipped node:" % time-elapsed)))
@@ -498,12 +508,14 @@
   []
   (do
     (future
+      (Thread/sleep 5000)
       (timbre/info "Crawler started.")
+      (crawl-nodes true)
       (while true
+        (Thread/sleep crawl-nodes-interval)
         (try
-          (crawl-nodes)
-          (catch Throwable t))
-        (Thread/sleep crawl-nodes-interval)))))
+          (crawl-nodes false)
+          (catch Throwable t))))))
 
 
 

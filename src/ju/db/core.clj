@@ -177,6 +177,11 @@
   (first (select nodes
                  (where { :node_name node-name }))))
 
+(defn delete-node
+  [node-name]
+  (delete
+    nodes
+    (where {:node_name node-name})))
 
 
 (defn get-file-id
