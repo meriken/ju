@@ -704,7 +704,7 @@
     (if-not match
       s
       (concat [(nth match 1)
-                (if (re-find #"\.(jpe?g|gif|bmp|png)$" (nth match 2))
+                (if false ; (re-find #"\.(jpe?g|gif|bmp|png)$" (nth match 2))
                     [:img {:src (nth match 2) :on-click #(launch-image-viewer (nth match 2)) :height 210}]
                     [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} (nth match 2)])]
                (process-links (last match))))))
@@ -787,7 +787,8 @@
                   (map #(do
                          [:li [:a
                                {:href (str % (js/encodeURIComponent thread-title) "/" (:record-short-id post))
-                                :target "_blank"}
+                                :target "_blank"
+                                :key (my-uuid)}
                                "このレスを" (nth (re-find #"^https?://([^/:]+)(:[0-9]+)?/.*/$" %) 1 %) "で開く"]])
                        ["http://bbs.shingetsu.info/thread.cgi/"
                         "http://rep4649.ddo.jp:8000/thread.cgi/"
@@ -813,14 +814,10 @@
                                       (js/encodeURIComponent complete-src))
                            :target "_blank"}
                           "「Google」で画像検索"]])
-;                  <form id="post-{{sid}}-menu-ascii2d-form" action="http://www.ascii2d.net/imagesearch/search" method="POST" target="_blank">
-;                  <input type="hidden" name="uri" value="{{image_url}}" />
-;</form>
-;<a class="post-menu-ascii2d" data-form-id="post-{{sid}}-menu-ascii2d-form" target="_blank">二次元画像詳細検索</a>
                   (if (and thumbnail-exists? complete-src)
                     [:li
                      [:form
-                      {:id ascii2d-form-id :action "http://www.ascii2d.net/imagesearch/search" :method "POST" :target "_blank"}
+                      {:id ascii2d-form-id :action "https://www.ascii2d.net/imagesearch/search" :method "POST" :target "_blank"}
                       [:input {:type "hidden" :name "uri" :value complete-src}]]
                      [:a
                       {:on-click #(.submit (aget ($ (keyword (str "#" ascii2d-form-id))) 0)) :target "_blank"}

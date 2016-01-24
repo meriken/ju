@@ -626,8 +626,12 @@
 
 (defn verify-signature
   [target public-key signature]
-  (= (md5-string-to-bigint (md5 target))
-     (expt-mod (base64-to-bigint signature) 65537 (base64-to-bigint public-key))))
+  ;(timbre/debug "verify-signature:" target public-key signature)
+  (try
+    (= (md5-string-to-bigint (md5 target))
+     (expt-mod (base64-to-bigint signature) 65537 (base64-to-bigint public-key)))
+    (catch Throwable _
+      false)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
