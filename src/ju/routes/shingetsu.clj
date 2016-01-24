@@ -1071,13 +1071,13 @@
              (let [{:keys [dat-file-name]} (:params request)
                    [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)
                    file (db/get-file-by-thread-number thread-number)
-                   results (map
+                   results (doall (map
                              process-record-body
-                             (db/get-all-records-in-file (:id file)))
+                             (db/get-all-records-in-file (:id file))))
                    anchor-map (apply merge (map #(assoc {} (str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2))
                                                    results
                                                    (range 1 (inc (count results)))))
-                   posts-as-strings (map #(let [name (if (nil? (:name %1)) "新月名無しさん" (:name %1))
+                   posts-as-strings (doall (map #(let [name (if (nil? (:name %1)) "新月名無しさん" (:name %1))
                                                 mail (if (nil? (:mail %1)) "" (:mail %1))
                                                 local-time (clj-time.core/to-time-zone (clj-time.coerce/from-long (* (:stamp %1) 1000)) (clj-time.core/time-zone-for-offset +9))
                                                 ts (str
@@ -1118,7 +1118,7 @@
                                                   (str "<>" (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
                                                 "\n"))
                                          results
-                                         (range 1 (inc (count results))))]
+                                         (range 1 (inc (count results)))))]
                (->
                  (ok (apply str posts-as-strings))
                  (content-type "text/plain; charset=windows-31j")))))
