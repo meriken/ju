@@ -36,7 +36,6 @@
 
 
 (def page-size 20)
-(def recaptcha-sitekey "6LfTLRQTAAAAAEQstJ4pYl1qzIvJfBJ2-WRRMmYR")
 (def jump-command (atom :top))
 (def history (atom nil))
 (def navbar-collapsed? (atom true))
@@ -50,6 +49,9 @@
 (def server-status (atom nil))
 (def server-node-name (atom nil))
 (def service-name (atom nil))
+(def enable-recaptcha (atom param/enable-recaptcha))
+(def recaptcha-site-key (atom param/recaptcha-site-key))
+(def recaptcha-secret-key (atom param/recaptcha-secret-key))
 
 
 
@@ -94,7 +96,7 @@
 
 (defn process-jump-command
   []
-  (.log js/console (str "process-jump-command: " @jump-command))
+  ;(.log js/console (str "process-jump-command: " @jump-command))
   (cond
     (= @jump-command :bottom)
     (js/setTimeout #(.scrollTop ($ (keyword "html,body")) (.height ($ js/document))) 0)
@@ -384,14 +386,15 @@
 ; This is rather tricky.
 (defn recaptcha []
   (fn []
-    [(with-meta #(do [:div#g-recaptcha.g-recaptcha {:data-sitekey recaptcha-sitekey}])
+    [(with-meta #(if @enable-recaptcha [:div#g-recaptcha.g-recaptcha {:data-sitekey @recaptcha-site-key}])
                 {:component-did-mount (fn [this]
-                                        (comment try
-                                          (.render js/grecaptcha
-                                                   "g-recaptcha"
-                                                   (clj->js {:sitekey recaptcha-sitekey}))
-                                          (.removeClass ($ :#g-recaptcha) "g-recaptcha")
-                                          (catch js/Error _)))})]))
+                                        (if @enable-recaptcha
+                                          (try
+                                            (.render js/grecaptcha
+                                                     "g-recaptcha"
+                                                     (clj->js {:sitekey @recaptcha-site-key}))
+                                            (.removeClass ($ :#g-recaptcha) "g-recaptcha")
+                                            (catch js/Error _))))})]))
 
 (defn submit-post
   [e]
@@ -785,10 +788,10 @@
                         "このレスに返信する(引用付き)"]]
                   [:li.divider {:role "separator"}]
                   (map #(do
-                         [:li [:a
+                         [:li {:key (my-uuid)}
+                          [:a
                                {:href (str % (js/encodeURIComponent thread-title) "/" (:record-short-id post))
-                                :target "_blank"
-                                :key (my-uuid)}
+                                :target "_blank"}
                                "このレスを" (nth (re-find #"^https?://([^/:]+)(:[0-9]+)?/.*/$" %) 1 %) "で開く"]])
                        ["http://bbs.shingetsu.info/thread.cgi/"
                         "http://rep4649.ddo.jp:8000/thread.cgi/"
@@ -893,7 +896,7 @@
   [response]
   (let [num-posts (:num-posts response)
         num-pages (+ (quot num-posts page-size) (if (pos? (rem num-posts page-size)) 1 0))]
-    (.log js/console "posts-handler:" num-posts num-pages (clj->js (:anchors response)))
+    ;(.log js/console "posts-handler:" num-posts num-pages (clj->js (:anchors response)))
     (session/put! :num-posts num-posts)
     (session/put! :num-pages num-pages)
     (session/put!
@@ -1000,17 +1003,25 @@
            :params {:threads threads}})))
 
 (defn fetch-server-status!
-  []
-  ;(.log js/console "fetch-server-status!" )
-  (GET (str "/api/status" )
-          {:handler #(do
-                      (reset! server-node-name (:server-node-name (:status %)))
-                      (reset! service-name (:service-name (:status %)))
-                      (set-title)
-                      (if (= (session/get :page) :status)
-                        (reset! server-status (:status %))))
-           :response-format :json
-           :keywords? true}))
+  ([]
+   (fetch-server-status! false))
+  ([sync]
+    ;(.log js/console "fetch-server-status!" )
+   (ajax "/api/status"
+         {:method   "GET"
+          :success  (fn [response]
+                      (let [status (:status (clojure.walk/keywordize-keys (js->clj response)))]
+                        (reset! server-node-name (:server-node-name status))
+                        (reset! service-name (:service-name status))
+                        (reset! enable-recaptcha (:enable-recaptcha status))
+                        (reset! recaptcha-site-key (:recaptcha-site-key status))
+                        (reset! recaptcha-secret-key (:recaptcha-secret-key status))
+
+                        (set-title)
+                        (if (= (session/get :page) :status)
+                          (reset! server-status status))))
+          :async    (not sync)
+          :dataType "json"})))
 
 (defn process-query-string
   []
@@ -1071,7 +1082,7 @@
 (secretary/defroute "/create-new-thread" [] (process-query-string) (session/put! :page :create-new-thread) (set-title))
 (secretary/defroute "/help" [] (process-query-string) (session/put! :page :help) (set-title))
 (secretary/defroute "/terms" [] (process-query-string) (session/put! :page :terms) (set-title))
-(secretary/defroute "/status" [] (process-query-string) (fetch-server-status!) (session/put! :page :status) (set-title))
+(secretary/defroute "/status" [] (process-query-string) (fetch-server-status! true) (session/put! :page :status) (set-title))
 
 (secretary/defroute
   "/threads" []
@@ -1247,7 +1258,7 @@
                (remove-tooltips))))
 
   (check-new-post-notification!)
-  (fetch-server-status!)
+  (fetch-server-status! true)
   (js/setInterval check-new-post-notification! 30000)
   (js/setInterval fetch-server-status! 30000)
   (js/setInterval #(when (= (session/get :page) :recent-threads) (reset! jump-command nil) (update-threads :recent-threads)) 60000)

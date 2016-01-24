@@ -956,6 +956,18 @@
              (try
                (let [{:keys [thread-title name mail password body attachment g-recaptcha-response]} (:params request)
                      _ (timbre/debug "/api/post" thread-title name mail password body g-recaptcha-response attachment)
+                     remote-address (get-remote-address request)
+                     recaptcha-result (if-not param/enable-recaptcha
+                                        true
+                                        (:success (:body
+                                          (clj-http.client/post "https://www.google.com/recaptcha/api/siteverify"
+                                                              {:as :json
+                                                               :form-params
+                                                               {:secret param/recaptcha-secret-key
+                                                                :response g-recaptcha-response
+                                                                :remoteip remote-address}}))))
+                     _ (if-not recaptcha-result
+                         (throw (Exception.)))
                      file-id (db/get-file-id-by-thread-title thread-title)
                      file (db/get-file-by-id file-id)
                      stamp (long (/ (clj-time.coerce/to-long (clj-time.core/now)) 1000))
@@ -1023,6 +1035,9 @@
                   :num-deleted-records (db/count-all-deleted-records)
                   :cache-size cache-size
                   :server-node-name @server-node-name
+                  :enable-recaptcha param/enable-recaptcha
+                  :recaptcha-site-key param/recaptcha-site-key
+                  :recaptcha-secret-key param/recaptcha-secret-key
                   :service-name param/service-name
                   :active-nodes (into [] (sort @active-nodes))
                   :search-nodes (into [] (sort @search-nodes))}}}))
