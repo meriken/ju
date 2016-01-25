@@ -546,7 +546,7 @@
   []
   (do
     (future
-      (Thread/sleep 5000)
+      (Thread/sleep 60000)
       (timbre/info "Crawler started.")
       (crawl-nodes true)
       (while true
