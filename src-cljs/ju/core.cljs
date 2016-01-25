@@ -1082,7 +1082,7 @@
 (secretary/defroute "/create-new-thread" [] (process-query-string) (session/put! :page :create-new-thread) (set-title))
 (secretary/defroute "/help" [] (process-query-string) (session/put! :page :help) (set-title))
 (secretary/defroute "/terms" [] (process-query-string) (session/put! :page :terms) (set-title))
-(secretary/defroute "/status" [] (process-query-string) (fetch-server-status! true) (session/put! :page :status) (set-title))
+(secretary/defroute "/status" [] (process-query-string) (session/put! :page :status) (fetch-server-status! true) (set-title))
 
 (secretary/defroute
   "/threads" []
