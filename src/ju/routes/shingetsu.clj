@@ -441,7 +441,7 @@
                      node-name
                      nil
                      ))
-                 (catch Throwable _  (timbre/info (str "Skipped record: " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
+                 (catch Throwable t  (timbre/info (str "Skipped record: " (str t) node-name file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
              records))
          (db/update-file file-id)
          ;(if-not (valid-file? file)
