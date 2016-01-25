@@ -441,7 +441,7 @@
                      node-name
                      nil
                      ))
-                 (catch Throwable _  (timbre/info (str "Skipped record: " record)))))
+                 (catch Throwable _  (timbre/info (str "Skipped record: " file-name (:stamp record) (:record-id record))))))
              records))
          (db/update-file file-id)
          ;(if-not (valid-file? file)
@@ -1136,8 +1136,8 @@
 
            (GET "/2ch/dat/:dat-file-name"
                  request
-             (timbre/debug request)
              (let [{:keys [dat-file-name]} (:params request)
+                   _ (timbre/info "/2ch/dat/:dat-file-name" (get-remote-address request) dat-file-name)
                    [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)
                    file (db/get-file-by-thread-number thread-number)
                    _ (if (nil? file) (throw (Exception.)))
@@ -1152,7 +1152,7 @@
                                              nil))
                                          results
                                          (range 1 (inc (count results))))))
-                   thread-title (unhexify (second (re-find #"^thread_(.*)$" (:file-name file))))
+                   thread-title (file-name-to-thread-title (:file-name file))
                    posts-as-strings (doall (remove
                                              nil?
                                              (map
