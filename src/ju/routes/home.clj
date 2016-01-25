@@ -24,6 +24,7 @@
            (GET "/thread/:thread-title" [thread-title] (home-page thread-title))
            (GET "/thread/:thread-title/:qualifier"
                 [thread-title qualifier]
+             (timbre/debug "/thread/:thread-title/:qualifier")
              (if (not (re-find #"^[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier))
                (home-page (home-page "スレッド一覧"))
                (let [file-id (db/get-file-id-by-thread-title thread-title)

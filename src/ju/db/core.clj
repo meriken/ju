@@ -145,7 +145,7 @@
 
 
 (defn known-node? [node-name]
-  (pos? (count (select nodes (where {:node_name node-name})))))
+  (pos? (count (select nodes (fields :id) (where {:node_name node-name})))))
 
 (defn add-node [node-name]
   (transaction {:isolation :serializable}
@@ -186,7 +186,7 @@
 
 (defn get-file-id
   [file-name]
-  (let [files (select files (where {:file_name file-name}))]
+  (let [files (select files (fields :id) (where {:file_name file-name}))]
     (and
       files
       (pos? (count files))
@@ -223,7 +223,7 @@
 (defn get-file-id-by-thread-title
   [thread-title]
   (let [file-name (str "thread_" (hexify thread-title))
-        files (select files (where {:file_name file-name}))]
+        files (select files (fields :id) (where {:file_name file-name}))]
     (and
       files
       (pos? (count files))
@@ -298,8 +298,8 @@
                                        (get-all-records))))]
     results))
 
-(defn add-record [file-id stamp record-id body deleted]
-  (if (zero? (count (select files (where {:id file-id}))))
+(defn add-record [file-id stamp record-id body deleted dat-file-line suffix]
+  (if (zero? (count (select files (fields :id) (where {:id file-id}))))
     (throw (IllegalArgumentException. "Invalid file ID.")))
   (if (< stamp 1000000000)
     (throw (IllegalArgumentException. "Invalid stamp.")))
@@ -307,16 +307,18 @@
     (throw (IllegalArgumentException. (str "Invalid record ID:" record-id))))
 
   (transaction {:isolation :serializable}
-    (when (zero? (count (select records (where { :file_id file-id :stamp stamp :record_id record-id }))))
+    (when (zero? (count (select records (fields :id) (where { :file_id file-id :stamp stamp :record_id record-id }))))
       (insert records
               (values {:file_id file-id
                        :stamp stamp
                        :record_id record-id
                        :record_short_id (second (re-find #"^([0-9a-f]{8})" record-id))
                        :body body
-                       :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))
+                       :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
                        :size (+ 10 2 32 2 (count body) 1)
-                       :deleted deleted}))
+                       :deleted deleted
+                       :dat_file_line dat-file-line
+                       :suffix suffix}))
       (add-anchor-in-post file-id body (second (re-find #"^([0-9a-f]{8})" record-id))))))
 
 (defn get-all-records-in-file
@@ -438,7 +440,7 @@
   [file-id stamp record-id]
   (nth
     (select records
-            (fields :id :file_id :stamp :record_id :record_short_id :time_created :size)
+            (fields :id :file_id :stamp :record_id :record_short_id :time_created :size :dat_file_line :suffix)
             (where {:file_id file-id :stamp stamp :record_id record-id :deleted false}))
     0
     nil))
@@ -446,14 +448,21 @@
 (defn get-all-active-and-deleted-records-in-file-without-bodies
   [file-id]
   (select records
-          (fields :id :file_id :stamp :record_id :record_short_id :time_created :size)
+          (fields :id :file_id :stamp :record_id :record_short_id :time_created :size :dat_file_line :suffix)
           (where {:file_id file-id})))
+
+(defn get-all-records-in-file-without-bodies
+  [file-id]
+  (select records
+          (fields :id :file_id :stamp :record_id :record_short_id :time_created :size :dat_file_line :suffix)
+          (where {:file_id file-id :deleted false})
+          (order :stamp :ASC)))
 
 (defn get-all-records-without-bodies
   []
   (select records
           (where {:deleted false})
-          (fields :id :file_id :stamp :record_id :record_short_id :time_created :size)))
+          (fields :id :file_id :stamp :record_id :record_short_id :time_created :size :dat_file_line :suffix)))
 
 (defn get-all-records
   []
@@ -506,6 +515,16 @@
                                 (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))
         duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))]
     (dorun (map ju.db.core/really-delete-record duplicates))))
+
+(defn update-dat-file-line
+  [id dat-file-line suffix]
+  (update
+    records
+    (set-fields {:dat_file_line dat-file-line
+                 :suffix suffix})
+    (where {:id id})))
+
+
 
  (defn update-file
   [file-id]
@@ -595,7 +614,7 @@
   [file-id source destination]
   ;(timbre/debug "add-anchor" file-id source destination)
   (transaction {:isolation :serializable}
-    (when (zero? (count (select anchors (where { :file_id file-id :source source :destination destination}))))
+    (when (zero? (count (select anchors (fields :id) (where { :file_id file-id :source source :destination destination}))))
       (insert anchors
               (values {:file_id file-id
                        :source source
