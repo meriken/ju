@@ -441,7 +441,7 @@
                      node-name
                      nil
                      ))
-                 (catch Throwable _  (timbre/info (str "Skipped record: " file-name (:stamp record) (:record-id record))))))
+                 (catch Throwable _  (timbre/info (str "Skipped record: " file-name record)))))
              records))
          (db/update-file file-id)
          ;(if-not (valid-file? file)

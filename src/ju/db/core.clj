@@ -212,9 +212,9 @@
   [thread-number]
   (let [ts (java.sql.Timestamp. (* (- (Long/parseLong thread-number) (* 9 60 60)) 1000))
         files (select files (where {:time_first_post ts}))]
-    (and
-      files
-      (pos? (count files))
+    (if (and
+          files
+          (pos? (count files)))
       (first files))))
 
 (defn hexify [s]
