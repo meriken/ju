@@ -316,7 +316,7 @@
                        :body body
                        :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
                        :size (+ 10 2 32 2 (count body) 1)
-                       :deleted deleted
+                       :deleted (if deleted true false)
                        :dat_file_line dat-file-line
                        :suffix suffix
                        :origin origin
