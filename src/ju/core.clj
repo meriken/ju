@@ -4,6 +4,7 @@
             [ju.db.migrations :as migrations]
             [clojure.tools.nrepl.server :as nrepl]
             [taoensso.timbre :as timbre]
+            [taoensso.timbre.appenders.3rd-party.rotor :as rotor]
             [environ.core :refer [env]]
 
     ; Meriken
@@ -83,7 +84,29 @@
   (if (Desktop/isDesktopSupported)
     (.browse (Desktop/getDesktop) (URI. (str "http://localhost:" port)))))
 
+(defn ju-output-fn
+  ([data] (ju-output-fn nil data))
+  ([{:keys [no-stacktrace? stacktrace-fonts] :as opts} data]
+   (let [{:keys [level ?err_ vargs_ msg_ ?ns-str hostname_ timestamp_]} data]
+     (str
+      (force timestamp_) " "
+       ; (force hostname_) " "
+       ; (clojure.string/upper-case (name level))  " "
+       ; "[" (or ?ns-str "?ns") "] - "
+       (force msg_)
+       (comment when-not no-stacktrace?
+         (when-let [err (force ?err_)]
+           (str "\n" (stacktrace err opts))))
+       ))))
+
+(defn configure-timbre
+  []
+  (let [filename-base  "ju"]
+    (timbre/merge-config!
+      {:output-fn ju-output-fn})))
+
 (defn start-app [[port]]
+  (configure-timbre)
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app))
   (load-config-file-if-necessary)
   ; Initialize the database if needed

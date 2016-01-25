@@ -441,7 +441,7 @@
                      node-name
                      nil
                      ))
-                 (catch Throwable _  (timbre/info (str "Skipped record: " file-name record)))))
+                 (catch Throwable _  (timbre/info (str "Skipped record: " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
              records))
          (db/update-file file-id)
          ;(if-not (valid-file? file)
@@ -762,7 +762,7 @@
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
            (GET (str param/server-path "/ping") request
-             ;(timbre/info "/ping command received:" (get-remote-address request))
+             ;(timbre/info "/ping" (get-remote-address request))
              (->
                (ok
                  (str
@@ -771,7 +771,7 @@
                (content-type "text/plain; charset=UTF-8")))
 
            (GET (str param/server-path "/node") request
-             ;(timbre/info "/node command received:" (get-remote-address request))
+             ;(timbre/info "/node" (get-remote-address request))
              (->
                (ok (try (rand-nth (into [] @search-nodes)) (catch Throwable _ "")))
                (content-type "text/plain; charset=UTF-8")))
@@ -784,7 +784,7 @@
                    node-name (if (re-find #"^:" node-name)
                                (str remote-addr node-name)
                                node-name)]
-               (timbre/info "/join command received:" node-name)
+               (timbre/info "/join" (get-remote-address request) node-name)
                (when (and (valid-node-name? node-name)
                           (not (= node-name @server-node-name))
                           (not (some #{node-name} @active-nodes))
@@ -801,7 +801,7 @@
                 {:keys [headers params body server-name] :as request}
              (let [{node-name :node-name} params
                    node-name (clojure.string/replace node-name #"\+" "/")]
-               (timbre/info "/bye command received:" node-name)
+               (timbre/info "/bye" (get-remote-address request) node-name)
                (when (and (valid-node-name? node-name)
                           (not (= node-name @server-node-name))
                           (some #{node-name} @active-nodes)
@@ -826,7 +826,7 @@
                      stamp (Long/parseLong stamp)
                      entry {:file-name file-name :stamp stamp :record-id record-id}
                      file (db/get-file file-name)]
-                 (timbre/info "/update command received:" remote-addr file-name stamp record-id node-name)
+                 (timbre/info "/update" remote-addr file-name stamp record-id node-name)
                  ;(if (and
                  ;      (not (db/file-deleted? file-id))
                  ;      (not (db/record-exists file-id stamp record-id)))
@@ -868,7 +868,7 @@
 
            (GET (str param/server-path "/have/:file-name")
                 {:keys [headers params body server-name] :as request}
-             ;(timbre/info "/have command received:" (get-remote-address request) (:file-name params))
+             ;(timbre/info "/have" (get-remote-address request) (:file-name params))
              (let [{file-name :file-name} params
                    file (db/get-file file-name)]
                (->
@@ -877,22 +877,22 @@
 
            (GET (str param/server-path "/head/:file-name/:range")
                 {:keys [headers params body server-name] :as request}
-             ;(timbre/info "/head command received:" (get-remote-address request) (:file-name params) (:range params))
+             ;(timbre/info "/head" (get-remote-address request) (:file-name params) (:range params))
              (process-get-command request true))
 
            (GET (str param/server-path "/get/:file-name/:range")
                 {:keys [headers params body server-name] :as request}
-             (timbre/info "/get command received:" (get-remote-address request) (:file-name params) (:range params))
+             (timbre/info "/get" (get-remote-address request) (:file-name params) (:range params))
              (process-get-command request false))
 
            (GET (str param/server-path "/get/:file-name/:range/:record-id")
                 {:keys [headers params body server-name] :as request}
-             (timbre/info "/get command received:" (get-remote-address request) (:file-name params) (:range params) (:record-id params))
+             (timbre/info "/get" (get-remote-address request) (:file-name params) (:range params) (:record-id params))
              (process-get-command request false))
 
            (GET (str param/server-path "/recent/:range")
                 {:keys [headers params body server-name] :as request}
-             (timbre/info "/recent command received:" (get-remote-address request) (:range params))
+             (timbre/info "/recent" (get-remote-address request) (:range params))
              (let [{:keys [range]} params]
                (if (valid-range? range)
                  (let [{range :range} params
@@ -914,21 +914,25 @@
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
            (GET (str param/server-path "/active-nodes") request
+             (timbre/info "/active-nodes" (get-remote-address request))
              (->
                (ok (apply str (sort (map #(str % "\n") @active-nodes))))
                (content-type "text/plain; charset=UTF-8")))
 
            (GET (str param/server-path "/search-nodes") request
+             (timbre/info "/search-nodes" (get-remote-address request))
              (->
                (ok (apply str (sort (map #(str % "\n") @search-nodes))))
                (content-type "text/plain; charset=UTF-8")))
 
            (GET (str param/server-path "/known-nodes") request
+             (timbre/info "/known-nodes" (get-remote-address request))
              (->
                (ok (apply str (sort (map #(str % "\n") (map :node-name (db/get-all-nodes))))))
                (content-type "text/plain; charset=UTF-8")))
 
            (GET (str param/server-path "/files") request
+             (timbre/info "/files" (get-remote-address request))
              (->
                (ok (apply str (sort (map #(str % "\n") (map :file-name (db/get-all-files))))))
                (content-type "text/plain; charset=UTF-8")))
@@ -941,7 +945,7 @@
 
            (POST "/api/thread"
                  request
-             (timbre/debug "/api/thread" request)
+             (timbre/info "/api/thread" (get-remote-address request))
              (let [{:keys [thread-title page-num page-size record-short-id download]} (:params request)
                    ;page-num (Integer/parseInt page-num)
                    ;page-size (Integer/parseInt page-size)
@@ -966,7 +970,7 @@
 
            (POST "/api/new-posts"
                  request
-             ;(timbre/debug "/api/new-posts" request)
+             (timbre/info "/api/new-posts" (get-remote-address request))
              (let [{:keys [threads]} (:params request)
                    ;_ (timbre/debug threads)
                    results (remove nil?
@@ -988,7 +992,7 @@
 
            (POST "/api/new-post-notification"
                  request
-             ;(timbre/debug "/api/new-post-notification" request)
+             ;(timbre/info "/api/new-post-notification" (get-remote-address request))
              (let [{:keys [threads]} (:params request)
                    result (remove zero?
                                    (map (fn [thread]
@@ -999,6 +1003,7 @@
 
            (GET "/api/threads"
                 {:keys [headers params body server-name] :as request}
+             (timbre/info "/api/threads" (get-remote-address request))
              (let [n (:n params)
                    n (if (zero? (count n)) nil n)]
                (->> (if n
@@ -1013,7 +1018,7 @@
                  request
              (try
                (let [{:keys [thread-title name mail password body attachment g-recaptcha-response]} (:params request)
-                     _ (timbre/debug "/api/post" thread-title name mail password body g-recaptcha-response attachment)
+                     _ (timbre/debug "/api/post" (get-remote-address request) thread-title)
                      remote-address (get-remote-address request)
                      recaptcha-result (if-not param/enable-recaptcha
                                         true
@@ -1101,6 +1106,7 @@
                  (internal-server-error "NG"))))
 
            (GET "/api/status" request
+             (timbre/info "/api/status" (get-remote-address request))
              (let [cache-size (reduce + (map :size (db/get-all-files)))]
                {:body
                 {:status
@@ -1120,6 +1126,7 @@
 
            (GET "/2ch/subject.txt"
                 {:keys [headers params body server-name] :as request}
+             (timbre/info "/2ch/subject.txt" (get-remote-address request))
              (let [files (db/get-all-files)
                    lines (->> files
                               (remove #(or
