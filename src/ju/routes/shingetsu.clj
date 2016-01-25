@@ -1106,7 +1106,7 @@
                  (internal-server-error "NG"))))
 
            (GET "/api/status" request
-             (timbre/info "/api/status" (get-remote-address request))
+             ;(timbre/info "/api/status" (get-remote-address request))
              (let [cache-size (reduce + (map :size (db/get-all-files)))]
                {:body
                 {:status
@@ -1126,7 +1126,7 @@
 
            (GET "/2ch/subject.txt"
                 {:keys [headers params body server-name] :as request}
-             (timbre/info "/2ch/subject.txt" (get-remote-address request))
+             ;(timbre/info "/2ch/subject.txt" (get-remote-address request))
              (let [files (db/get-all-files)
                    lines (->> files
                               (remove #(or
