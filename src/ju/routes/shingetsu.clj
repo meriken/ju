@@ -679,7 +679,12 @@
 
 (defn get-remote-address
   [request]
-  (or (get-in request [:headers "x-forwarded-for"]) (:remote-addr request)))
+  (clojure.string/replace
+    (or
+      (get-in request [:headers "x-forwarded-for"])
+      (:remote-addr request))
+    #",.*$"
+    ""))
 
 (defn process-get-command
   [request without-bodies]
