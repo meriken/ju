@@ -438,6 +438,8 @@
                            (assoc :stamp stamp)
                            (assoc :record-id record-id)))
                      (:suffix elements)
+                     node-name
+                     nil
                      ))
                  (catch Throwable _  (timbre/info (str "Skipped record: " record)))))
              records))
@@ -1075,7 +1077,9 @@
                      (-> elements
                          (assoc :stamp stamp)
                          (assoc :record-id record-id)))
-                   (:suffix elements))
+                   (:suffix elements)
+                   @server-node-name
+                   remote-address)
                  (db/update-file file-id)
                  (db/process-update-command (:file-name file) stamp record-id)
                  (do (future
@@ -1136,15 +1140,23 @@
              (let [{:keys [dat-file-name]} (:params request)
                    [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)
                    file (db/get-file-by-thread-number thread-number)
+                   _ (if (nil? file) (throw (Exception.)))
                    results (db/get-all-records-in-file-without-bodies (:id file))
-                   anchor-map (apply merge (map #(assoc {} (str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2))
-                                                   results
-                                                   (range 1 (inc (count results)))))
+                   anchor-map (apply merge
+                                     (remove
+                                       nil?
+                                       (map
+                                         #(try
+                                           {(str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2)}
+                                           (catch Throwable _
+                                             nil))
+                                         results
+                                         (range 1 (inc (count results))))))
                    thread-title (unhexify (second (re-find #"^thread_(.*)$" (:file-name file))))
                    posts-as-strings (doall (remove
                                              nil?
                                              (map
-                                               #(let []
+                                               #(try
                                                  (if (:dat-file-line %1)
                                                    (str
                                                      (clojure.string/replace (:dat-file-line %1) #"&gt;&gt;[a-f0-9]{8}" (fn [s] (get anchor-map s s)))
@@ -1159,7 +1171,9 @@
                                                          ))
                                                      (if (= %2 1)
                                                        (str "<>" (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
-                                                     "\n")))
+                                                     "\n"))
+                                                 (catch Throwable _
+                                                   nil))
                                              results
                                              (range 1 (inc (count results))))))]
                (->

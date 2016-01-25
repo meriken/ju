@@ -298,7 +298,7 @@
                                        (get-all-records))))]
     results))
 
-(defn add-record [file-id stamp record-id body deleted dat-file-line suffix]
+(defn add-record [file-id stamp record-id body deleted dat-file-line suffix origin remote-address]
   (if (zero? (count (select files (fields :id) (where {:id file-id}))))
     (throw (IllegalArgumentException. "Invalid file ID.")))
   (if (< stamp 1000000000)
@@ -318,7 +318,9 @@
                        :size (+ 10 2 32 2 (count body) 1)
                        :deleted deleted
                        :dat_file_line dat-file-line
-                       :suffix suffix}))
+                       :suffix suffix
+                       :origin origin
+                       :remote_address remote-address}))
       (add-anchor-in-post file-id body (second (re-find #"^([0-9a-f]{8})" record-id))))))
 
 (defn get-all-records-in-file

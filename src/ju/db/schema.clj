@@ -241,7 +241,9 @@
         [:size         bigint "NOT NULL"]
         [:tags varchar "DEFAULT NULL"]
         [:suffix         varchar "DEFAULT NULL"]
-        [:dat_file_line         varchar "DEFAULT NULL"]))))
+        [:dat_file_line         varchar "DEFAULT NULL"]
+        [:origin         varchar "DEFAULT NULL"]
+        [:remote_address varchar "DEFAULT NULL"]))))
 
 (defn create-anchors-table
   [db-spec]
