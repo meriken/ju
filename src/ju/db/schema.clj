@@ -156,10 +156,10 @@
              (re-find #"^jdbc:mysql:" (java-get-jdbc-url (:datasource db-spec)))))
     {:id                                 "SERIAL PRIMARY KEY"
      :bigint                             "BIGINT"
-     :varchar                            "LONGTEXT CHARACTER SET UTF8 COLLATE 'utf8_bin'"
-     :varchar-unique                     "LONGTEXT CHARACTER SET UTF8 COLLATE 'utf8_bin'" ; UNIQUE is not supported.
-     :varchar-ignorecase                 "LONGTEXT CHARACTER SET UTF8 COLLATE 'utf8_general_ci'"
-     :varchar-ignorecase-unique          "LONGTEXT CHARACTER SET UTF8 COLLATE 'utf8_general_ci'" ; UNIQUE is not supported.
+     :varchar                            "LONGTEXT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_bin'"
+     :varchar-unique                     "LONGTEXT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_bin'" ; UNIQUE is not supported.
+     :varchar-ignorecase                 "LONGTEXT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_general_ci'"
+     :varchar-ignorecase-unique          "LONGTEXT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_general_ci'" ; UNIQUE is not supported.
      :blob                               "LONGBLOB"}
 
     (or (= (:subprotocol db-spec) "postgresql")
