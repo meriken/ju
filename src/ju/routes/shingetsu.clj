@@ -701,7 +701,7 @@
                 str
                 (map
                   #(do
-                    (if-not (= (:record-id %) (md5 (:body %)))
+                    (if (and (not without-bodies) (not (= (:record-id %) (md5 (:body %)))))
                       (throw (Exception. "Invalid record ID")))
                     (if (and record-id (not (= record-id (:record-id %))))
                       ""
@@ -712,7 +712,10 @@
                           (str "<>" (String. (:body %) "UTF-8"))
                           "")
                         "\n")))
-                  (db/get-records-in-file-with-range file-id start end))))
+                  ((if without-bodies
+                     db/get-records-in-file-with-range-without-bodies
+                     db/get-records-in-file-with-range)
+                    file-id start end))))
           (content-type "text/plain; charset=UTF-8"))))))
 
 (defn process-record-body

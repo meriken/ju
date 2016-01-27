@@ -408,6 +408,31 @@
     (nil? start) (select records (where {:file_id file-id :deleted false})                              (where {:stamp [<= end]}) (order :stamp :ASC))
     :else         (select records (where {:file_id file-id :deleted false}) (where {:stamp [>= start]}) (where {:stamp [<= end]}) (order :stamp :ASC))))
 
+(defn get-records-in-file-with-range-without-bodies
+  [file-id start end]
+  (cond
+    (nil? end)
+    (select records
+            (fields :id :file_id :stamp :record_id :record_short_id :time_created :size :dat_file_line :suffix)
+            (where {:file_id file-id :deleted false})
+            (where {:stamp [>= start]})
+            (order :stamp :ASC))
+
+    (nil? start)
+    (select records
+            (fields :id :file_id :stamp :record_id :record_short_id :time_created :size :dat_file_line :suffix)
+            (where {:file_id file-id :deleted false})
+            (where {:stamp [<= end]})
+            (order :stamp :ASC))
+
+    :else
+    (select records
+            (fields :id :file_id :stamp :record_id :record_short_id :time_created :size :dat_file_line :suffix)
+            (where {:file_id file-id :deleted false})
+            (where {:stamp [>= start]})
+            (where {:stamp [<= end]})
+            (order :stamp :ASC))))
+
 (defn count-records-in-file
   [file-id]
   (count-keyword (first (clojure.java.jdbc/query
