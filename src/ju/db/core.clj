@@ -304,7 +304,7 @@
   (if (< stamp 1000000000)
     (throw (IllegalArgumentException. "Invalid stamp.")))
   (if-not (= (md5 body) record-id)
-    (throw (IllegalArgumentException. (str "Invalid record ID:" record-id))))
+    (throw (IllegalArgumentException. (str "Invalid record ID: " record-id))))
 
   (transaction {:isolation :serializable}
     (when (zero? (count (select records (fields :id) (where { :file_id file-id :stamp stamp :record_id record-id }))))

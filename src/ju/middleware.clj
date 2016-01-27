@@ -3,10 +3,13 @@
             [taoensso.timbre :as timbre]
             [environ.core :refer [env]]
             [ring.middleware.flash :refer [wrap-flash]]
+            [ring.util.codec :refer [percent-decode]]
             [immutant.web.middleware :refer [wrap-session]]
             ;[ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
+            [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.format :refer [wrap-restful-format]]
             [buddy.auth.middleware :refer [wrap-authentication]]
             [buddy.auth.backends.session :refer [session-backend]]
@@ -14,7 +17,8 @@
             [buddy.auth :refer [authenticated?]]
             [ju.layout :refer [*identity*]]
             [ju.config :refer [defaults]])
-  (:import [javax.servlet ServletContext]))
+  (:import [javax.servlet ServletContext]
+           (java.io ByteArrayInputStream)))
 
 (defn wrap-context [handler]
   (fn [request]
@@ -71,6 +75,45 @@
       wrap-identity
       (wrap-authentication (session-backend))))
 
+(defn- percent-encode-everything
+  [s]
+  (cond
+    (zero? (count s))
+    ""
+
+    (re-find #"^(%[0-9A-F]{2})+$" s)
+    s
+
+    (re-find #"^%[0-9A-F]{2}" s)
+    (let [match (re-find #"^(%[0-9A-F]{2})(.*)$" s)]
+      (percent-encode-everything
+        (str
+          (nth match 1)
+          (percent-encode-everything (nth match 2)))))
+
+    :else
+    (percent-encode-everything
+      (str
+        (format "%%%02X" (int (first (take 1 s))))
+        (apply str (drop 1 s))))))
+
+(defn percent-decode-for-2ch-post
+  [s]
+  (timbre/debug s)
+  (percent-decode (percent-encode-everything s) "windows-31j"))
+
+(defn wrap-2ch-post
+  [handler]
+  (fn [request]
+    (if (= (:uri request) "/test/bbs.cgi")
+      (handler (assoc request
+                 :form-params
+                 (->> (clojure.string/split (slurp (:body request)) #"&")
+                             (map #(re-find #"^([^=]+)=(.*)$" %))
+                             (map #(do {(keyword (nth % 1)) (percent-decode-for-2ch-post (nth % 2))}))
+                             (apply merge))))
+      (handler request))))
+
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
       wrap-auth
@@ -82,5 +125,6 @@
         (-> site-defaults
             (assoc-in [:security :anti-forgery] false)
             (dissoc :session)))
+      wrap-2ch-post
       wrap-context
       wrap-internal-error))

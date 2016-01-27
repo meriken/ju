@@ -441,7 +441,7 @@
                      node-name
                      nil
                      ))
-                 (catch Throwable t  (timbre/info (str "Skipped record: " (str t) node-name file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
+                 (catch Throwable t  (timbre/info (str "Skipped record: " (str t) " " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
              records))
          (db/update-file file-id)
          ;(if-not (valid-file? file)
@@ -753,8 +753,88 @@
                     (:id %)
                     dat-file-line
                     (:suffix record)))
-                  (catch Throwable _))
+                  (catch Throwable t
+                    (timbre/info "update-dat-file-lines-in-all-records:" (str t) (:id %))))
               (sort-by :id (db/get-all-records-with-ids-only)))))
+
+
+(defn process-post
+  [thread-title name mail password body attachment remote-address]
+  (let [file-id (db/get-file-id-by-thread-title thread-title)
+        file (db/get-file-by-id file-id)
+        stamp (long (/ (clj-time.coerce/to-long (clj-time.core/now)) 1000))
+        escape-special-characters (fn [s]
+                                    (-> s
+                                        (clojure.string/replace #"&" "&amp;")
+                                        (clojure.string/replace #"<" "&lt;")
+                                        (clojure.string/replace #">" "&gt;")))
+        body? (and body (pos? (count body)))
+        attachment? (and attachment
+                         (:filename attachment)
+                         (pos? (count (:filename attachment)))
+                         (:size attachment)
+                         (pos? (:size attachment))
+                         (:tempfile attachment))
+        _ (if (and (not body?) (not attachment?))
+            (throw (Exception. "空の書き込みはできません。")))
+        record-body (str
+                      (if body?
+                        (str
+                          "body:"
+                          (clojure.string/replace (escape-special-characters body) #"\r?\n" "<br>")
+                          ))
+                      (if attachment?
+                        (str
+                          (if body?
+                            "<>")
+                          "attach:"
+                          (String. (clojure.data.codec.base64/encode (Files/readAllBytes (.toPath (:tempfile attachment)))) "ASCII")
+                          "<>suffix:"
+                          (let [match (re-find #"\.([a-zA-Z0-9]+)$" (:filename attachment))]
+                            (if match (second match) "bin"))))
+                      (if (and name (pos? (count name))) (str "<>name:" (escape-special-characters name)))
+                      (if (and mail (pos? (count mail))) (str "<>mail:" (escape-special-characters mail))))
+        record-body (if (or (nil? password) (zero? (count password)))
+                      record-body
+                      (let [{:keys [public-key signature]} (sign-post record-body password)]
+                        (str
+                          record-body
+                          "<>pubkey:" public-key
+                          "<>sign:" signature
+                          "<>target:body"
+                          (if (and name (pos? (count name))) ",name")
+                          (if (and mail (pos? (count mail))) ",mail")
+                          (if attachment? ",attach,suffix"))))
+        record-id (md5 record-body)
+        elements (->> (clojure.string/split record-body #"<>")
+                      (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                      (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                      (apply merge))
+        entry {:file-name (:file-name file) :stamp stamp :record-id record-id}]
+    ;(timbre/debug record-body)
+    (db/add-record
+      file-id
+      stamp
+      record-id
+      (.getBytes record-body "UTF-8")
+      false
+      (convert-record-into-dat-file-line
+        (-> elements
+            (assoc :stamp stamp)
+            (assoc :record-id record-id)))
+      (:suffix elements)
+      @server-node-name
+      remote-address)
+    (db/update-file file-id)
+    (db/process-update-command (:file-name file) stamp record-id)
+    (do (future
+          (swap! update-command-history conj entry)
+          (dorun (pmap
+                   #(try
+                     (update % (:file-name file) stamp record-id)
+                     (catch Throwable t
+                       (timbre/error t)))
+                   @active-nodes))))))
 
 (defroutes shingetsu-routes
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1023,87 +1103,50 @@
                      recaptcha-result (if-not param/enable-recaptcha
                                         true
                                         (:success (:body
-                                          (clj-http.client/post "https://www.google.com/recaptcha/api/siteverify"
-                                                              {:as :json
-                                                               :form-params
-                                                               {:secret param/recaptcha-secret-key
-                                                                :response g-recaptcha-response
-                                                                :remoteip remote-address}}))))
-                     _ (if-not recaptcha-result
-                         (throw (Exception.)))
-                     file-id (db/get-file-id-by-thread-title thread-title)
-                     file (db/get-file-by-id file-id)
-                     stamp (long (/ (clj-time.coerce/to-long (clj-time.core/now)) 1000))
-                     escape-special-characters (fn [s]
-                                                 (-> s
-                                                     (clojure.string/replace #"&" "&amp;")
-                                                     (clojure.string/replace #"<" "&lt;")
-                                                     (clojure.string/replace #">" "&gt;")))
-                     body (if body body "")
-                     attachment? (and attachment
-                                      (:filename attachment)
-                                      (pos? (count (:filename attachment)))
-                                      (:size attachment)
-                                      (pos? (:size attachment))
-                                      (:tempfile attachment))
-                     _ (if (and (zero? (count body)) (not attachment?))
-                         (throw (Exception. "The post is empty.")))
-                     record-body (str
-                                   "body:" (clojure.string/replace (escape-special-characters body) #"\r?\n" "<br>")
-                                   (if (and name (pos? (count name))) (str "<>name:" (escape-special-characters name)))
-                                   (if (and mail (pos? (count mail))) (str "<>mail:" (escape-special-characters mail)))
-                                   (if attachment?
-                                     (str
-                                       "<>attach:"
-                                       (String. (clojure.data.codec.base64/encode (Files/readAllBytes (.toPath (:tempfile attachment)))) "ASCII")
-                                       "<>suffix:"
-                                       (let [match (re-find #"\.([a-zA-Z0-9]+)$" (:filename attachment))]
-                                         (if match (second match) "bin")))))
-                     record-body (if (or (nil? password) (zero? (count password)))
-                                   record-body
-                                   (let [{:keys [public-key signature]} (sign-post record-body password)]
-                                     (str
-                                       record-body
-                                       "<>pubkey:" public-key
-                                       "<>sign:" signature
-                                       "<>target:body"
-                                       (if (and name (pos? (count name))) ",name")
-                                       (if (and mail (pos? (count mail))) ",mail")
-                                       (if attachment? ",attach,suffix"))))
-                     record-id (md5 record-body)
-                     elements (->> (clojure.string/split record-body #"<>")
-                                  (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
-                                  (map #(do {(keyword (nth % 1)) (nth % 2)}))
-                                  (apply merge))
-                     entry {:file-name (:file-name file) :stamp stamp :record-id record-id}]
-                 ;(timbre/debug record-body)
-                 (db/add-record
-                   file-id
-                   stamp
-                   record-id
-                   (.getBytes record-body "UTF-8")
-                   false
-                   (convert-record-into-dat-file-line
-                     (-> elements
-                         (assoc :stamp stamp)
-                         (assoc :record-id record-id)))
-                   (:suffix elements)
-                   @server-node-name
-                   remote-address)
-                 (db/update-file file-id)
-                 (db/process-update-command (:file-name file) stamp record-id)
-                 (do (future
-                       (swap! update-command-history conj entry)
-                       (dorun (pmap
-                                #(try
-                                  (update % (:file-name file) stamp record-id)
-                                  (catch Throwable t
-                                    (timbre/error t)))
-                                @active-nodes))))
+                                                    (clj-http.client/post "https://www.google.com/recaptcha/api/siteverify"
+                                                                          {:as :json
+                                                                           :form-params
+                                                                               {:secret param/recaptcha-secret-key
+                                                                                :response g-recaptcha-response
+                                                                                :remoteip remote-address}}))))]
+                 (if-not recaptcha-result
+                   (throw (Exception.)))
+                 (process-post thread-title name mail password body attachment remote-address)
                  (ok "OK"))
                (catch Throwable t
                  (timbre/error t)
                  (internal-server-error "NG"))))
+
+           (POST "/test/bbs.cgi"
+                 request
+             (try
+               (let [{:keys [bbs key FROM mail password MESSAGE attachment g-recaptcha-response]} (:form-params request)
+                     _ (timbre/debug "/test/bbs.cgi" (get-remote-address request) bbs key)
+                     remote-address (get-remote-address request)
+                     thread-title (file-name-to-thread-title (:file-name (db/get-file-by-thread-number key)))]
+                 (process-post thread-title FROM mail nil MESSAGE nil remote-address)
+                 (->
+                   (ok (str
+                         "<html lang=\"ja\">\n"
+                         "<head>\n<title>書きこみました。</title>\n"
+                         "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=shift_jis\">\n"
+                         "<meta content=5;URL=../namazuplus/index.html http-equiv=refresh>\n"
+                         "</head>\n<body>書きこみが終わりました。<br><br>\n"
+                         "画面を切り替えるまでしばらくお待ち下さい。<br><br>\n"
+                         "<br><br><br><br><br>\n"
+                         "<center>\n"
+                         "</center>\n"
+                         "</body>\n"
+                         "</html>"))
+                   (content-type "text/html; charset=windows-31j")))
+               (catch Throwable t
+                 (timbre/error (str t))
+                 (->
+                   (ok (str "<html><head><title>ＥＲＲＯＲ！</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=shift_jis\"></head>\n"
+                            "<body><!-- 2ch_X:error -->\n"
+                            "ＥＲＲＯＲ - エラーが発生しました。\n"
+                            "<hr>(Ju 2ch Interface)</body></html>"))
+                   (content-type "text/html; charset=windows-31j")))))
 
            (GET "/api/status" request
              ;(timbre/info "/api/status" (get-remote-address request))
@@ -1174,7 +1217,8 @@
                                                      (clojure.string/replace (:dat-file-line %1) #"&gt;&gt;[a-f0-9]{8}" (fn [s] (get anchor-map s s)))
                                                      (if (:suffix %1)
                                                        (str
-                                                         (if (pos? (count (:body %1))) "<br>")
+                                                         (if-not (re-find #"<>$" (:dat-file-line %1))
+                                                           "<br>")
                                                          "http://"
                                                          (clojure.string/replace @server-node-name (re-pattern (str param/server-path "$")) "")
                                                          "/thread"
