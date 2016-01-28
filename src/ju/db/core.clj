@@ -9,56 +9,13 @@
     [taoensso.timbre :as timbre]
     [korma.core :refer :all]
     [korma.db :refer [defdb transaction create-db default-connection]]
+    [ju.util :refer :all]
     [ju.db.schema :as schema]
     [pandect.algo.md5 :refer :all]
     [clj-time.coerce])
   (:import [java.sql
-            BatchUpdateException
+            ;BatchUpdateException
             PreparedStatement]))
-
-
-
-(comment
-  (def pool-spec
-    {:adapter    :hsqldb ;:mysql
-     :init-size  1
-     :min-idle   1
-     :max-idle   4
-     :max-active 32})
-
-  (defn connect! []
-    (let [conn (atom nil)]
-      (conman/connect!
-        conn
-        (assoc
-          pool-spec
-          :jdbc-url (env :database-url)))
-      conn))
-
-  (defn disconnect! [conn]
-    (conman/disconnect! conn))
-
-  (defstate ^:dynamic *db*
-            :start (connect!)
-            :stop (disconnect! *db*))
-
-  (conman/bind-connection *db* "sql/queries.sql")
-
-  (defn to-date [sql-date]
-    (-> sql-date (.getTime) (java.util.Date.)))
-
-  (extend-protocol jdbc/IResultSetReadColumn
-    java.sql.Date
-    (result-set-read-column [v _ _] (to-date v))
-
-    java.sql.Timestamp
-    (result-set-read-column [v _ _] (to-date v)))
-
-  (extend-type java.util.Date
-    jdbc/ISQLParameter
-    (set-parameter [v ^PreparedStatement stmt idx]
-      (.setTimestamp stmt idx (java.sql.Timestamp. (.getTime v)))))
-  )
 
 
 
@@ -306,22 +263,25 @@
   (if-not (= (md5 body) record-id)
     (throw (IllegalArgumentException. (str "Invalid record ID: " record-id))))
 
-  (transaction {:isolation :serializable}
-    (when (zero? (count (select records (fields :id) (where { :file_id file-id :stamp stamp :record_id record-id }))))
-      (insert records
-              (values {:file_id file-id
-                       :stamp stamp
-                       :record_id record-id
-                       :record_short_id (second (re-find #"^([0-9a-f]{8})" record-id))
-                       :body body
-                       :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
-                       :size (+ 10 2 32 2 (count body) 1)
-                       :deleted (if deleted true false)
-                       :dat_file_line dat-file-line
-                       :suffix suffix
-                       :origin origin
-                       :remote_address remote-address}))
-      (add-anchor-in-post file-id body (second (re-find #"^([0-9a-f]{8})" record-id))))))
+  (try-times
+    5
+    (transaction
+      {:isolation :serializable}
+      (when (zero? (count (select records (fields :id) (where { :file_id file-id :stamp stamp :record_id record-id }))))
+        (insert records
+                (values {:file_id file-id
+                         :stamp stamp
+                         :record_id record-id
+                         :record_short_id (second (re-find #"^([0-9a-f]{8})" record-id))
+                         :body body
+                         :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
+                         :size (+ 10 2 32 2 (count body) 1)
+                         :deleted (if deleted true false)
+                         :dat_file_line dat-file-line
+                         :suffix suffix
+                         :origin origin
+                         :remote_address remote-address}))
+        (add-anchor-in-post file-id body (second (re-find #"^([0-9a-f]{8})" record-id)))))))
 
 (defn get-all-records-in-file
   [file-id]
@@ -534,6 +494,8 @@
   []
   (let [duplicates (remove #(= (count %) 1)
                            (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
+                                               (if (zero? (mod (:id record) 100))
+                                                 (timbre/info "remove-duplicate-records:" (:id record)))
                                                (map #(:id %) (remove #(or
                                                                        (not (= (:file-id %) (:file-id record)))
                                                                        (not (= (:stamp %) (:stamp record)))
@@ -541,7 +503,9 @@
                                                                      (ju.db.core/get-records-by-short-id (:record-short-id record))))))
                                 (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))
         duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))]
-    (dorun (map ju.db.core/really-delete-record duplicates))))
+    (timbre/info "remove-duplicate-records: duplicates:" (count duplicates))
+    (dorun (map ju.db.core/really-delete-record duplicates))
+    (count duplicates)))
 
 (defn update-dat-file-line
   [id dat-file-line suffix]

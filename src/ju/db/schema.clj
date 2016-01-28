@@ -74,6 +74,7 @@
                      :subprotocol "hsqldb"
                      :subname     (str "file:" db-name ".hsqldb"
                                        ";hsqldb.tx=mvcc"
+                                       ";tx_level=serializable"
                                        ";hsqldb.lob_file_scale=1")
                      :user        "sa"
                      :password    ""
@@ -85,6 +86,7 @@
                             :subprotocol "hsqldb"
                             :subname     (str "file:" backup-db-name ".hsqldb"
                                               ";hsqldb.tx=mvcc"
+                                              ";tx_level=serializable"
                                               ";hsqldb.lob_file_scale=1")
                             :user        "sa"
                             :password    ""

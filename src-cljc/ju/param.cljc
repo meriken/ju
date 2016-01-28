@@ -1,11 +1,12 @@
 (ns ju.param)
 
 (def default-http-port 48888)
-(def io-threads nil)
-(def worker-threads nil)
+(def io-threads 4)
+(def worker-threads 4)
 
 (def static-server-node-name nil)
 (def server-path "/server")
+(def static-server-url-base nil)
 (def service-name "匿名掲示板")
 
 (def enable-recaptcha false)

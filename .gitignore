@@ -19,5 +19,7 @@ ju.hsqldb.*
 /out/
 /figwheel_server.log
 /ju-log4j.log
+/ju-log4j.log.*
 /ju.clj
 ju.iml
+ju-log4j.log.1

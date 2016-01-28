@@ -12,6 +12,7 @@
             [taoensso.timbre :as timbre]
             [clj-http.client :as client]
             [ju.param :as param]
+            [ju.util :refer :all]
             [ju.db.core :as db]
             [clojure.math.numeric-tower :refer [expt]]
             [clojure.data.codec.base64]
@@ -54,6 +55,7 @@
 (def max-num-retries 5)
 (def max-num-active-nodes 8)
 (def max-num-search-nodes 128)
+
 
 
 (defn valid-node-name? [node-name]
@@ -180,6 +182,15 @@
          "<>"
          (if (:body record)
            (:body record)))))
+
+(defn get-server-url-base
+  []
+  (if @server-node-name
+    (clojure.string/replace
+      (if param/static-server-url-base
+        param/static-server-url-base
+        (str "http://" (clojure.string/replace @server-node-name (re-pattern (str param/server-path "$")) "")))
+      #"/$" "")))
 
 
 
@@ -346,27 +357,6 @@
         file-names (map #(second (re-find #"^[0-9]+<>[0-9a-f]{32}<>(thread_[0-9A-F]+)(<>.*)?$" %)) records)
         file-names (clojure.set/difference (into #{} file-names) param/known-corrupt-files)]
     file-names))
-
-(defn try-times*
-  "Executes thunk. If an exception is thrown, will retry. At most n retries
-  are done. If still some exception is thrown it is bubbled upwards in
-  the call chain."
-  [n thunk]
-  (loop [n n]
-    (if-let [result (try
-                      [(thunk)]
-                      (catch Exception e
-                        (when (zero? n)
-                          (throw e))))]
-      (result 0)
-      (recur (dec n)))))
-
-(defmacro try-times
-  "Executes body. If an exception is thrown, will retry. At most n retries
-  are done. If still some exception is thrown it is bubbled upwards in
-  the call chain."
-  [n & body]
-  `(try-times* ~n (fn [] ~@body)))
 
 (defn download-file-from-node
   ([node-name file-name]
@@ -1132,6 +1122,7 @@
                   :num-deleted-records (db/count-all-deleted-records)
                   :cache-size cache-size
                   :server-node-name @server-node-name
+                  :server-url-base (get-server-url-base)
                   :enable-recaptcha param/enable-recaptcha
                   :recaptcha-site-key param/recaptcha-site-key
                   :recaptcha-secret-key param/recaptcha-secret-key
@@ -1166,6 +1157,7 @@
            (GET "/test/read.cgi/2ch/:thread-number"
                 request
              (let [thread-number (:thread-number (:params request))
+                   _ (timbre/info "/test/read.cgi/2ch/:thread-number" thread-number)
                    file (db/get-file-by-thread-number thread-number)
                    _ (if (nil? file) (throw (Exception.)))]
                (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))
@@ -1173,16 +1165,36 @@
            (GET "/test/read.cgi/2ch/:thread-number/"
                 request
              (let [thread-number (:thread-number (:params request))
+                   _ (timbre/info "/test/read.cgi/2ch/:thread-number/" thread-number)
                    file (db/get-file-by-thread-number thread-number)
                    _ (if (nil? file) (throw (Exception.)))]
                (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))
 
            (GET "/test/read.cgi/2ch/:thread-number/:qualifier"
                 request
-             (let [thread-number (:thread-number (:params request))
+             (let [{:keys [thread-number qualifier]} (:params request)
+                   _ (timbre/info "/test/read.cgi/2ch/:thread-number/:qualifier" thread-number qualifier)
                    file (db/get-file-by-thread-number thread-number)
-                   _ (if (nil? file) (throw (Exception.)))]
-               (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))
+                   _ (if (nil? file) (throw (Exception.)))
+                   records (db/get-all-records-in-file-without-bodies (:id file))
+                   post-numbers-map (apply merge
+                                     (remove
+                                       nil?
+                                       (map
+                                         #(try
+                                           {%2 (second (re-find #"^(.{8})" (:record-id %1)))}
+                                           (catch Throwable _
+                                             nil))
+                                         records
+                                         (range 1 (inc (count records))))))
+                   _ (timbre/debug (str post-numbers-map))
+                   record-short-id (try (get post-numbers-map (Integer/parseInt qualifier)) (catch Throwable _ nil))]
+               (redirect
+                 (str
+                   "/thread/"
+                   (percent-encode (file-name-to-thread-title (:file-name file)))
+                   (if record-short-id
+                     (str "/" record-short-id))))))
 
            (GET "/2ch/dat/:dat-file-name"
                  request
@@ -1209,13 +1221,69 @@
                                                #(try
                                                  (if (:dat-file-line %1)
                                                    (str
-                                                     (clojure.string/replace (:dat-file-line %1) #"&gt;&gt;[a-f0-9]{8}" (fn [s] (get anchor-map s s)))
+                                                     (-> (:dat-file-line %1)
+                                                         (clojure.string/replace
+                                                           #"&gt;&gt;[a-f0-9]{8}"
+                                                           (fn [s] (get anchor-map s s)))
+                                                         (clojure.string/replace
+                                                           #"\[\[[^\]]+\]\]"
+                                                           (fn [s]
+                                                             (let [thread-title (second (re-find #"\[\[([^\]]+)\]\]" s))
+                                                                   file-name (thread-title-to-file-name thread-title)
+                                                                   file (db/get-file file-name)]
+                                                               (if file
+                                                                 (str
+                                                                   "[["
+                                                                   thread-title
+                                                                   "( "
+                                                                   (get-server-url-base)
+                                                                   "/test/read.cgi/2ch/"
+                                                                   (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
+                                                                      (* 9 60 60))
+                                                                   "/"
+                                                                   " )"
+                                                                   "]]")
+                                                                 s)
+                                                               )))
+                                                         (clojure.string/replace
+                                                           #"\[\[[^\]]+/[a-f0-9]{8}\]\]"
+                                                           (fn [s]
+                                                             (let [[_ thread-title record-short-id] (re-find #"\[\[([^\]]+)/([a-f0-9]{8})\]\]" s)
+                                                                   file-name (thread-title-to-file-name thread-title)
+                                                                   file (db/get-file file-name)
+                                                                   records (db/get-all-records-in-file-without-bodies (:id file))
+                                                                   post-numbers-map (apply merge
+                                                                                           (remove
+                                                                                             nil?
+                                                                                             (map
+                                                                                               (fn [record post-number]
+                                                                                                 (try
+                                                                                                 {(second (re-find #"^(.{8})" (:record-id record))) post-number}
+                                                                                                 (catch Throwable _
+                                                                                                   nil)))
+                                                                                               records
+                                                                                               (range 1 (inc (count records))))))
+                                                                   post-number (get post-numbers-map record-short-id nil)]
+                                                               (if file
+                                                                 (str
+                                                                   "[["
+                                                                   thread-title
+                                                                   "( "
+                                                                   (get-server-url-base)
+                                                                   "/test/read.cgi/2ch/"
+                                                                   (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
+                                                                      (* 9 60 60))
+                                                                   "/"
+                                                                   (if post-number
+                                                                     (str post-number))
+                                                                   " )")
+                                                                 s)
+                                                               ))))
                                                      (if (:suffix %1)
                                                        (str
                                                          (if-not (re-find #"<>$" (:dat-file-line %1))
                                                            "<br>")
-                                                         "http://"
-                                                         (clojure.string/replace @server-node-name (re-pattern (str param/server-path "$")) "")
+                                                         (get-server-url-base)
                                                          "/thread"
                                                          "/" (java.net.URLEncoder/encode thread-title "UTF-8")
                                                          "/" (:record-id %1) "." (:suffix %1)
@@ -1258,7 +1326,8 @@
                    FROM
                    mail
                    nil
-                   (clojure.string/replace MESSAGE #">>[0-9]+" (fn [s] (get anchor-map s s)))
+                   (-> MESSAGE
+                     (clojure.string/replace #">>[0-9]+" (fn [s] (get anchor-map s s))))
                    nil
                    remote-address)
                  (->
@@ -1328,8 +1397,7 @@
                                    records-in-duplicate-file (and file-lower-case (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file-lower-case)))
                                    duplicate-records (if file-lower-case (clojure.set/intersection
                                                                                    (into #{} (map #(:record-id %) records-in-original-file))
-                                                                                   (into #{} (map #(:record-id %) records-in-duplicate-file))
-                                                                                   )
+                                                                                   (into #{} (map #(:record-id %) records-in-duplicate-file)))
                                                                          #{})]
                                (when (and
                                        file-lower-case

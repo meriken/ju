@@ -48,6 +48,7 @@
 (def new-post-notification (atom false))
 (def server-status (atom nil))
 (def server-node-name (atom nil))
+(def server-url-base (atom nil))
 (def service-name (atom nil))
 (def enable-recaptcha (atom param/enable-recaptcha))
 (def recaptcha-site-key (atom param/recaptcha-site-key))
@@ -754,8 +755,7 @@
      src (str href-base "/"
               (:record-id post)
               "." (:suffix post))
-     complete-src (and @server-node-name
-                       (str "http://" (clojure.string/replace @server-node-name #"/.*" "") src))
+     complete-src (str @server-url-base src)
      body-exists? (pos? (count body))
      thumbnail-exists? (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
      ascii2d-form-id (my-uuid)
@@ -1012,6 +1012,7 @@
           :success  (fn [response]
                       (let [status (:status (clojure.walk/keywordize-keys (js->clj response)))]
                         (reset! server-node-name (:server-node-name status))
+                        (reset! server-url-base (:server-url-base status))
                         (reset! service-name (:service-name status))
                         (reset! enable-recaptcha (:enable-recaptcha status))
                         (reset! recaptcha-site-key (:recaptcha-site-key status))
