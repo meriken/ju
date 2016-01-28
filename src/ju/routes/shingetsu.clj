@@ -3,8 +3,9 @@
             [compojure.core :refer [defroutes GET POST]]
             [compojure.coercions :refer [as-int]]
             [ring.util.http-response :refer [ok internal-server-error]]
-            [ring.util.response :refer [content-type]]
+            [ring.util.response :refer [content-type redirect]]
             [ring.util.request :refer [body-string]]
+            [ring.util.codec :refer [percent-encode]]
             [clojure.java.io :as io]
 
     ; Meriken
@@ -18,7 +19,8 @@
             [clj-time.coerce]
             [clj-time.format]
             [clj-time.predicates])
-  (:import (java.nio.file Files)
+  (:import (java.net URLEncoder)
+           (java.nio.file Files)
            (java.security MessageDigest)))
 
 
@@ -1120,37 +1122,6 @@
                  (timbre/error t)
                  (internal-server-error "NG"))))
 
-           (POST "/test/bbs.cgi"
-                 request
-             (try
-               (let [{:keys [bbs key FROM mail password MESSAGE attachment g-recaptcha-response]} (:form-params request)
-                     _ (timbre/debug "/test/bbs.cgi" (get-remote-address request) bbs key)
-                     remote-address (get-remote-address request)
-                     thread-title (file-name-to-thread-title (:file-name (db/get-file-by-thread-number key)))]
-                 (process-post thread-title FROM mail nil MESSAGE nil remote-address)
-                 (->
-                   (ok (str
-                         "<html lang=\"ja\">\n"
-                         "<head>\n<title>書きこみました。</title>\n"
-                         "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=shift_jis\">\n"
-                         "<meta content=5;URL=../namazuplus/index.html http-equiv=refresh>\n"
-                         "</head>\n<body>書きこみが終わりました。<br><br>\n"
-                         "画面を切り替えるまでしばらくお待ち下さい。<br><br>\n"
-                         "<br><br><br><br><br>\n"
-                         "<center>\n"
-                         "</center>\n"
-                         "</body>\n"
-                         "</html>"))
-                   (content-type "text/html; charset=windows-31j")))
-               (catch Throwable t
-                 (timbre/error (str t))
-                 (->
-                   (ok (str "<html><head><title>ＥＲＲＯＲ！</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=shift_jis\"></head>\n"
-                            "<body><!-- 2ch_X:error -->\n"
-                            "ＥＲＲＯＲ - エラーが発生しました。\n"
-                            "<hr>(Ju 2ch Interface)</body></html>"))
-                   (content-type "text/html; charset=windows-31j")))))
-
            (GET "/api/status" request
              ;(timbre/info "/api/status" (get-remote-address request))
              (let [cache-size (reduce + (map :size (db/get-all-files)))]
@@ -1192,6 +1163,27 @@
                  (content-type "text/plain; charset=windows-31j"))
                ))
 
+           (GET "/test/read.cgi/2ch/:thread-number"
+                request
+             (let [thread-number (:thread-number (:params request))
+                   file (db/get-file-by-thread-number thread-number)
+                   _ (if (nil? file) (throw (Exception.)))]
+               (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))
+
+           (GET "/test/read.cgi/2ch/:thread-number/"
+                request
+             (let [thread-number (:thread-number (:params request))
+                   file (db/get-file-by-thread-number thread-number)
+                   _ (if (nil? file) (throw (Exception.)))]
+               (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))
+
+           (GET "/test/read.cgi/2ch/:thread-number/:qualifier"
+                request
+             (let [thread-number (:thread-number (:params request))
+                   file (db/get-file-by-thread-number thread-number)
+                   _ (if (nil? file) (throw (Exception.)))]
+               (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))
+
            (GET "/2ch/dat/:dat-file-name"
                  request
              (let [{:keys [dat-file-name]} (:params request)
@@ -1228,8 +1220,9 @@
                                                          "/" (java.net.URLEncoder/encode thread-title "UTF-8")
                                                          "/" (:record-id %1) "." (:suffix %1)
                                                          ))
+                                                     "<>"
                                                      (if (= %2 1)
-                                                       (str "<>" (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
+                                                       (str (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
                                                      "\n"))
                                                  (catch Throwable _
                                                    nil))
@@ -1237,7 +1230,59 @@
                                              (range 1 (inc (count results))))))]
                (->
                  (ok (apply str posts-as-strings))
-                 (content-type "text/plain; charset=windows-31j")))))
+                 (content-type "text/plain; charset=windows-31j"))))
+
+
+
+           (POST "/test/bbs.cgi"
+                 request
+             (try
+               (let [{:keys [bbs key FROM mail password MESSAGE attachment g-recaptcha-response]} (:form-params request)
+                     _ (timbre/debug "/test/bbs.cgi" (get-remote-address request) bbs key)
+                     remote-address (get-remote-address request)
+                     file (db/get-file-by-thread-number key)
+                     thread-title (file-name-to-thread-title (:file-name file))
+                     results (db/get-all-records-in-file-without-bodies (:id file))
+                     anchor-map (apply merge
+                                       (remove
+                                         nil?
+                                         (map
+                                           #(try
+                                             {(str ">>" %2) (str ">>" (second (re-find #"^(.{8})" (:record-id %1))))}
+                                             (catch Throwable _
+                                               nil))
+                                           results
+                                           (range 1 (inc (count results))))))]
+                 (process-post
+                   thread-title
+                   FROM
+                   mail
+                   nil
+                   (clojure.string/replace MESSAGE #">>[0-9]+" (fn [s] (get anchor-map s s)))
+                   nil
+                   remote-address)
+                 (->
+                   (ok (str
+                         "<html lang=\"ja\">\n"
+                         "<head>\n<title>書きこみました。</title>\n"
+                         "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=shift_jis\">\n"
+                         "<meta content=5;URL=../namazuplus/index.html http-equiv=refresh>\n"
+                         "</head>\n<body>書きこみが終わりました。<br><br>\n"
+                         "画面を切り替えるまでしばらくお待ち下さい。<br><br>\n"
+                         "<br><br><br><br><br>\n"
+                         "<center>\n"
+                         "</center>\n"
+                         "</body>\n"
+                         "</html>"))
+                   (content-type "text/html; charset=windows-31j")))
+               (catch Throwable t
+                 (timbre/error (str t))
+                 (->
+                   (ok (str "<html><head><title>ＥＲＲＯＲ！</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=shift_jis\"></head>\n"
+                            "<body><!-- 2ch_X:error -->\n"
+                            "ＥＲＲＯＲ - エラーが発生しました。\n"
+                            "<hr>(Ju 2ch Interface)</body></html>"))
+                   (content-type "text/html; charset=windows-31j"))))))
 
 
 
