@@ -52,9 +52,14 @@
 (defn start-http-server [port]
   (init)
   (reset! shingetsu/http-server-port port)
-  (reset! http-server (immutant/run app :host "0.0.0.0" :port port
-  ; :io-threads param/io-threads :worker-threads param/worker-threads
-                                    )))
+  (reset! http-server
+          (immutant/run
+            app
+             (immutant.web.undertow/options
+               :host "0.0.0.0"
+               :port port
+               :io-threads param/io-threads
+               :worker-threads param/worker-threads))))
 
 (defn stop-http-server []
   (when @http-server
@@ -124,7 +129,7 @@
   (shingetsu/start-crawler)
   (start-http-server (http-port port))
   (open-web-browser port)
-  (timbre/info "HTTP server started on port:" (:port @http-server)))
+  (timbre/info "HTTP server started on port:" shingetsu/http-server-port))
 
 (defn -main [& args]
   (cond
