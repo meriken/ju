@@ -99,7 +99,7 @@
       (force timestamp_) " "
        ; (force hostname_) " "
        ; (clojure.string/upper-case (name level))  " "
-       ; "[" (or ?ns-str "?ns") "] - "
+       ; "[" (or ?ns-str "?ns") "] "
        (force msg_)
        (comment when-not no-stacktrace?
          (when-let [err (force ?err_)]
@@ -110,7 +110,9 @@
   []
   (let [filename-base  "ju"]
     (timbre/merge-config!
-      {:output-fn ju-output-fn})))
+      {:output-fn ju-output-fn})
+    (timbre/set-config!
+      {:ns-blacklist ["slf4j-timbre.adapter"]})))
 
 (defn start-app [[port]]
   (configure-timbre)
@@ -129,7 +131,7 @@
   (shingetsu/start-crawler)
   (start-http-server (http-port port))
   (open-web-browser port)
-  (timbre/info "HTTP server started on port:" shingetsu/http-server-port))
+  (timbre/info "HTTP server started on port:" @shingetsu/http-server-port))
 
 (defn -main [& args]
   (cond
