@@ -106,8 +106,8 @@
       {:output-fn ju-output-fn})))
 
 (defn start-app [[port]]
-  (timbre/debug "start-app:" port)
   (configure-timbre)
+  (timbre/debug "start-app:" port)
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app))
   (load-config-file-if-necessary)
   ; Initialize the database if needed
@@ -126,6 +126,7 @@
   (timbre/info "HTTP server started on port:" (:port @http-server)))
 
 (defn -main [& args]
+  (configure-timbre)
   (timbre/debug "main:" (str args))
   (cond
     (some #{"migrate" "rollback"} args)
