@@ -11,7 +11,6 @@
     [korma.db :refer [defdb transaction create-db default-connection]]
     [ju.util :refer :all]
     [ju.db.schema :as schema]
-    [pandect.algo.md5 :refer :all]
     [clj-time.coerce])
   (:import [java.sql
             ;BatchUpdateException
@@ -65,6 +64,7 @@
 (defentity nodes (normalize-keys))
 (defentity files (normalize-keys))
 (defentity records (transform convert-blobs) (normalize-keys))
+(defentity blocked_records (normalize-keys))
 (defentity update_commands (normalize-keys))
 (defentity anchors (normalize-keys))
 
@@ -517,7 +517,58 @@
 
 
 
- (defn update-file
+(defn add-blocked-record
+  [file-name stamp record-id]
+  (try-times
+    5
+    (transaction
+      {:isolation :serializable}
+      (when (zero? (count (select blocked_records (fields :id) (where { :file_name file-name :stamp stamp :record_id record-id }))))
+        (insert blocked_records
+                (values {:file_name file-name
+                         :stamp stamp
+                         :record_id record-id
+                         :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
+                         :origin nil}))))))
+
+(defn add-blocked-record-with-origin
+  [file-name stamp record-id origin]
+  (try-times
+    5
+    (transaction
+      {:isolation :serializable}
+      (when (zero? (count (select blocked_records (fields :id) (where { :file_name file-name :stamp stamp :record_id record-id :origin origin}))))
+        (insert blocked_records
+                (values {:file_name file-name
+                         :stamp stamp
+                         :record_id record-id
+                         :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
+                         :origin origin}))))))
+
+(defn is-record-blocked?
+  [file-name stamp record-id origin]
+  (or
+    (pos? (count (select blocked_records
+                         (fields :id)
+                         (where
+                           {:file_name file-name
+                            :stamp stamp
+                            :record_id record-id
+                            :origin origin}))))
+    (and
+      origin
+      (pos? (count (select blocked_records
+                           (fields :id)
+                           (where
+                             {:file_name file-name
+                              :stamp stamp
+                              :record_id record-id
+                              :origin nil})))))))
+
+
+
+
+(defn update-file
   [file-id]
   ;(timbre/debug "update-file:" file-id)
   (update

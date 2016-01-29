@@ -1,11 +1,11 @@
-(ns ju.util)
+(ns ju.util
+  (:import (java.net URLEncoder)
+           (java.nio.file Files)
+           (java.security MessageDigest)))
 
 
 
 (defn try-times*
-  "Executes thunk. If an exception is thrown, will retry. At most n retries
-  are done. If still some exception is thrown it is bubbled upwards in
-  the call chain."
   [n thunk]
   (loop [n n]
     (if-let [result (try
@@ -17,8 +17,16 @@
       (recur (dec n)))))
 
 (defmacro try-times
-  "Executes body. If an exception is thrown, will retry. At most n retries
-  are done. If still some exception is thrown it is bubbled upwards in
-  the call chain."
   [n & body]
   `(try-times* ~n (fn [] ~@body)))
+
+
+
+(defn md5
+  [s]
+  (let [md (MessageDigest/getInstance "MD5")]
+    (.update md (cond
+                  (nil? s) (.getBytes "" "UTF-8")
+                  (string? s) (.getBytes s "UTF-8")
+                  :else s))
+    (apply str (map #(format "%02x" %) (.digest md)))))

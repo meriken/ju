@@ -111,7 +111,7 @@
   (let [filename-base  "ju"]
     (timbre/merge-config!
       {:output-fn ju-output-fn})
-    (timbre/set-config!
+    (timbre/merge-config!
       {:ns-blacklist ["slf4j-timbre.adapter"]})))
 
 (defn start-app [[port]]

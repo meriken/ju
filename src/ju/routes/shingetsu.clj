@@ -378,23 +378,29 @@
    (download-file-from-node node-name file-name "0-"))
 
   ([node-name file-name range]
+   (download-file-from-node node-name file-name range nil))
+
+  ([node-name file-name range record-id]
    (if (some #{node-name} (into #{} param/blocked-nodes))
      (throw (IllegalArgumentException. "Node was blocked.")))
 
-   (if-not (= range "0-")
-     (timbre/info "Downloading file:" node-name file-name range))
    (if-not (valid-node-name? node-name)
      (throw (IllegalArgumentException. "Invalid node name.")))
    (if-not (valid-file-name? file-name)
      (throw (IllegalArgumentException. "Invalid file name.")))
    (if-not (valid-range? range)
      (throw (IllegalArgumentException. "Invalid range.")))
+   ;TODO: Check record-id
 
    (db/add-file file-name)
    (let [file-id (db/get-file-id file-name)
          existing-records (and file-id (db/get-all-active-and-deleted-records-in-file-without-bodies file-id))]
-     (if (= range "0-")
-       ; Use /head to find missing records.
+     (cond
+       (and record-id (db/is-record-blocked? file-name (Long/parseLong range) record-id node-name))
+       ;(timbre/info (str "Blocked record on blacklist: " node-name " " file-name " " range " " record-id))
+       nil
+
+       (= range "0-") ; Use /head to identify missing records.
        (let [file (:body (try-times max-num-retries (client/get (str "http://" node-name "/head/" file-name "/" range) http-params)))
              file (if (nil? file) "" file)
              file (clojure.string/replace file #"(?m)^(?![0-9]+<>[0-9a-f]{32}).*$" "")
@@ -415,12 +421,16 @@
                (download-file-from-node node-name file-name (str oldest "-" newest))
                (catch Throwable t))
              (let [existing-records (map #(identity {:stamp (:stamp %) :record-id (:record-id %)}) (db/get-all-active-and-deleted-records-in-file-without-bodies file-id))
-                   records (clojure.set/difference (into #{} records) (into #{} existing-records))
-                   stamps (map :stamp records)]
-               (dorun (map #(download-file-from-node node-name file-name (str %)) stamps))))))
+                   records (clojure.set/difference (into #{} records) (into #{} existing-records))]
+               (dorun (map #(download-file-from-node node-name file-name (str (:stamp %)) (:record-id %)) records))))))
 
        ; Use the supplied range.
-       (let [file (:body (try-times max-num-retries (client/get (str "http://" node-name "/get/" file-name "/" range) http-params)))
+       :else
+       (let [_ (timbre/info "Downloading file:" node-name file-name range record-id)
+             url (if record-id
+                   (str "http://" node-name "/get/" file-name "/" range "/" record-id)
+                   (str "http://" node-name "/get/" file-name "/" range))
+             file (:body (try-times max-num-retries (client/get url http-params)))
              file (clojure.string/replace file #"(?m)^(?![0-9]+<>[0-9a-f]{32}<>).*$" "")
              file (clojure.string/replace file #"\r" "")
              file (clojure.string/replace file #"\n+" "\n")
@@ -437,20 +447,29 @@
                                      (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
                                      (map #(do {(keyword (nth % 1)) (nth % 2)}))
                                      (apply merge))]
-                   (db/add-record
-                     file-id
-                     stamp
-                     record-id
-                     body
-                     (is-post-spam? file-name stamp record-id elements)
-                     (convert-record-into-dat-file-line
-                       (-> elements
-                           (assoc :stamp stamp)
-                           (assoc :record-id record-id)))
-                     (:suffix elements)
-                     node-name
-                     nil
-                     ))
+                   (cond
+                     (db/is-record-blocked? file-name stamp record-id node-name)
+                     (timbre/info (str "Blocked record on blacklist: " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 "")))
+
+                     (not (= (md5 body) record-id))
+                     (do
+                       (timbre/info (str "Blocked record with invalid ID: " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 "")))
+                       (db/add-blocked-record-with-origin file-name stamp record-id node-name))
+
+                     :else
+                     (db/add-record
+                       file-id
+                       stamp
+                       record-id
+                       body
+                       (is-post-spam? file-name stamp record-id elements)
+                       (convert-record-into-dat-file-line
+                         (-> elements
+                             (assoc :stamp stamp)
+                             (assoc :record-id record-id)))
+                       (:suffix elements)
+                       node-name
+                       nil)))
                  (catch Throwable t  (timbre/info (str "Skipped record: " (str t) " " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
              records))
          (db/update-file file-id)
@@ -572,15 +591,6 @@
 ;;;;;;;;;;;;;;
 ; Signatures ;
 ;;;;;;;;;;;;;;
-
-(defn md5
-  [s]
-  (let [md (MessageDigest/getInstance "MD5")]
-    (.update md (cond
-                  (nil? s) (.getBytes "" "UTF-8")
-                  (string? s) (.getBytes s "UTF-8")
-                  :else s))
-    (apply str (map #(format "%02x" %) (.digest md)))))
 
 (def int-to-base64-char-table
   {0 "A" 16 "Q" 32 "g" 48 "w"

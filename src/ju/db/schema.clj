@@ -248,6 +248,20 @@
         [:origin         varchar "DEFAULT NULL"]
         [:remote_address varchar "DEFAULT NULL"]))))
 
+(defn create-blocked-records-table
+  [db-spec]
+  (let [{:keys [id bigint blob varchar varchar-unique varchar-ignorecase-unique]} (db-types db-spec)]
+    (sql/db-do-commands
+      db-spec
+      (sql/create-table-ddl
+        :blocked_records
+        [:id           id]
+        [:stamp        bigint "NOT NULL"]
+        [:file_name    varchar "NOT NULL"]
+        [:record_id    varchar "NOT NULL"]
+        [:time_created "TIMESTAMP NULL"]
+        [:origin        varchar "DEFAULT NULL"]))))
+
 (defn create-anchors-table
   [db-spec]
   (let [{:keys [id bigint blob varchar varchar-unique varchar-ignorecase-unique]} (db-types db-spec)]
@@ -313,6 +327,12 @@
 
 
 
+  (try (sql/db-do-commands db-spec "CREATE INDEX blocked_records_index ON records ( file_id, stamp, record_id );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX blocked_records_index ON records ( file_id, stamp, record_id(32) );")
+                               (catch Throwable _ (timbre/info "Failed to create blocked_records_index")))))
+
+
+
   (try (sql/db-do-commands db-spec "CREATE INDEX update_commands_index           ON update_commands ( stamp                 );")
        (catch Throwable _ (timbre/info "Failed to create update_commands_index")))
 
@@ -337,6 +357,7 @@
   (create-nodes-table db-spec)
   (create-files-table db-spec)
   (create-records-table db-spec)
+  (create-blocked-records-table db-spec)
   (create-update-commands-table db-spec)
   (create-anchors-table db-spec)
   (create-indexes db-spec))

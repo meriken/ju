@@ -7,5 +7,5 @@
   {:init
    (fn []
      (parser/cache-off!)
-     (timbre/info "\n-=[ju started successfully using the development profile]=-"))
+     (timbre/info "Ju started successfully using the development profile."))
    :middleware wrap-dev})
