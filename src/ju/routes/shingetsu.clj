@@ -520,7 +520,7 @@
     (let [file-names (get-files-with-recent-command)]
       (dorun (map #(db/add-file %) file-names)))
     (dorun
-      (pmap
+      ((if param/enable-parallel-crawling pmap map)
         #(let [time-crawled (:time-crawled (db/get-node %))
                time-elapsed (and time-crawled (- (clj-time.coerce/to-long (clj-time.core/now)) (.getTime time-crawled)))]
           (if (or force-crawling
@@ -1219,7 +1219,8 @@
                                              nil?
                                              (map
                                                #(try
-                                                 (if (:dat-file-line %1)
+                                                 (if-not (:dat-file-line %1)
+                                                   (str "?<>?<>????/?/?(?) ??:??:?? ID:" (:record-short-id %1) "<><>\n")
                                                    (str
                                                      (-> (:dat-file-line %1)
                                                          (clojure.string/replace
@@ -1231,7 +1232,8 @@
                                                              (let [thread-title (second (re-find #"\[\[([^\]]+)\]\]" s))
                                                                    file-name (thread-title-to-file-name thread-title)
                                                                    file (db/get-file file-name)]
-                                                               (if file
+                                                               (if (or (nil? file) (nil? (:time-first-post file)))
+                                                                 s
                                                                  (str
                                                                    "[["
                                                                    thread-title
@@ -1242,43 +1244,40 @@
                                                                       (* 9 60 60))
                                                                    "/"
                                                                    " )"
-                                                                   "]]")
-                                                                 s)
-                                                               )))
+                                                                   "]]")))))
                                                          (clojure.string/replace
                                                            #"\[\[[^\]]+/[a-f0-9]{8}\]\]"
                                                            (fn [s]
                                                              (let [[_ thread-title record-short-id] (re-find #"\[\[([^\]]+)/([a-f0-9]{8})\]\]" s)
                                                                    file-name (thread-title-to-file-name thread-title)
-                                                                   file (db/get-file file-name)
-                                                                   records (db/get-all-records-in-file-without-bodies (:id file))
-                                                                   post-numbers-map (apply merge
-                                                                                           (remove
-                                                                                             nil?
-                                                                                             (map
-                                                                                               (fn [record post-number]
-                                                                                                 (try
-                                                                                                 {(second (re-find #"^(.{8})" (:record-id record))) post-number}
-                                                                                                 (catch Throwable _
-                                                                                                   nil)))
-                                                                                               records
-                                                                                               (range 1 (inc (count records))))))
-                                                                   post-number (get post-numbers-map record-short-id nil)]
-                                                               (if file
-                                                                 (str
-                                                                   "[["
-                                                                   thread-title
-                                                                   "( "
-                                                                   (get-server-url-base)
-                                                                   "/test/read.cgi/2ch/"
-                                                                   (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
-                                                                      (* 9 60 60))
-                                                                   "/"
-                                                                   (if post-number
-                                                                     (str post-number))
-                                                                   " )")
-                                                                 s)
-                                                               ))))
+                                                                   file (db/get-file file-name)]
+                                                               (if (or (nil? file) (nil? (:time-first-post file)))
+                                                                 s
+                                                                 (let [records (db/get-all-records-in-file-without-bodies (:id file))
+                                                                       post-numbers-map (apply merge
+                                                                                               (remove
+                                                                                                 nil?
+                                                                                                 (map
+                                                                                                   (fn [record post-number]
+                                                                                                     (try
+                                                                                                       {(second (re-find #"^(.{8})" (:record-id record))) post-number}
+                                                                                                       (catch Throwable _
+                                                                                                         nil)))
+                                                                                                   records
+                                                                                                   (range 1 (inc (count records))))))
+                                                                       post-number (get post-numbers-map record-short-id nil)]
+                                                                   (str
+                                                                     "[["
+                                                                     thread-title
+                                                                     "( "
+                                                                     (get-server-url-base)
+                                                                     "/test/read.cgi/2ch/"
+                                                                     (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
+                                                                        (* 9 60 60))
+                                                                     "/"
+                                                                     (if post-number
+                                                                       (str post-number))
+                                                                     " )")))))))
                                                      (if (:suffix %1)
                                                        (str
                                                          (if-not (re-find #"<>$" (:dat-file-line %1))
@@ -1292,8 +1291,9 @@
                                                      (if (= %2 1)
                                                        (str (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
                                                      "\n"))
-                                                 (catch Throwable _
-                                                   nil))
+                                                 (catch Throwable t
+                                                   (timbre/debug (str t))
+                                                   (str (:dat-file-line %1) "<>\n")))
                                              results
                                              (range 1 (inc (count results))))))]
                (->

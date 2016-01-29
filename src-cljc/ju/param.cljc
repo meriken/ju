@@ -2,7 +2,8 @@
 
 (def default-http-port 48888)
 (def io-threads 4)
-(def worker-threads 4)
+(def worker-threads 16)
+(def enable-parallel-crawling true)
 
 (def static-server-node-name nil)
 (def server-path "/server")

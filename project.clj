@@ -62,11 +62,11 @@
   :jvm-opts ["-server"
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
-             "-Xmx512m"
-             ;"-XX:+UseParNewGC"
-             ;"-XX:+UseConcMarkSweepGC"
-             "-XX:+UseG1GC"
-             "-XX:MaxGCPauseMillis=1000"
+             "-Xmx768m" ; 512m should work.
+             "-XX:+UseParNewGC"
+             "-XX:+UseConcMarkSweepGC"
+             ;"-XX:+UseG1GC"
+             ;"-XX:MaxGCPauseMillis=1000"
              ]
   :resource-paths ["resources" "target/cljsbuild"]
 

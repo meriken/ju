@@ -859,9 +859,10 @@
      body-with-image [body
                       (if (and body-exists? thumbnail-exists?) [:hr])
                       (if thumbnail-exists?
-                        [:img {:height 210
-                               :src src
-                               :on-click #(launch-image-viewer src)}])
+                        [:div {:style {:height 210 :width "100%" :text-align "center"}}
+                               [:img {:style {:max-height 210 :max-width "100%" :width "auto" :height "auto"}
+                                      :src src
+                                      :on-click #(launch-image-viewer src)}]])
                       (if (pos? (count reverse-anchors))
                         [:div.reverse-anchors [:hr]
                          [:div

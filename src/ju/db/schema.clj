@@ -222,8 +222,9 @@
         [:num_deleted_records bigint "DEFAULT 0"]
         [:deleted "BOOLEAN DEFAULT FALSE"]
         [:size bigint "DEFAULT 0"]
-        [:tags varchar "DEFAULT NULL"]
-        [:suggested_tags varchar "DEFAULT NULL"]))))
+        ;[:tags varchar "DEFAULT NULL"]
+        ;[:suggested_tags varchar "DEFAULT NULL"]
+        ))))
 
 (defn create-records-table
   [db-spec]
