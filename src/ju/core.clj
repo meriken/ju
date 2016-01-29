@@ -50,6 +50,7 @@
 (defonce http-server (atom nil))
 
 (defn start-http-server [port]
+  (timbre/debug "start-http-server:" port)
   (init)
   (reset! shingetsu/http-server-port port)
   (reset! http-server (immutant/run app :host "0.0.0.0" :port port :io-threads param/io-threads :worker-threads param/worker-threads)))
