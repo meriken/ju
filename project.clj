@@ -37,7 +37,8 @@
                  [cljs-ajax "0.5.1"]
                  [metosin/compojure-api "0.24.1"]
                  [metosin/ring-swagger-ui "2.1.3-4"]
-                 [org.immutant/web "2.1.1" :exclusions [ch.qos.logback/logback-classic]]
+                 ;[org.immutant/web "2.1.1" :exclusions [ch.qos.logback/logback-classic]]
+                 [org.immutant/web "2.1.2" :exclusions [ch.qos.logback/logback-classic]]
 
                  ; Meriken
                  [org.hsqldb/hsqldb "2.3.3"]
