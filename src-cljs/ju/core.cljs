@@ -859,7 +859,7 @@
      body-with-image [body
                       (if (and body-exists? thumbnail-exists?) [:hr])
                       (if thumbnail-exists?
-                        [:div {:style {:height 210 :width "100%" :text-align "center"}}
+                        [:div {:style {:display "flex" :justify-content "center":align-items "center":height 210 :width "100%"}}
                                [:img {:style {:max-height 210 :max-width "100%" :width "auto" :height "auto"}
                                       :src src
                                       :on-click #(launch-image-viewer src)}]])

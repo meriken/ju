@@ -1,5 +1,12 @@
 (ns ju.param)
 
+(def initial-nodes
+  ["node.shingetsu.info:8000/server.cgi"
+   "node.fuktommy.com:8000/server.cgi"
+   "melchior.ygg.io:48888/server"])
+(def blocked-nodes
+  [])
+
 (def default-http-port 48888)
 (def io-threads 4)
 (def worker-threads 16)

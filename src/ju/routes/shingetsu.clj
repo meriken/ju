@@ -44,7 +44,6 @@
                     (if (> try-count 4) false true))})
 
 (defonce http-server-port (atom nil))
-(def initial-nodes ["node.shingetsu.info:8000/server.cgi" "node.fuktommy.com:8000/server.cgi"])
 (defonce active-nodes (atom (hash-set)))
 (defonce search-nodes (atom (hash-set)))
 (defonce server-node-name (atom nil))
@@ -203,6 +202,9 @@
 (defn ping [node-name]
   (if-not (valid-node-name? node-name)
     (throw (IllegalArgumentException. "Invalid node name.")))
+  (if (some #{node-name} (into #{} param/blocked-nodes))
+    (throw (IllegalArgumentException. "Node was blocked.")))
+
   (try
     (let [response-body (:body (client/get (str "http://" node-name "/ping") http-params-for-quick-commands))
           new-server-node-name (second (re-find #"^PONG\n([^\n]+)\n?$" response-body))
@@ -228,7 +230,9 @@
   (if-not (db/known-node? node-name)
     (throw (IllegalArgumentException. "Invalid node.")))
   (if (= node-name @server-node-name)
-    (throw (Exception. "Invalid node name.")))
+    (throw (Exception. "Invalid node.")))
+  (if (some #{node-name} (into #{} param/blocked-nodes))
+    (throw (IllegalArgumentException. "Node was blocked.")))
 
   (client/get (str "http://" node-name "/join/" (clojure.string/replace @server-node-name #"/" "+")) http-params-for-quick-commands)
   (swap! active-nodes conj node-name))
@@ -237,6 +241,8 @@
   ; (timbre/debug "bye:" node-name)
   (if-not (valid-node-name? node-name)
     (throw (IllegalArgumentException. "Invalid node name.")))
+  (if (some #{node-name} (into #{} param/blocked-nodes))
+    (throw (IllegalArgumentException. "Node was blocked.")))
 
   (swap! active-nodes #(clojure.set/difference % #{node-name}))
   (client/get (str "http://" node-name "/bye/" (clojure.string/replace @server-node-name #"/" "+")) http-params-for-quick-commands))
@@ -244,6 +250,8 @@
 (defn node [node-name]
   (if-not (valid-node-name? node-name)
     (throw (IllegalArgumentException. "Invalid node name.")))
+  (if (some #{node-name} (into #{} param/blocked-nodes))
+    (throw (IllegalArgumentException. "Node was blocked.")))
 
   (let [response (client/get (str "http://" node-name "/node") http-params-for-quick-commands)
         new-node-name (clojure.string/replace (:body response) #"\n$" "")]
@@ -256,6 +264,8 @@
     (throw (IllegalArgumentException. "Invalid node name.")))
   (if-not (valid-range? range)
     (throw (IllegalArgumentException. "Invalid range.")))
+  (if (some #{node-name} (into #{} param/blocked-nodes))
+    (throw (IllegalArgumentException. "Node was blocked.")))
 
   (let [file (:body (client/get (str "http://" node-name "/recent/" range) http-params))
         file (clojure.string/replace file #"(?m)^(?![0-9]+<>[0-9a-f]{32}<>[a-z]+_).*$" "")
@@ -271,6 +281,8 @@
   ([node-name file-name stamp record-id sender-node-name]
    (if-not (valid-file-name? file-name)
      (throw (IllegalArgumentException. "Invalid file name.")))
+   (if (some #{node-name} (into #{} param/blocked-nodes))
+     (throw (IllegalArgumentException. "Node was blocked.")))
 
    (client/get
      (str "http://" node-name "/update/" file-name "/" stamp "/" record-id "/" (clojure.string/replace sender-node-name #"/" "+"))
@@ -289,6 +301,8 @@
     (throw (IllegalArgumentException. "Invalid node name.")))
   (if (= node-name @server-node-name)
     (throw (Exception. "Invalid node name.")))
+  (if (some #{node-name} (into #{} param/blocked-nodes))
+    (throw (IllegalArgumentException. "Node was blocked.")))
 
   (when (ping node-name)
     ; Add as an active node if appropriate.
@@ -325,7 +339,7 @@
 
      (let [nodes (db/get-all-nodes)]
        (if (zero? (count nodes))
-         (dorun ((if burst-mode pmap map) #(try (check-node %1) (catch Throwable t)) initial-nodes))
+         (dorun ((if burst-mode pmap map) #(try (check-node %1) (catch Throwable t)) param/initial-nodes))
          (dorun ((if burst-mode pmap map) #(try (check-node %1) (catch Throwable t)) (shuffle (map :node-name nodes))))))
 
      (while (> (count @active-nodes) max-num-active-nodes)
@@ -338,6 +352,7 @@
 (defn start-node-monitor []
   (if param/static-server-node-name
     (reset! server-node-name param/static-server-node-name))
+  (dorun (map db/delete-node param/blocked-nodes))
   (do
     (future
       (timbre/info "Node monitor started.")
@@ -363,6 +378,9 @@
    (download-file-from-node node-name file-name "0-"))
 
   ([node-name file-name range]
+   (if (some #{node-name} (into #{} param/blocked-nodes))
+     (throw (IllegalArgumentException. "Node was blocked.")))
+
    (if-not (= range "0-")
      (timbre/info "Downloading file:" node-name file-name range))
    (if-not (valid-node-name? node-name)
@@ -457,6 +475,8 @@
 
 (defn crawl-node [node-name]
   (timbre/info "Crawler: Crawling node:" node-name)
+  (if (some #{node-name} (into #{} param/blocked-nodes))
+    (throw (IllegalArgumentException. "Node was blocked.")))
   (try
     ; Try to download a list of files.
     (let [file-names (concat
