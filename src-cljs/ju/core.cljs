@@ -53,6 +53,8 @@
 (def enable-recaptcha (atom param/enable-recaptcha))
 (def recaptcha-site-key (atom param/recaptcha-site-key))
 (def recaptcha-secret-key (atom param/recaptcha-secret-key))
+(def enable-google-analytics (atom param/enable-google-analytics))
+(def google-analytics-tracking-id (atom param/google-analytics-tracking-id))
 
 
 
@@ -1018,6 +1020,8 @@
                         (reset! enable-recaptcha (:enable-recaptcha status))
                         (reset! recaptcha-site-key (:recaptcha-site-key status))
                         (reset! recaptcha-secret-key (:recaptcha-secret-key status))
+                        (reset! enable-google-analytics (:enable-google-analytics status))
+                        (reset! google-analytics-tracking-id (:google-analytics-tracking-id status))
 
                         (set-title)
                         (if (= (session/get :page) :status)
@@ -1032,7 +1036,11 @@
           new-href (clojure.string/replace href #"(\?[^\?]+)\?[^\?]+$" "$1")
           new-href (clojure.string/replace new-href #"\?_=1$" "")
           new-href (clojure.string/replace new-href #"\?_=1&" "?")]
-      (.replaceState (.-history js/window) "" (.-title js/document) new-href))
+      (.replaceState (.-history js/window) "" (.-title js/document) new-href)
+      (when @enable-google-analytics
+        (.log js/console (str "(js/ga \"send\" \"pageview\" \"" (clojure.string/replace new-href #"^https?://[^/]+" "") "\")"))
+        (js/ga "send" "pageview" (clojure.string/replace new-href #"^https?://[^/]+" ""))
+        ))
     (let [href (-> js/window .-location .-href)
           query (apply merge (map
                                #(let [match (re-find #"^(.*?)=(.*)" %)]
@@ -1237,6 +1245,11 @@
       ) 0))
 
 (defn init! []
+  (fetch-server-status! true)
+  (when @enable-google-analytics
+    (.log js/console (str "(js/ga \"create\" \"" @google-analytics-tracking-id "\" \"auto\")"))
+    (js/ga "create" @google-analytics-tracking-id "auto"))
+
   (enable-console-print!)
   (reset! history (doto (Html5History.)
                     (events/listen
@@ -1251,7 +1264,6 @@
   (mount-components)
   (session/put! :recent-threads nil)
   (session/put! :threads nil)
-  ;(.initHighlightingOnLoad js/hljs)
 
   (-> ($ js/document)
       (.on "mouseup touchend"
@@ -1260,7 +1272,6 @@
                (remove-tooltips))))
 
   (check-new-post-notification!)
-  (fetch-server-status! true)
   (js/setInterval check-new-post-notification! 30000)
   (js/setInterval fetch-server-status! 30000)
   (js/setInterval #(when (= (session/get :page) :recent-threads) (reset! jump-command nil) (update-threads :recent-threads)) 60000)

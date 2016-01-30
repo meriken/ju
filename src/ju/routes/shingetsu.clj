@@ -1151,14 +1151,17 @@
                   :num-records (db/count-all-records)
                   :num-deleted-records (db/count-all-deleted-records)
                   :cache-size cache-size
+                  :service-name param/service-name
+                  :active-nodes (into [] (sort @active-nodes))
+                  :search-nodes (into [] (sort @search-nodes))
+
                   :server-node-name @server-node-name
                   :server-url-base (get-server-url-base)
                   :enable-recaptcha param/enable-recaptcha
                   :recaptcha-site-key param/recaptcha-site-key
                   :recaptcha-secret-key param/recaptcha-secret-key
-                  :service-name param/service-name
-                  :active-nodes (into [] (sort @active-nodes))
-                  :search-nodes (into [] (sort @search-nodes))}}}))
+                  :enable-google-analytics param/enable-google-analytics
+                  :google-analytics-tracking-id param/google-analytics-tracking-id}}}))
 
 
 
