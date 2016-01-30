@@ -16,7 +16,7 @@
 (def server-path "/server")
 (def static-server-url-base nil)
 (def service-name "匿名掲示板")
-
+(def anonymous-users-handle "新月名無しさん")
 (def enable-recaptcha false)
 (def recaptcha-site-key nil)
 (def recaptcha-secret-key nil)

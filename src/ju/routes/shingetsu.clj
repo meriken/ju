@@ -154,7 +154,7 @@
 
 (defn convert-record-into-dat-file-line
   [record]
-  (let [name (if (nil? (:name record)) "新月名無しさん" (:name record))
+  (let [name (if (nil? (:name record)) param/anonymous-users-handle (:name record))
         mail (if (nil? (:mail record)) "" (:mail record))
         local-time (clj-time.core/to-time-zone (clj-time.coerce/from-long (* (:stamp record) 1000)) (clj-time.core/time-zone-for-offset +9))
         ts (str
@@ -1165,6 +1165,10 @@
 
 
 
+           (GET "/2ch/"
+                {:keys [headers params body server-name] :as request}
+             (redirect "/threads"))
+
            (GET "/2ch/subject.txt"
                 {:keys [headers params body server-name] :as request}
              ;(timbre/info "/2ch/subject.txt" (get-remote-address request))
@@ -1184,8 +1188,46 @@
                                      (catch Throwable _ ""))))]
                (->
                  (ok (apply str lines))
-                 (content-type "text/plain; charset=windows-31j"))
-               ))
+                 (content-type "text/plain; charset=windows-31j"))))
+
+           (GET "/2ch/head.txt"
+                {:keys [headers params body server-name] :as request}
+             (->
+               (ok (str
+                     "新月 - P2P anonymous BBS<br>\n"
+                     "<br>\n"
+                     "http://shingetsu.info/<br>\n"
+                     "<br>\n"
+                     "次の利用規約に同意した方のみ新月ネットワークに参加できます。<br>\n"
+                     "<br>\n"
+                     "(投稿者の責任または免責)<br>\n"
+                     "1. 投稿者は投稿した記事に使用、改変または再配布の条件を記述しなければならない。<br>\n"
+                     "   条件は新月の仕組みに矛盾するものであってはならない。<br>\n"
+                     "2. 第1項の条件の記述がない場合には、利用者は投稿者が使用、<br>\n"
+                     "   改変または再配布を制限しないことに同意したものとみなすことができる。<br>\n"
+                     "3. 投稿者は第1項の条件または第2項の同意が正しいことに責任を持つ。<br>\n"
+                     "4. 投稿者は法律に定めのない限り、個別の記事で宣言しない限り、<br>\n"
+                     "   かつ第3項に反しない限り、記事の内容が正しいこと、役に立つこと、<br>\n"
+                     "   または不愉快でないことなどについて保証しない。<br>\n"
+                     "<br>\n"
+                     "(ノード管理者の責任または免責)<br>\n"
+                     "5. ノード管理者は記事または掲示板を自由に編集または削除できる。<br>\n"
+                     "6. ノード管理者は法律に定めのない限り、<br>\n"
+                     "   ノードを管理・運営することで知った情報についての守秘義務を負わない。<br>\n"
+                     "7. ノード管理者は法律に定めのない限り、記事の内容が正しいこと、役に立つこと、<br>\n"
+                     "   または不愉快でないことなどについて保証しない。<br>\n"
+                     "8. ノード管理者は自分の管理するノードに対して、<br>\n"
+                     "   特定のユーザ、特定のノード、全ての利用者または全てのノードが<br>\n"
+                     "   一時的または永続的に接続できることを保証しない。<br>"))
+               (content-type "text/plain; charset=windows-31j")))
+
+           (GET "/2ch/SETTING.TXT"
+                {:keys [headers params body server-name] :as request}
+             (->
+               (ok (str
+                     "BBS_TITLE=" param/service-name "\n"
+                     "BBS_NONAME_NAME=" param/anonymous-users-handle "\n"))
+               (content-type "text/plain; charset=windows-31j")))
 
            (GET "/test/read.cgi/2ch/:thread-number"
                 request

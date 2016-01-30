@@ -78,7 +78,8 @@
         href (if href href (.-href (.-parentElement (.-target e))))
         path (.getPath (.parse Uri href))
         query-string (.getQuery (.parse Uri href))
-        title (.-title (.-target e))]
+        title (.-title (.-target e))
+        ]
     ;(js/alert path)
     (.log js/console path)
     (.blur ($ (.-target e)))
@@ -87,7 +88,7 @@
       (. e stopPropagation)
       (open-internal-page
         (str path (if (pos? (count query-string)) "?" "") query-string)
-        title
+        nil, ;title
         (cond
           (has-class $target "jump-to-first-new-post") :first-new-post
           (has-class (parent $target) "jump-to-first-new-post") :first-new-post
@@ -698,6 +699,9 @@
 
 (defn launch-image-viewer
   [src]
+  (when @enable-google-analytics
+    ;(.log js/console (str "(js/ga \"send\" \"pageview\" \"" src "\")"))
+    (js/ga "send" "pageview" src))
   (let [links (clj->js [src])
         options (clj->js {:useBootstrapModal false
                           :hidePageScrollbars false})]
@@ -853,7 +857,10 @@
                   (cljs-time.core/to-default-time-zone (cljs-time.coerce/from-long (* (:stamp post) 1000))))] " "
                (if (:suffix post)
                  [:a.btn.btn-xs.btn-default.attachment
-                  {:href src}
+                  {:href src
+                   :on-click #(when @enable-google-analytics
+                               ;(.log js/console (str "(js/ga \"send\" \"pageview\" \"" src "\")"))
+                               (js/ga "send" "pageview" src))}
                   [:span.glyphicon.glyphicon-paperclip] (str " " (clojure.string/replace (:record-id post) #".{16}$" "…") "." (:suffix post))])]
 
               ]
@@ -864,11 +871,7 @@
                         [:div {:style {:display "flex" :justify-content "center":align-items "center":height 210 :width "100%"}}
                                [:img {:style {:max-height 210 :max-width "100%" :width "auto" :height "auto"}
                                       :src src
-                                      :on-click #(do
-                                                  (when @enable-google-analytics
-                                                    ;(.log js/console (str "(js/ga \"send\" \"pageview\" \"" src "\")"))
-                                                    (js/ga "send" "pageview" src))
-                                                  (launch-image-viewer src))}]])
+                                      :on-click #(launch-image-viewer src)}]])
                       (if (pos? (count reverse-anchors))
                         [:div.reverse-anchors [:hr]
                          [:div
@@ -1040,7 +1043,8 @@
           new-href (clojure.string/replace href #"(\?[^\?]+)\?[^\?]+$" "$1")
           new-href (clojure.string/replace new-href #"\?_=1$" "")
           new-href (clojure.string/replace new-href #"\?_=1&" "?")]
-      (.replaceState (.-history js/window) "" (.-title js/document) new-href)
+      ;(.replaceState (.-history js/window) "" (.-title js/document) new-href)
+      (.replaceState (.-history js/window) "" nil new-href)
       (when @enable-google-analytics
         ;(.log js/console (str "(js/ga \"send\" \"pageview\" \"" (clojure.string/replace new-href #"^https?://[^/]+" "") "\")"))
         (js/ga "send" "pageview" (clojure.string/replace new-href #"^https?://[^/]+" ""))
@@ -1076,8 +1080,9 @@
 
 (defn set-title
   [& [params]]
-  (set! (.-title js/document)
-        (if @service-name
+  (.log js/console (str (session/get :page)))
+  (if (session/get :page)
+    (set! (.-title js/document)
           (str (case (session/get :page)
                  :home "目次"
                  :threads "全てのスレッド"
@@ -1089,7 +1094,8 @@
                  :help "使い方"
                  :terms "新月ネットワーク利用規約"
                  "")
-               " - " @service-name))))
+               (if @service-name
+                 (str " - " @service-name))))))
 
 (secretary/defroute "/" [] (process-query-string) (reset! jump-command :top) (session/put! :page :home) (set-title))
 (secretary/defroute "/new-posts" [] (process-query-string) (fetch-new-posts!) (session/put! :page :new-posts) (set-title))
