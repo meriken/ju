@@ -871,33 +871,19 @@
           file (db/get-file file-name)]
       (if (or (nil? file) (nil? (:time-first-post file)))
         s
-        (let [records (db/get-all-records-in-file-without-bodies (:id file))
-              post-numbers-map (apply merge
-                                      (remove
-                                        nil?
-                                        (map
-                                          (fn [record post-number]
-                                            (try
-                                              {(second (re-find #"^(.{8})" (:record-id record))) post-number}
-                                              (catch Throwable _
-                                                nil)))
-                                          records
-                                          (range 1 (inc (count records))))))
+        (let [records (db/get-all-records-in-file-with-record-short-ids-only (:id file))
+              post-numbers-map (apply merge (map
+                                             (fn [record post-number]
+                                               {(:record-short-id record) post-number})
+                                             records
+                                             (range 1 (inc (count records)))))
               post-number (get post-numbers-map record-short-id nil)]
           (str
-            "[["
-            thread-title
-            "/"
-            record-short-id
-            "( "
-            (get-server-url-base)
-            "/test/read.cgi/2ch/"
+            "[[" thread-title "/" record-short-id "( "
+            (get-server-url-base) "/test/read.cgi/2ch/"
             (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
                (* 9 60 60))
-            "/"
-            (if post-number
-              (str post-number))
-            " )"))))
+            "/" (if post-number (str post-number)) " )"))))
     ; without ID
     (let [thread-title (second (re-find #"\[\[([^\]]+)\]\]" s))
           file-name (thread-title-to-file-name thread-title)
@@ -905,16 +891,11 @@
       (if (or (nil? file) (nil? (:time-first-post file)))
         s
         (str
-          "[["
-          thread-title
-          "( "
-          (get-server-url-base)
-          "/test/read.cgi/2ch/"
+          "[[" thread-title "( "
+          (get-server-url-base) "/test/read.cgi/2ch/"
           (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
              (* 9 60 60))
-          "/"
-          " )"
-          "]]")))))
+          "/ )]]")))))
 
 (defroutes shingetsu-routes
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1358,7 +1339,7 @@
                                                               (re-find #"\[\[" (:dat-file-line %1))))
                                                      (:dat-file-line %1)
 
-                                                     :else
+                                                     :else ; This is costly.
                                                      (-> (:dat-file-line %1)
                                                          (clojure.string/replace
                                                            #"&gt;&gt;[a-f0-9]{8}"

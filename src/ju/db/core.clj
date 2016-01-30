@@ -445,6 +445,13 @@
           (where {:file_id file-id :deleted false})
           (order :stamp :ASC)))
 
+(defn get-all-records-in-file-with-record-short-ids-only
+  [file-id]
+  (select records
+          (fields :record_short_id)
+          (where {:file_id file-id :deleted false})
+          (order :stamp :ASC)))
+
 (defn get-all-records-without-bodies
   []
   (select records
