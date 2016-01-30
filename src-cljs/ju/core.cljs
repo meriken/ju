@@ -864,7 +864,11 @@
                         [:div {:style {:display "flex" :justify-content "center":align-items "center":height 210 :width "100%"}}
                                [:img {:style {:max-height 210 :max-width "100%" :width "auto" :height "auto"}
                                       :src src
-                                      :on-click #(launch-image-viewer src)}]])
+                                      :on-click #(do
+                                                  (when @enable-google-analytics
+                                                    ;(.log js/console (str "(js/ga \"send\" \"pageview\" \"" src "\")"))
+                                                    (js/ga "send" "pageview" src))
+                                                  (launch-image-viewer src))}]])
                       (if (pos? (count reverse-anchors))
                         [:div.reverse-anchors [:hr]
                          [:div
@@ -1038,7 +1042,7 @@
           new-href (clojure.string/replace new-href #"\?_=1&" "?")]
       (.replaceState (.-history js/window) "" (.-title js/document) new-href)
       (when @enable-google-analytics
-        (.log js/console (str "(js/ga \"send\" \"pageview\" \"" (clojure.string/replace new-href #"^https?://[^/]+" "") "\")"))
+        ;(.log js/console (str "(js/ga \"send\" \"pageview\" \"" (clojure.string/replace new-href #"^https?://[^/]+" "") "\")"))
         (js/ga "send" "pageview" (clojure.string/replace new-href #"^https?://[^/]+" ""))
         ))
     (let [href (-> js/window .-location .-href)
@@ -1247,7 +1251,7 @@
 (defn init! []
   (fetch-server-status! true)
   (when @enable-google-analytics
-    (.log js/console (str "(js/ga \"create\" \"" @google-analytics-tracking-id "\" \"auto\")"))
+    ;(.log js/console (str "(js/ga \"create\" \"" @google-analytics-tracking-id "\" \"auto\")"))
     (js/ga "create" @google-analytics-tracking-id "auto"))
 
   (enable-console-print!)
