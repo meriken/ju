@@ -11,12 +11,16 @@
 (def io-threads 4)
 (def worker-threads 16)
 (def enable-parallel-crawling true)
-
+(def check-for-duplicate-records false)
 (def static-server-node-name nil)
 (def server-path "/server")
 (def static-server-url-base nil)
+
 (def service-name "匿名掲示板")
 (def anonymous-users-handle "新月名無しさん")
+
+(def thumbnail-height 256)
+
 (def enable-recaptcha false)
 (def recaptcha-site-key nil)
 (def recaptcha-secret-key nil)

@@ -55,7 +55,7 @@
 (def recaptcha-secret-key (atom param/recaptcha-secret-key))
 (def enable-google-analytics (atom param/enable-google-analytics))
 (def google-analytics-tracking-id (atom param/google-analytics-tracking-id))
-
+(def thumbnail-height (atom param/thumbnail-height))
 
 
 (defn remove-tooltips
@@ -715,7 +715,7 @@
       s
       (concat [(nth match 1)
                 (if false ; (re-find #"\.(jpe?g|gif|bmp|png)$" (nth match 2))
-                    [:img {:src (nth match 2) :on-click #(launch-image-viewer (nth match 2)) :height 210}]
+                    [:img {:src (nth match 2) :on-click #(launch-image-viewer (nth match 2)) :height @thumbnail-height}]
                     [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} (nth match 2)])]
                (process-links (last match))))))
 
@@ -868,8 +868,8 @@
      body-with-image [body
                       (if (and body-exists? thumbnail-exists?) [:hr])
                       (if thumbnail-exists?
-                        [:div {:style {:display "flex" :justify-content "center":align-items "center":height 210 :width "100%"}}
-                               [:img {:style {:max-height 210 :max-width "100%" :width "auto" :height "auto"}
+                        [:div {:style {:display "flex" :justify-content "center":align-items "center":height @thumbnail-height :width "100%"}}
+                               [:img {:style {:max-height @thumbnail-height :max-width "100%" :width "auto" :height "auto"}
                                       :src src
                                       :on-click #(launch-image-viewer src)}]])
                       (if (pos? (count reverse-anchors))

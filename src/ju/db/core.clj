@@ -64,6 +64,7 @@
 (defentity nodes (normalize-keys))
 (defentity files (normalize-keys))
 (defentity records (transform convert-blobs) (normalize-keys))
+(defentity images (transform convert-blobs) (normalize-keys))
 (defentity blocked_records (normalize-keys))
 (defentity update_commands (normalize-keys))
 (defentity anchors (normalize-keys))
@@ -497,22 +498,49 @@
     records
     (where {:id id})))
 
-(defn remove-duplicate-records
-  []
+(declare update-file)
+(defn remove-duplicate-records-in-file
+  [file-id]
+  (timbre/info "remove-duplicate-records-in-file:" file-id)
   (let [duplicates (remove #(= (count %) 1)
                            (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
-                                               (if (zero? (mod (:id record) 100))
-                                                 (timbre/info "remove-duplicate-records:" (:id record)))
                                                (map #(:id %) (remove #(or
                                                                        (not (= (:file-id %) (:file-id record)))
                                                                        (not (= (:stamp %) (:stamp record)))
                                                                        (not (= (:record-id %) (:record-id record))))
                                                                      (ju.db.core/get-records-by-short-id (:record-short-id record))))))
-                                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))
+                                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
         duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))]
-    (timbre/info "remove-duplicate-records: duplicates:" (count duplicates))
+    (timbre/info "remove-duplicate-records-in-file: duplicates:" (count duplicates))
     (dorun (map ju.db.core/really-delete-record duplicates))
+    (update-file file-id)
     (count duplicates)))
+
+(defn remove-duplicate-records
+  []
+  (reduce + (map remove-duplicate-records-in-file (sort (map #(:id %) (get-all-files))))))
+
+(defn remove-duplicate-records-from-mika-in-file
+  [file-id]
+  (timbre/info "remove-duplicate-records-from-mika-in-file:" file-id)
+  (let [duplicates (remove #(= (count %) 1)
+                           (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
+                                               (map #(:id %) (remove #(or
+                                                                       (not (= (:file-id %) (:file-id record)))
+                                                                       (not (= (mod (:stamp %) 32400) (mod (:stamp record) 32400)))
+                                                                       (not (= (:record-id %) (:record-id record))))
+                                                                     (ju.db.core/get-records-by-short-id (:record-short-id record))))))
+                                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
+        ;duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))
+        ]
+    (timbre/info (apply str duplicates))
+    ;(dorun (map ju.db.core/really-delete-record duplicates))
+    (update-file file-id)
+    (count (into #{} (apply concat (map #(drop 1 %) duplicates))))))
+
+(defn remove-duplicate-records-from-mika
+  []
+  (reduce + (map remove-duplicate-records-from-mika-in-file (sort (map #(:id %) (get-all-files))))))
 
 (defn update-dat-file-line
   [id dat-file-line suffix]
@@ -676,3 +704,23 @@
 
 
 
+
+(comment defn start-database-monitor []
+  (do
+    (future
+      (timbre/info "Database monitor started.")
+      (try
+      (while true
+        (try
+          (let [dirty-files (get-dirty-files)]
+            (when (pos? (count dirty-files))
+              (Thread/sleep 1000)
+              (map
+                (fn [file]
+                  (mark-file-as-clean (:id file))
+                  (remove-duplicate-records-in-file (:id file))
+                  (update-file (:id file)))
+                dirty-files)
+              ))
+          (catch Throwable t))
+        (Thread/sleep 1000))))))

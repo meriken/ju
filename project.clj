@@ -56,6 +56,8 @@
                  ;[commons-lang/commons-lang "2.6"]
                  [org.apache.commons/commons-lang3 "3.1"]
                  [log4j "1.2.17" :exclusions [javax.mail/mail javax.jms/jms com.sun.jdmk/jmxtools com.sun.jmx/jmxri]]
+                 [com.twelvemonkeys.imageio/imageio-core "3.1.1"]
+                 [com.twelvemonkeys.imageio/imageio-jpeg "3.1.1"]
                  ]
 
   :min-lein-version "2.0.0"

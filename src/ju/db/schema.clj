@@ -286,6 +286,25 @@
         [:stamp        bigint "DEFAULT 0"]
         [:record_id    varchar "NOT NULL"]))))
 
+(defn create-images-table
+  [db-spec]
+  (let [{:keys [id bigint blob varchar varchar-unique varchar-ignorecase-unique]} (db-types db-spec)]
+    (sql/db-do-commands
+      db-spec
+      (sql/create-table-ddl
+        :images
+        [:id           id]
+        [:file_id      bigint "NOT NULL"]
+        [:record_id    varchar "NOT NULL"]
+        [:suffix       varchar "NOT NULL"]
+        [:thumbnail    blob "DEFAULT NULL"]
+        [:body         blob "DEFAULT NULL"]
+        [:jane_md5_string varchar "NOT NULL"]
+        [:md5_string   varchar "NOT NULL"]
+        [:time_created "TIMESTAMP NULL"]
+        [:size         bigint "NOT NULL"]
+        [:origin       varchar "DEFAULT NULL"]))))
+
 
 
 (defn create-indexes
@@ -343,6 +362,16 @@
   (try (sql/db-do-commands db-spec "CREATE INDEX anchors_index                   ON anchors         ( file_id, destination  );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX anchors_index                   ON anchors         ( file_id, destination(8)  );")
                                (catch Throwable _ (timbre/info "Failed to create anchors_index")))))
+
+
+
+  (try (sql/db-do-commands db-spec "CREATE INDEX images_index ON images ( file_id, record_id );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_index ON images ( file_id, record_id(32) );")
+                               (catch Throwable _ (timbre/info "Failed to create images_index")))))
+  (try (sql/db-do-commands db-spec "CREATE INDEX images_origin_index ON images ( origin );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_origin_index ON images ( origin(128) );")
+                               (catch Throwable _ (timbre/info "Failed to create images_origin_index")))))
+
   )
 
 ; TODO

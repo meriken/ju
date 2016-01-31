@@ -1197,7 +1197,8 @@
                   :recaptcha-site-key param/recaptcha-site-key
                   :recaptcha-secret-key param/recaptcha-secret-key
                   :enable-google-analytics param/enable-google-analytics
-                  :google-analytics-tracking-id param/google-analytics-tracking-id}}}))
+                  :google-analytics-tracking-id param/google-analytics-tracking-id
+                  :thumbnail-height param/thumbnail-height}}}))
 
 
 
