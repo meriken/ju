@@ -411,12 +411,12 @@
              records (map #(let [match (re-find #"^([0-9]+)<>([0-9a-f]{32})" %)]
                             {:stamp (Long/parseLong (nth match 1)) :record-id (nth match 2)})
                           records)
-             existing-records (map #(identity {:stamp (:stamp %) :record-id (:record-id %)}) existing-records)
+             existing-records (map #(do {:stamp (:stamp %) :record-id (:record-id %)}) existing-records)
              records (clojure.set/difference (into #{} records) (into #{} existing-records))
-             blocked-records (map #(identity {:stamp (:stamp %) :record-id (:record-id %)}) blocked-records)
+             blocked-records (map #(do {:stamp (:stamp %) :record-id (:record-id %)}) blocked-records)
              records (clojure.set/difference (into #{} records) (into #{} blocked-records))]
-         (if (empty? records)
-           0
+         (if (<= (count records) 1)
+           (dorun (map #(download-file-from-node node-name file-name (str (:stamp %)) (:record-id %)) records))
            (let [stamps (map :stamp records)
                  oldest (apply min stamps)
                  newest (apply max stamps)]
