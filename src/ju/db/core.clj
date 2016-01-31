@@ -600,6 +600,20 @@
                               :record_id record-id
                               :origin nil})))))))
 
+(defn get-all-blocked-records-in-file
+  [file-name origin]
+  (concat
+    (select blocked_records
+                         (where
+                           {:file_name file-name
+                            :origin origin}))
+    (if origin
+      (select blocked_records
+                           (where
+                             {:file_name file-name
+                              :origin nil}))
+      '())))
+
 
 
 

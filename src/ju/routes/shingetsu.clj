@@ -394,7 +394,8 @@
 
    (db/add-file file-name)
    (let [file-id (db/get-file-id file-name)
-         existing-records (and file-id (db/get-all-active-and-deleted-records-in-file-without-bodies file-id))]
+         existing-records (if file-id (db/get-all-active-and-deleted-records-in-file-without-bodies file-id))
+         blocked-records (if file-id (db/get-all-blocked-records-in-file file-id node-name))]
      (cond
        (and record-id (db/is-record-blocked? file-name (Long/parseLong range) record-id node-name))
        ;(timbre/info (str "Blocked record on blacklist: " node-name " " file-name " " range " " record-id))
@@ -411,7 +412,9 @@
                             {:stamp (Long/parseLong (nth match 1)) :record-id (nth match 2)})
                           records)
              existing-records (map #(identity {:stamp (:stamp %) :record-id (:record-id %)}) existing-records)
-             records (clojure.set/difference (into #{} records) (into #{} existing-records))]
+             records (clojure.set/difference (into #{} records) (into #{} existing-records))
+             blocked-records (map #(identity {:stamp (:stamp %) :record-id (:record-id %)}) blocked-records)
+             records (clojure.set/difference (into #{} records) (into #{} blocked-records))]
          (if (empty? records)
            0
            (let [stamps (map :stamp records)
