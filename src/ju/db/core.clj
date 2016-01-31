@@ -533,7 +533,7 @@
                                 (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
         ;duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))
         ]
-    (timbre/info (apply str duplicates))
+    (timbre/info (pr-str duplicates))
     ;(dorun (map ju.db.core/really-delete-record duplicates))
     (update-file file-id)
     (count (into #{} (apply concat (map #(drop 1 %) duplicates))))))
