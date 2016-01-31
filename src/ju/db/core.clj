@@ -531,12 +531,11 @@
                                                                        (not (= (:record-id %) (:record-id record))))
                                                                      (ju.db.core/get-records-by-short-id (:record-short-id record))))))
                                 (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
-        ;duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))
-        ]
-    (timbre/info (pr-str duplicates))
-    ;(dorun (map ju.db.core/really-delete-record duplicates))
+        duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))]
+    (timbre/info "remove-duplicate-records-from-mika-in-file:" (pr-str duplicates))
+    (dorun (map ju.db.core/mark-record-as-deleted duplicates))
     (update-file file-id)
-    (count (into #{} (apply concat (map #(drop 1 %) duplicates))))))
+    (count duplicates)))
 
 (defn remove-duplicate-records-from-mika
   []
