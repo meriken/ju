@@ -107,6 +107,11 @@
                (re-find #"http://|href=" (:body elements))))
       (and file-name
            (some #{file-name} param/known-corrupt-files))
+      (and (:name elements) (= "bvd*mfs}@gmail.com" (:name elements)))
+      (and thread-title
+           (= thread-title "雑談")
+           stamp
+           (<= 1368229462 stamp) (<= stamp 1368259427))
       (and thread-title
            stamp
            (<= 1368259441 stamp) (<= stamp 1368334184)
@@ -395,7 +400,7 @@
    (db/add-file file-name)
    (let [file-id (db/get-file-id file-name)
          existing-records (if file-id (db/get-all-active-and-deleted-records-in-file-without-bodies file-id))
-         blocked-records (if file-id (db/get-all-blocked-records-in-file file-id node-name))]
+         blocked-records (if file-id (db/get-all-blocked-records-in-file file-name node-name))]
      (cond
        (and record-id (db/is-record-blocked? file-name (Long/parseLong range) record-id node-name))
        ;(timbre/info (str "Blocked record on blacklist: " node-name " " file-name " " range " " record-id))
