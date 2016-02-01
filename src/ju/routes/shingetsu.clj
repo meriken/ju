@@ -105,6 +105,10 @@
            (:body elements)
            (or (re-find #"^[^ぁ-ゞァ-ヶ]+$" (:body elements))
                (re-find #"http://|href=" (:body elements))))
+      (and thread-title
+           (:name elements) (pos? (count (:name elements)))
+           (:body elements)
+           (re-find #"ジミーチュウ|ダンヒル|ゴヤール|クリスチャンディオール|[Aa]mbien|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci" (:body elements)))
       (and file-name
            (some #{file-name} param/known-corrupt-files))
       (and (:name elements) (= "bvd*mfs}@gmail.com" (:name elements)))
