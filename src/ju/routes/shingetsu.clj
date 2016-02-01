@@ -937,11 +937,11 @@
                    node-name (if (re-find #"^:" node-name)
                                (str remote-addr node-name)
                                node-name)]
-               (timbre/info "/join" (get-remote-address request) node-name)
+               (timbre/info "/join" (get-remote-address request) node-name server-name)
                (when (and (valid-node-name? node-name)
                           (not (= node-name @server-node-name))
                           (not (some #{node-name} @active-nodes))
-                          (re-find (re-pattern (str "^" (java.util.regex.Pattern/quote server-name) ":")) node-name)
+                          ;(re-find (re-pattern (str "^" (java.util.regex.Pattern/quote server-name) ":")) node-name)
                           (ping node-name))
                  (if (>= (count @active-nodes) max-num-active-nodes)
                    (bye (first (shuffle @active-nodes))))
