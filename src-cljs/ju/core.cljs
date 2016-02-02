@@ -1072,10 +1072,10 @@
                            :display "flex"
                            :background "#000"
                            :float "left"
-                           :height "150px"
-                           :width "150px"
-                           :max-height "150px"
-                           :max-width "150px"}}
+                           :height "119px"
+                           :width "119px"
+                           :max-height "119px"
+                           :max-width "119px"}}
                   [:img {:src (str
                                "/thread/"
                                (js/encodeURIComponent (session/get :thread-title))
@@ -1085,8 +1085,8 @@
                          :style {:background "#000"
                                  :height "auto"
                                  :width "auto"
-                                 :max-height "150px"
-                                 :max-width "150px"}}]]]))
+                                 :max-height "119px"
+                                 :max-width "119px"}}]]]))
             (:images response))
        ])))
 
