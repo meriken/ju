@@ -96,14 +96,15 @@
   ([{:keys [no-stacktrace? stacktrace-fonts] :as opts} data]
    (let [{:keys [level ?err_ vargs_ msg_ ?ns-str hostname_ timestamp_]} data]
      (str
-      (force timestamp_) " "
+       (force timestamp_) " "
        ; (force hostname_) " "
        ; (clojure.string/upper-case (name level))  " "
        ; "[" (or ?ns-str "?ns") "] "
-       (force msg_)
+       (force msg_) " "
+       (force ?err_)
        (comment when-not no-stacktrace?
-         (when-let [err (force ?err_)]
-           (str "\n" (stacktrace err opts))))
+                (when-let [err (force ?err_)]
+                  (str "\n" (stacktrace err opts))))
        ))))
 
 (defn configure-timbre

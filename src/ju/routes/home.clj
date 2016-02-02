@@ -25,8 +25,8 @@
            (GET "/thread/:thread-title/:qualifier"
                 [thread-title qualifier]
              (timbre/debug "/thread/:thread-title/:qualifier")
-             (if (not (re-find #"^[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier))
-               (home-page (home-page "スレッド一覧"))
+             (cond
+               (re-find #"^[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier)
                (let [file-id (db/get-file-id-by-thread-title thread-title)
                      [_ record-id suffix] (re-find #"^([a-f0-9]{32})\.([a-zA-Z0-9]+)$" qualifier)
                      record (db/get-record-in-file-by-record-id file-id record-id)
@@ -38,8 +38,22 @@
                  ;(timbre/debug (:suffix elements))
                  (if (= suffix (:suffix elements))
                    {:status  200
-                    :headers {"Content-Type" (ring.util.mime-type/ext-mime-type qualifier)}
-                    :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))))
+                    :headers {"Content-Type" (ring.util.mime-type/ext-mime-type suffix)}
+                    :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))
+
+               (re-find #"^thumbnail-[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier)
+               (let [file-id (db/get-file-id-by-thread-title thread-title)
+                     [_ record-id suffix] (re-find #"^thumbnail-([a-f0-9]{32})\.([a-zA-Z0-9]+)$" qualifier)
+                     image (db/get-image file-id record-id)]
+                 ;(timbre/debug (:suffix elements))
+                 (if (and image (= suffix "jpg"))
+                   {:status  200
+                    :headers {"Content-Type" (ring.util.mime-type/ext-mime-type suffix)}
+                    :body    (ByteArrayInputStream. (:thumbnail image))}))
+
+               :else
+               (home-page (home-page "スレッド一覧"))
+               ))
            (GET "/new-posts" [] (home-page "新着レスまとめ読み"))
            (GET "/create-new-thread" [] (home-page "新規スレッド作成"))
            (GET "/status" [] (home-page "状態"))

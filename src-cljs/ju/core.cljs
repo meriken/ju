@@ -761,6 +761,11 @@
      src (str href-base "/"
               (:record-id post)
               "." (:suffix post))
+     thumbnail-src (if (= (:suffix post) "gif")
+                     src
+                     (str href-base "/thumbnail-"
+                        (:record-id post)
+                        "." "jpg"))
      complete-src (str @server-url-base src)
      body-exists? (pos? (count body))
      thumbnail-exists? (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
@@ -870,7 +875,7 @@
                       (if thumbnail-exists?
                         [:div {:style {:display "flex" :justify-content "center":align-items "center":height @thumbnail-height :width "100%"}}
                                [:img {:style {:max-height @thumbnail-height :max-width "100%" :width "auto" :height "auto"}
-                                      :src src
+                                      :src thumbnail-src
                                       :on-click #(launch-image-viewer src)}]])
                       (if (pos? (count reverse-anchors))
                         [:div.reverse-anchors [:hr]

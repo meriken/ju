@@ -719,6 +719,26 @@
 
 
 
+(defn add-image [image]
+  (if (zero? (count (select files (fields :id) (where {:id (:file_id image)}))))
+    (throw (IllegalArgumentException. (str "Invalid file ID: " (:file_id image)))))
+
+  (try-times
+    5
+    (transaction
+      {:isolation :serializable}
+      (when (zero? (count (select images (where {
+                                                 :file_id (:file_id image)
+                                                 :record_id (:record_id image)
+                                                 :stamp (:stamp image)
+                                                 :md5_string (:md5_string image) }))))
+        (insert images (values image))))))
+
+(defn get-image [file-id record-id]
+  (nth (select images (where {:file_id file-id :record_id record-id})) 0 nil))
+
+
+
 (comment defn start-database-monitor []
   (do
     (future

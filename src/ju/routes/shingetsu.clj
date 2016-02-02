@@ -19,10 +19,16 @@
             [clj-time.core]
             [clj-time.coerce]
             [clj-time.format]
-            [clj-time.predicates])
+            [clj-time.predicates]
+            [clojure.data.codec.base64 :as base64])
   (:import (java.net URLEncoder)
            (java.nio.file Files)
-           (java.security MessageDigest)))
+           (java.security MessageDigest)
+           (javax.imageio ImageIO ImageWriter ImageWriteParam IIOImage)
+           (java.io ByteArrayInputStream ByteArrayOutputStream)
+           (java.awt.image BufferedImage)
+           (java.awt Image)
+           (javax.imageio.stream MemoryCacheImageOutputStream)))
 
 
 
@@ -199,6 +205,93 @@
         param/static-server-url-base
         (str "http://" (clojure.string/replace @server-node-name (re-pattern (str param/server-path "$")) "")))
       #"/$" "")))
+
+
+
+;;;;;;;;;;
+; Images ;
+;;;;;;;;;;
+
+(defn create-thumbnail
+  [^java.awt.Image awt-image]
+  ; (log :debug "create-thumbnail")
+  (try
+    (let [output    (new ByteArrayOutputStream 1000)
+          width     (.getWidth awt-image)
+          height    (.getHeight awt-image)
+          thumbnail-height (min height param/thumbnail-height)
+          thumbnail-width (int (/ (* thumbnail-height width) height))
+          thumbnail (new BufferedImage thumbnail-width thumbnail-height BufferedImage/TYPE_INT_RGB)
+
+          writer (.next (ImageIO/getImageWritersByFormatName "jpeg"))
+          param (.getDefaultWriteParam writer)]
+
+      (-> thumbnail
+          (.createGraphics)
+          (.drawImage
+            (.getScaledInstance
+              awt-image
+              thumbnail-width
+              thumbnail-height
+              Image/SCALE_SMOOTH)
+            0
+            0
+            nil))
+      (.setCompressionMode param ImageWriteParam/MODE_EXPLICIT)
+      (.setCompressionQuality param 0.9)
+      (.setOutput writer (MemoryCacheImageOutputStream. output))
+      (.write writer nil (IIOImage. thumbnail nil nil) param)
+      (.flush output)
+      (let [byte-array (.toByteArray output)]
+        (.close output)
+        byte-array))
+
+    (catch Throwable t
+      (timbre/error "create-thumbnail:" (str t))
+      nil)))
+
+(defn create-image
+  [file-id stamp record-id elements deleted]
+  (try
+    (let [image     (base64/decode (.getBytes (:attach elements)))
+          awt-image (ImageIO/read (new ByteArrayInputStream image))
+          thumbnail (if awt-image (create-thumbnail awt-image))]
+      (when thumbnail
+        (db/add-image
+          {
+           :file_id      file-id
+           :stamp        stamp
+           :record_id    record-id
+           :suffix       (:suffix elements)
+           :thumbnail    thumbnail
+           :width        (.getWidth awt-image)
+           :height       (.getHeight awt-image)
+           :jane_md5_string (jane-md5 image)
+           :md5_string   (md5 image)
+           :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
+           :size         (count image)
+           :deleted      deleted
+           })
+        )
+      true)
+    (catch Throwable t
+      (timbre/error "create-image:" t))))
+
+(defn create-images
+  []
+  (dorun (map
+           (fn [record]
+             (let [record (db/get-record-by-id (:id record))]
+               (when (some #{(:suffix record)} #{"jpg" "jpeg" "png" "gif"})
+                 (timbre/info "create-images:" (:id record) (:record-id record))
+                 (let [record (db/get-record-by-id (:id record))
+                       body (String. (:body record) "UTF-8")
+                       elements (->> (clojure.string/split body #"<>")
+                                     (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                     (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                     (apply merge))]
+                   (create-image (:file-id record) (:stamp record) (:record-id record) elements (:deleted record))))))
+           (sort-by :id (db/get-all-records-with-ids-only)))))
 
 
 
@@ -438,7 +531,7 @@
 
        ; Use the supplied range.
        :else
-       (let [_ (timbre/info "Downloading file:" node-name file-name range record-id)
+       (let [_ (timbre/info "Downloading file:" node-name file-name (file-name-to-thread-title file-name) range record-id)
              url (if record-id
                    (str "http://" node-name "/get/" file-name "/" range "/" record-id)
                    (str "http://" node-name "/get/" file-name "/" range))
@@ -469,19 +562,23 @@
                        (db/add-blocked-record-with-origin file-name stamp record-id node-name))
 
                      :else
-                     (db/add-record
-                       file-id
-                       stamp
-                       record-id
-                       body
-                       (is-post-spam? file-name stamp record-id elements)
-                       (convert-record-into-dat-file-line
-                         (-> elements
-                             (assoc :stamp stamp)
-                             (assoc :record-id record-id)))
-                       (:suffix elements)
-                       node-name
-                       nil)))
+                     (let [deleted (is-post-spam? file-name stamp record-id elements)]
+                       (db/add-record
+                         file-id
+                         stamp
+                         record-id
+                         body
+                         deleted
+                         (convert-record-into-dat-file-line
+                           (-> elements
+                               (assoc :stamp stamp)
+                               (assoc :record-id record-id)))
+                         (:suffix elements)
+                         node-name
+                         nil)
+                       (if (:suffix elements)
+                         (create-image file-id stamp record-id elements deleted))
+                       )))
                  (catch Throwable t  (timbre/info (str "Skipped record: " (str t) " " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
              records))
          (db/update-file file-id)
@@ -862,6 +959,8 @@
       (:suffix elements)
       @server-node-name
       remote-address)
+    (if (:suffix elements)
+      (create-image file-id stamp record-id elements false))
     (db/update-file file-id)
     (db/process-update-command (:file-name file) stamp record-id)
     (do (future
@@ -937,11 +1036,10 @@
                    node-name (if (re-find #"^:" node-name)
                                (str remote-addr node-name)
                                node-name)]
-               (timbre/info "/join" (get-remote-address request) node-name server-name)
+               (timbre/info "/join" (get-remote-address request) node-name)
                (when (and (valid-node-name? node-name)
                           (not (= node-name @server-node-name))
                           (not (some #{node-name} @active-nodes))
-                          ;(re-find (re-pattern (str "^" (java.util.regex.Pattern/quote server-name) ":")) node-name)
                           (ping node-name))
                  (if (>= (count @active-nodes) max-num-active-nodes)
                    (bye (first (shuffle @active-nodes))))
@@ -979,7 +1077,7 @@
                      stamp (Long/parseLong stamp)
                      entry {:file-name file-name :stamp stamp :record-id record-id}
                      file (db/get-file file-name)]
-                 (timbre/info "/update" remote-addr file-name stamp record-id node-name)
+                 (timbre/info "/update" remote-addr file-name (file-name-to-thread-title file-name) stamp record-id node-name)
                  ;(if (and
                  ;      (not (db/file-deleted? file-id))
                  ;      (not (db/record-exists file-id stamp record-id)))
@@ -1001,7 +1099,7 @@
                    (try
                      (download-file-from-node node-name file-name (str stamp))
                      (if-not (db/get-record-without-body (db/get-file-id file-name) stamp record-id)
-                       (timbre/info "INVALID /update COMMAND:" file-name stamp record-id node-name))
+                       (timbre/info "Record not found for /update:" file-name (file-name-to-thread-title file-name) stamp record-id node-name))
                      (when (db/get-record-without-body (db/get-file-id file-name) stamp record-id)
                        (dorun (pmap
                                 #(try

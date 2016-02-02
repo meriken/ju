@@ -295,15 +295,20 @@
         :images
         [:id           id]
         [:file_id      bigint "NOT NULL"]
+        [:stamp        bigint "NOT NULL"]
         [:record_id    varchar "NOT NULL"]
         [:suffix       varchar "NOT NULL"]
-        [:thumbnail    blob "DEFAULT NULL"]
-        [:body         blob "DEFAULT NULL"]
+        [:thumbnail    blob "NOT NULL"]
+        [:image        blob "DEFAULT NULL"]
+        [:width        bigint "NOT NULL"]
+        [:height       bigint "NOT NULL"]
         [:jane_md5_string varchar "NOT NULL"]
         [:md5_string   varchar "NOT NULL"]
         [:time_created "TIMESTAMP NULL"]
         [:size         bigint "NOT NULL"]
-        [:origin       varchar "DEFAULT NULL"]))))
+        [:subindex     bigint "DEFAULT NULL"]
+        [:origin       varchar "DEFAULT NULL"]
+        [:deleted      "BOOLEAN DEFAULT FALSE"]))))
 
 
 
@@ -368,6 +373,15 @@
   (try (sql/db-do-commands db-spec "CREATE INDEX images_index ON images ( file_id, record_id );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_index ON images ( file_id, record_id(32) );")
                                (catch Throwable _ (timbre/info "Failed to create images_index")))))
+  (try (sql/db-do-commands db-spec "CREATE INDEX images_record_id_index ON images ( record_id );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_record_id_index ON images ( record_id(32) );")
+                               (catch Throwable _ (timbre/info "Failed to create images_record_id_index")))))
+  (try (sql/db-do-commands db-spec "CREATE INDEX images_jane_md5_string_index ON images ( jane_md5_string );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_jane_md5_string_index ON images ( jane_md5_string(32) );")
+                               (catch Throwable _ (timbre/info "Failed to create images_jane_md5_string_index")))))
+  (try (sql/db-do-commands db-spec "CREATE INDEX images_md5_string_index ON images ( jane_string );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_md5_string_index ON images ( md5_string(32) );")
+                               (catch Throwable _ (timbre/info "Failed to create images_md5_string_index")))))
   (try (sql/db-do-commands db-spec "CREATE INDEX images_origin_index ON images ( origin );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_origin_index ON images ( origin(128) );")
                                (catch Throwable _ (timbre/info "Failed to create images_origin_index")))))
