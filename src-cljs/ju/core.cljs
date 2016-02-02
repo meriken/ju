@@ -752,6 +752,12 @@
                               (goog.string/unescapeEntities %)
                               [:br {:key (my-uuid)}])
                             (clojure.string/split (:body post) #"<br>"))))
+                 (map #(if-not (and (string? %) (re-find #"^[\t ]+" %))
+                        %
+                        (let [[_ spaces rest] (re-find #"^([\t ])+(.*)$" %)
+                              spaces (clojure.string/replace spaces #" " "&nbsp;")
+                              spaces (clojure.string/replace spaces #"\t" "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")]
+                          (list [:span {:dangerouslySetInnerHTML {:__html spaces}}] rest))))
                  (map #(if (string? %) (process-links %) %))
                  (map #(if (string? %) (process-anchors % thread-title) %))
                  (map #(if (string? %) (process-bracket-links %) %))))
@@ -870,7 +876,9 @@
 
               ]
      reverse-anchors (remove nil? (map #(if (= (:destination %) (:record-short-id post)) (:source %) nil) anchors))
-     body-with-image [body
+     ascii-art? (and (:body post) (re-find #"　 | 　" (:body post)))
+     body-with-image [{:class (if ascii-art? "ascii-art" "")}
+                      body
                       (if (and body-exists? thumbnail-exists?) [:hr])
                       (if thumbnail-exists?
                         [:div {:style {:display "flex" :justify-content "center":align-items "center":height @thumbnail-height :width "100%"}}
