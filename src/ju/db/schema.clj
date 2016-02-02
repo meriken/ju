@@ -403,6 +403,7 @@
   (create-blocked-records-table db-spec)
   (create-update-commands-table db-spec)
   (create-anchors-table db-spec)
+  (create-images-table db-spec)
   (create-indexes db-spec))
 
 (defn drop-tables

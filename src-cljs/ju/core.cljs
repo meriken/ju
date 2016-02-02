@@ -299,6 +299,12 @@
        ;  "このスレッドをダウンロード"]]
 
        [:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
+        [:a.btn.btn-default
+         {:on-click handle-click-on-link
+          :href (str (session/get :href-base) "/images")}
+         "このスレッドの画像一覧"]]
+
+       [:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
        [:a.btn.btn-default.first-page
         {:on-click handle-click-on-link
          :href (session/get :href-base)
@@ -511,7 +517,13 @@
   [(keyword (str "div.container"
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
-   [:h3 "「" (session/get :thread-title) "」の画像一覧"]
+   [:h3 "「"
+    [:a
+     {:style {:color "black"}
+      :on-click handle-click-on-link
+      :href (str (session/get :href-base))}
+     (session/get :thread-title)]
+    "」の画像一覧"]
    [:div#content
     (session/get :images)]])
 
@@ -1018,13 +1030,43 @@
            :keywords? true
            :params {:threads threads}})))
 
+(defn launch-image-viewer-for-images
+  [link event]
+  (comment when @enable-google-analytics
+    ;(.log js/console (str "(js/ga \"send\" \"pageview\" \"" src "\")"))
+    (js/ga "send" "pageview" src))
+  (let [links (.getElementsByTagName (.getElementById js/document"images") "a")
+        options (clj->js {:index link
+                          :event event
+                          :useBootstrapModal false
+                          :hidePageScrollbars false
+                          :thumbnailIndicators false})]
+    (.toggleClass ($ :#blueimp-gallery) "blueimp-gallery-controls" true)
+    (.Gallery js/blueimp links options)))
+
 (defn images-in-thread-handler
   [response]
   (let []
     (session/put!
       :images
       [:div#images
-       (map #(do [:div
+       (map (fn [image]
+              (let [link-tag-id (my-uuid)]
+                [:a {:id link-tag-id
+                     :href (str
+                             "/thread/"
+                             (js/encodeURIComponent (session/get :thread-title))
+                             "/"
+                             (:record-id image)
+                             "."
+                             (:suffix image))
+                      :on-click #(do
+                                  (.preventDefault %)
+                                  (launch-image-viewer-for-images
+                                    (.getElementById js/document link-tag-id)
+                                    %))
+                       :key link-tag-id}
+                  [:div
                   {:style {:margin "1px"
                            :justify-content "center":align-items "center"
                            :display "flex"
@@ -1038,13 +1080,13 @@
                                "/thread/"
                                (js/encodeURIComponent (session/get :thread-title))
                                "/thumbnail-"
-                               (:record-id %)
+                               (:record-id image)
                                ".jpg")
                          :style {:background "#000"
                                  :height "auto"
                                  :width "auto"
                                  :max-height "150px"
-                                 :max-width "150px"}}]])
+                                 :max-width "150px"}}]]]))
             (:images response))
        ])))
 
@@ -1061,7 +1103,7 @@
 (defn fetch-images-in-thread!
   [thread-title]
   (let []
-    (session/put! :images nil)
+    (session/put! :images [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
     (POST (str "/api/images-in-thread")
           {:handler images-in-thread-handler
            :error-handler images-in-thread-error-handler
@@ -1161,6 +1203,7 @@
                  :threads "全てのスレッド"
                  :recent-threads "最近更新されたスレッド"
                  :thread (session/get :thread-title)
+                 :images (str "「" (session/get :thread-title) "」の画像一覧")
                  :new-posts "新着レスまとめ読み"
                  :create-new-thread "新規スレッド作成"
                  :status "状態"
