@@ -507,6 +507,14 @@
    [:div#content
     (session/get :posts)]])
 
+(defn images-page []
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
+   [:h3 "「" (session/get :thread-title) "」の画像一覧"]
+   [:div#content
+    (session/get :images)]])
+
 (defn create-new-thread-page []
   [(keyword (str "div.container"
                  (if (not @navbar-enabled?) ".without-navbar")
@@ -577,6 +585,7 @@
    :threads #'threads-page
    :recent-threads #'recent-threads-page
    :thread #'thread-page
+   :images #'images-page
    :new-posts #'new-posts-page
    :create-new-thread #'create-new-thread-page
    :status #'status-page
@@ -975,8 +984,7 @@
       [:div#posts
        [:div.alert.alert-danger {:role "alert"}
         [:span.glyphicon.glyphicon-exclamation-sign]
-        "レスの読み込みに失敗しました。" [:br]
-        (str response)]])))
+        "レスの読み込みに失敗しました。"]])))
 
 (defn fetch-posts!
   [thread-title page-num record-short-id]
@@ -1009,6 +1017,58 @@
            :response-format :json
            :keywords? true
            :params {:threads threads}})))
+
+(defn images-in-thread-handler
+  [response]
+  (let []
+    (session/put!
+      :images
+      [:div#images
+       (map #(do [:div
+                  {:style {:margin "1px"
+                           :justify-content "center":align-items "center"
+                           :display "flex"
+                           :background "#000"
+                           :float "left"
+                           :height "150px"
+                           :width "150px"
+                           :max-height "150px"
+                           :max-width "150px"}}
+                  [:img {:src (str
+                               "/thread/"
+                               (js/encodeURIComponent (session/get :thread-title))
+                               "/thumbnail-"
+                               (:record-id %)
+                               ".jpg")
+                         :style {:background "#000"
+                                 :height "auto"
+                                 :width "auto"
+                                 :max-height "150px"
+                                 :max-width "150px"}}]])
+            (:images response))
+       ])))
+
+(defn images-in-thread-error-handler
+  [response]
+  (let []
+    (session/put!
+      :images
+      [:div#images
+       [:div.alert.alert-danger {:role "alert"}
+        [:span.glyphicon.glyphicon-exclamation-sign]
+        "画像の読み込みに失敗しました。"]])))
+
+(defn fetch-images-in-thread!
+  [thread-title]
+  (let []
+    (session/put! :images nil)
+    (POST (str "/api/images-in-thread")
+          {:handler images-in-thread-handler
+           :error-handler images-in-thread-error-handler
+           :format :json
+           :response-format :json
+           :keywords? true
+           :params {:thread-title thread-title}})))
 
 (defn check-new-post-notification!
   []
@@ -1143,6 +1203,16 @@
   (session/put! :record-short-id nil)
   (session/put! :href-base (str "/thread/" (js/decodeURIComponent thread-title)))
   (session/put! :page :thread)
+  (set-title))
+
+(secretary/defroute
+  "/thread/:thread-title/images"
+  [thread-title]
+  (process-query-string)
+  (reset! jump-command :top)
+  (fetch-images-in-thread! thread-title)
+  (session/put! :thread-title thread-title)
+  (session/put! :page :images)
   (set-title))
 
 (secretary/defroute

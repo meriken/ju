@@ -737,6 +737,14 @@
 (defn get-image [file-id record-id]
   (nth (select images (where {:file_id file-id :record_id record-id})) 0 nil))
 
+(defn get-all-images-in-thread-without-images-and-thumbnails
+  [file-id]
+  (select images
+          (where {:file_id file-id})
+          (order :stamp :ASC)
+          ;(fields :record-id)
+          ))
+
 
 
 (comment defn start-database-monitor []

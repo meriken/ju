@@ -1265,6 +1265,16 @@
                               (zero? (:num-records %))))
                     (map #(assoc % :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))))))
 
+           (POST "/api/images-in-thread"
+                 request
+             (let [{:keys [thread-title]} (:params request)
+                   _ (timbre/info "/api/images-in-thread" (get-remote-address request) thread-title)
+                   file (db/get-file (thread-title-to-file-name thread-title))
+                   images (db/get-all-images-in-thread-without-images-and-thumbnails (:id file))
+                   images (map #(assoc % :thumbnail nil) images)
+                   images (map #(assoc % :image nil) images)]
+               {:body {:images images}}))
+
            (POST "/api/post"
                  request
              (try
