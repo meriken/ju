@@ -1,11 +1,14 @@
 (ns ju.param)
 
+
+
 (def initial-nodes
   ["node.shingetsu.info:8000/server.cgi"
    "node.fuktommy.com:8000/server.cgi"
    "melchior.ygg.io:8880/server"
    "caspar.ygg.io:8880/server"
-   "balthazar.ygg.io:8880/server"])
+   "balthazar.ygg.io:8880/server"
+   "24.130.242.114:8000/server.cgi"])
 (def blocked-nodes
   [])
 

@@ -66,10 +66,10 @@
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
              "-Xmx768m" ; 512m should work.
-             "-XX:+UseParNewGC"
-             "-XX:+UseConcMarkSweepGC"
-             ;"-XX:+UseG1GC"
-             ;"-XX:MaxGCPauseMillis=1000"
+             ;"-XX:+UseParNewGC"
+             ;"-XX:+UseConcMarkSweepGC"
+             "-XX:+UseG1GC"
+             "-XX:MaxGCPauseMillis=1000"
              ]
   :resource-paths ["resources" "target/cljsbuild"]
 

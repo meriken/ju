@@ -14,7 +14,8 @@
             [ju.routes.shingetsu :as shingetsu])
   (:gen-class)
   (:import (java.awt Desktop)
-           (java.net URI)))
+           (java.net URI)
+           (org.apache.commons.lang3.exception ExceptionUtils)))
 
 (defonce nrepl-server (atom nil))
 
@@ -101,7 +102,8 @@
        ; (clojure.string/upper-case (name level))  " "
        ; "[" (or ?ns-str "?ns") "] "
        (force msg_) " "
-       (force ?err_)
+       (if (force ?err_)
+         (org.apache.commons.lang3.exception.ExceptionUtils/getStackTrace (force ?err_)))
        (comment when-not no-stacktrace?
                 (when-let [err (force ?err_)]
                   (str "\n" (stacktrace err opts))))
@@ -125,9 +127,8 @@
       (timbre/info "Initializing the database...")
       (timbre/info "Tables are being created...")
       (schema/create-tables schema/db-spec)))
-  ;(timbre/info "Updating files...")
-  ;(db/update-all-files)
   (start-nrepl)
+  (db/start-database-monitor)
   (shingetsu/start-node-monitor)
   (shingetsu/start-crawler)
   (start-http-server (http-port port))

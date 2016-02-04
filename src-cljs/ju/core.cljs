@@ -523,7 +523,7 @@
       :on-click handle-click-on-link
       :href (str (session/get :href-base))}
      (session/get :thread-title)]
-    "」の画像一覧"]
+    "」の画像一覧(新着順)"]
    [:div#content
     (session/get :images)]])
 

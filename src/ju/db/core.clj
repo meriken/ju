@@ -1,6 +1,7 @@
 (ns ju.db.core
   (:require
     [clojure.java.jdbc :as sql]
+    [clojure.stacktrace]
     ;[conman.core :as conman]
     [environ.core :refer [env]]
     [mount.core :refer [defstate]]
@@ -218,7 +219,6 @@
 (defn really-delete-file
   [file-id]
   (transaction
-    {:isolation :serializable}
     (delete files (where {:id file-id}))
     (delete records (where {:file_id file-id}))
     (delete anchors (where {:file_id file-id}))))
@@ -267,7 +267,6 @@
   (try-times
     5
     (transaction
-      {:isolation :serializable}
       (when (zero? (count (select records (fields :id) (where { :file_id file-id :stamp stamp :record_id record-id }))))
         (insert records
                 (values {:file_id file-id
@@ -275,7 +274,7 @@
                          :record_id record-id
                          :record_short_id (second (re-find #"^([0-9a-f]{8})" record-id))
                          :body body
-                         :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
+                         :time_created nil ; dirty flag ; (clj-time.coerce/to-sql-time (clj-time.core/now))
                          :size (+ 10 2 32 2 (count body) 1)
                          :deleted (if deleted true false)
                          :dat_file_line dat-file-line
@@ -446,6 +445,13 @@
           (where {:file_id file-id :deleted false})
           (order :stamp :ASC)))
 
+(defn get-all-records-in-file-without-bodies
+  [file-id]
+  (select records
+          (fields :id :file_id :stamp :record_id :record_short_id :time_created :size :dat_file_line :suffix)
+          (where {:file_id file-id :deleted false})
+          (order :stamp :ASC)))
+
 (defn get-all-records-in-file-with-record-short-ids-only
   [file-id]
   (select records
@@ -498,50 +504,6 @@
     records
     (where {:id id})))
 
-(declare update-file)
-(defn remove-duplicate-records-in-file
-  [file-id]
-  (timbre/info "remove-duplicate-records-in-file:" file-id)
-  (let [duplicates (remove #(= (count %) 1)
-                           (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
-                                               (map #(:id %) (remove #(or
-                                                                       (not (= (:file-id %) (:file-id record)))
-                                                                       (not (= (:stamp %) (:stamp record)))
-                                                                       (not (= (:record-id %) (:record-id record))))
-                                                                     (ju.db.core/get-records-by-short-id (:record-short-id record))))))
-                                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
-        duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))]
-    (timbre/info "remove-duplicate-records-in-file: duplicates:" (count duplicates))
-    (dorun (map ju.db.core/really-delete-record duplicates))
-    (update-file file-id)
-    (count duplicates)))
-
-(defn remove-duplicate-records
-  []
-  (reduce + (map remove-duplicate-records-in-file (sort (map #(:id %) (get-all-files))))))
-
-(defn remove-duplicate-records-from-mika-in-file
-  [file-id]
-  (timbre/info "remove-duplicate-records-from-mika-in-file:" file-id)
-  (let [duplicates (remove #(= (count %) 1)
-                           (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
-                                               (map #(:id %) (remove #(or
-                                                                       (not (= (:file-id %) (:file-id record)))
-                                                                       (not (= (mod (:stamp %) 32400) (mod (:stamp record) 32400)))
-                                                                       (not (= (:record-id %) (:record-id record))))
-                                                                     (ju.db.core/get-records-by-short-id (:record-short-id record))))))
-                                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
-        duplicates (into #{} (apply concat (map #(drop 1 %) duplicates)))]
-    (when (pos? (count duplicates))
-      (timbre/info "remove-duplicate-records-from-mika-in-file:" (pr-str duplicates))
-      (dorun (map ju.db.core/mark-record-as-deleted duplicates))
-      (update-file file-id))
-    (count duplicates)))
-
-(defn remove-duplicate-records-from-mika
-  []
-  (reduce + (map remove-duplicate-records-from-mika-in-file (sort (map #(:id %) (get-all-files))))))
-
 (defn update-dat-file-line
   [id dat-file-line suffix]
   (update
@@ -550,6 +512,144 @@
                  :suffix suffix})
     (where {:id id})))
 
+(defn delete-duplicate-images
+  [record-index]
+  (let [record (first
+                 (select records
+                       (fields :stamp :record_id)
+                       (where {:id record-index})))
+        duplicates (drop 1 (sort #(< (:id %1) (:id %2))
+                                 (select images
+                                         (fields :id)
+                                         (where {:stamp (:stamp record)
+                                                 :record_id (:record-id record)}))))]
+    (if (pos? (count duplicates))
+      (timbre/info "Deleted" (count duplicates) "duplicate images."))
+    (map (fn [image]
+           (delete images
+                   (where {:id (:id image)})))
+         duplicates)))
+
+(declare mark-file-as-dirty)
+(declare update-file)
+(defn remove-duplicate-records-in-file
+  [file-id]
+  (timbre/info "remove-duplicate-records-in-file:" file-id)
+  (let [duplicate-lists (remove #(= (count %) 1)
+                           (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
+                                               (map #(:id %) (remove #(or
+                                                                       (not (= (:file-id %) (:file-id record)))
+                                                                       (not (= (:stamp %) (:stamp record)))
+                                                                       (not (= (:record-id %) (:record-id record))))
+                                                                     (ju.db.core/get-records-by-short-id (:record-short-id record))))))
+                                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
+        duplicates (into #{} (apply concat (map #(drop 1 %) duplicate-lists)))]
+    (dorun (map #(do
+                  (ju.db.core/really-delete-record %)
+                  (delete-duplicate-images %))
+                duplicates))
+    (when (pos? (count duplicates))
+      (timbre/info "Deleted" (count duplicates) "duplicate record(s):" duplicate-lists)
+      (mark-file-as-dirty file-id))
+    (count duplicates)))
+
+(defn remove-duplicate-records
+  []
+  (reduce + (map remove-duplicate-records-in-file (sort (map #(:id %) (get-all-files))))))
+
+(defn remove-new-duplicate-records
+  []
+  ;(timbre/info "remove-new-duplicate-records")
+  (let [new-records (sort #(< (:id %1) (:id %2))
+                          (select records
+                                  (fields :id :file_id :stamp :record_id :record_short_id)
+                                  (where {:time_created nil})))
+        duplicate-lists (remove #(= (count %) 1)
+                                (map (fn [record] (let [record-list (map #(:id %)
+                                                                         (remove #(or
+                                                                                   (not (= (:file-id %) (:file-id record)))
+                                                                                   (not (= (:stamp %) (:stamp record)))
+                                                                                   (not (= (:record-id %) (:record-id record))))
+                                                                                 (ju.db.core/get-records-by-short-id (:record-short-id record))))]
+                                                    (update records
+                                                            (where {:id (:id record)})
+                                                            (set-fields {:time_created (clj-time.coerce/to-sql-time (clj-time.core/now))}))
+                                                    record-list))
+                                     new-records))
+        duplicates (into #{} (apply concat (map #(drop 1 %) duplicate-lists)))]
+    (dorun (map #(do
+                  (ju.db.core/really-delete-record %)
+                  (delete-duplicate-images %)
+                  (mark-file-as-dirty (:file-id (select records (fields :file_id) (where {:id %})))))
+                duplicates))
+    (when (pos? (count duplicates))
+      (timbre/info "Removed" (count duplicates) "new duplicate record(s)."))
+    (pos? (count new-records))))
+
+(defn clean-mikas-second-spill-
+  [file-id]
+  (timbre/info "clean-mikas-second-spill-:" file-id)
+  (let [duplicate-lists (remove #(= (count %) 1)
+                           (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
+                                               (remove #(or
+                                                                       (not (= (:file-id %) (:file-id record)))
+                                                                       (not (= (mod (:stamp %) 32400) (mod (:stamp record) 32400)))
+                                                                       (not (= (:record-id %) (:record-id record))))
+                                                                     (ju.db.core/get-records-by-short-id (:record-short-id record)))))
+                                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
+        sorted-duplicate-lists (map
+                                (fn [duplicate-list]
+                                  (map #(:id %) (sort #(> (:stamp %1) (:stamp %2)) duplicate-list)))
+                                duplicate-lists)
+        duplicates (into #{} (apply concat (map #(drop 1 %) sorted-duplicate-lists)))]
+    (when (pos? (count duplicates))
+      (timbre/info "clean-mikas-second-spill-:" (pr-str sorted-duplicate-lists))
+      ;(dorun (map ju.db.core/mark-record-as-deleted duplicates))
+      ;(update-file file-id))
+      )
+    (count duplicates)))
+
+(defn clean-mikas-second-spill
+  []
+  (reduce + (map clean-mikas-second-spill- (sort (map #(:id %) (get-all-files))))))
+
+(defn clean-mikas-first-spill
+  "Removes records that are special cases of duplicates.
+  Duplicate files were created in the following manner:
+  e.g. NHK総合実況 -> nhk総合実況"
+  []
+  (reduce +
+          (remove nil?
+                  (map (fn [file]
+                         (let [thread-title (file-name-to-thread-title (:file-name file))
+                               thread-title-lower-case (clojure.string/lower-case thread-title)]
+                           (if (and thread-title thread-title-lower-case (not (= thread-title thread-title-lower-case)))
+                             (let [records-in-original-file (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file))
+                                   file-lower-case (ju.db.core/get-file (thread-title-to-file-name thread-title-lower-case))
+                                   records-in-duplicate-file (and file-lower-case (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file-lower-case)))
+                                   duplicate-records (if file-lower-case (clojure.set/intersection
+                                                                           (into #{} (map #(:record-id %) records-in-original-file))
+                                                                           (into #{} (map #(:record-id %) records-in-duplicate-file)))
+                                                                         #{})]
+                               (when (and
+                                       file-lower-case
+                                       duplicate-records
+                                       (pos? (count duplicate-records)))
+                                 (timbre/debug
+                                   (str
+                                     thread-title
+                                     " -> " thread-title-lower-case
+                                     " " (count records-in-original-file)
+                                     " " (count records-in-duplicate-file)
+                                     " " (count duplicate-records)))
+                                 (dorun
+                                   (map #(mark-record-in-file-with-record-id-as-deleted (:id file-lower-case) %)
+                                        duplicate-records))
+                                 (update-file (:id file-lower-case))
+                                 (count duplicate-records)
+                                 )))))
+                       (ju.db.core/get-all-files)))))
+
 
 
 (defn add-blocked-record
@@ -557,7 +657,6 @@
   (try-times
     5
     (transaction
-      {:isolation :serializable}
       (when (zero? (count (select blocked_records (fields :id) (where { :file_name file-name :stamp stamp :record_id record-id }))))
         (insert blocked_records
                 (values {:file_name file-name
@@ -571,7 +670,6 @@
   (try-times
     5
     (transaction
-      {:isolation :serializable}
       (when (zero? (count (select blocked_records (fields :id) (where { :file_name file-name :stamp stamp :record_id record-id :origin origin}))))
         (insert blocked_records
                 (values {:file_name file-name
@@ -634,6 +732,7 @@
                                  (java.sql.Timestamp. (* 1000 (:stamp
                                                                 (nth
                                                                   (select records
+                                                                          (fields :stamp)
                                                                           (where {:file_id file-id :deleted false})
                                                                           (order :stamp :DESC)
                                                                           (limit 1))
@@ -647,6 +746,7 @@
                                  (java.sql.Timestamp. (* 1000 (:stamp
                                                                 (nth
                                                                   (select records
+                                                                          (fields :stamp)
                                                                           (where {:file_id file-id :deleted false})
                                                                           (order :stamp :ASC)
                                                                           (limit 1))
@@ -657,8 +757,10 @@
   (update
     files
     (set-fields {:size (reduce + (map :size (select records
-                                               (where {:file_id file-id})
-                                               (fields :size))))})
+
+                                                    (fields :size)
+                                                    (where {:file_id file-id})
+                                                    (fields :size))))})
     (where {:id file-id})))
 
 (defn update-all-files
@@ -667,6 +769,34 @@
     (map
       #(update-file %)
       (sort (map :id (select files (fields :id)))))))
+
+(defn get-dirty-files
+  []
+  (select files
+          (where {:dirty true})))
+
+
+(defn mark-file-as-dirty
+  [file-id]
+  (update
+    files
+    (set-fields {:dirty true})
+    (where {:id file-id})))
+
+(defn mark-file-as-clean
+  [file-id]
+  (update
+    files
+    (set-fields {:dirty false})
+    (where {:id file-id})))
+
+(defn is-file-dirty?
+  [file-id]
+  (:dirty
+    (first
+      (select
+        files
+        (where {:id file-id})))))
 
 
 
@@ -726,7 +856,6 @@
   (try-times
     5
     (transaction
-      {:isolation :serializable}
       (when (zero? (count (select images (where {
                                                  :file_id (:file_id image)
                                                  :record_id (:record_id image)
@@ -737,32 +866,56 @@
 (defn get-image [file-id record-id]
   (nth (select images (where {:file_id file-id :record_id record-id})) 0 nil))
 
-(defn get-all-images-in-thread-without-images-and-thumbnails
+(defn get-all-images-in-thread-with-record-ids-and-suffixes-only
   [file-id]
   (select images
           (where {:file_id file-id})
-          (order :stamp :ASC)
-          ;(fields :record-id)
-          ))
+          (fields :record_id :suffix)
+          (order :stamp :DESC)))
 
 
 
-(comment defn start-database-monitor []
+(defn start-database-monitor []
+  (comment do
+    (future
+      (timbre/debug "Record Monitor started.")
+      (while true
+        (do
+          (future
+            (try
+              (remove-duplicate-records)
+              (clean-mikas-first-spill)
+              (clean-mikas-second-spill)
+              (catch Throwable t
+                (timbre/error "Record Monitor:" t)))))
+        (Thread/sleep (* 60 60 1000)))))
+
   (do
     (future
-      (timbre/info "Database monitor started.")
-      (try
+      (timbre/debug "New Record Monitor started.")
+      (while true
+        (try
+          (while (remove-new-duplicate-records))
+          (catch Throwable t
+            (clojure.stacktrace/print-stack-trace t)
+            (timbre/error "New Record Monitor:" t)))
+        (Thread/sleep 100))))
+
+  (do
+    (future
+      (timbre/info "File Monitor started.")
       (while true
         (try
           (let [dirty-files (get-dirty-files)]
             (when (pos? (count dirty-files))
-              (Thread/sleep 1000)
-              (map
+              ;(timbre/info "File Monitor: Updating" (count dirty-files) "files.")
+              (pmap
                 (fn [file]
-                  (mark-file-as-clean (:id file))
-                  (remove-duplicate-records-in-file (:id file))
-                  (update-file (:id file)))
-                dirty-files)
-              ))
-          (catch Throwable t))
-        (Thread/sleep 1000))))))
+                  (when (is-file-dirty? (:id file))
+                    (timbre/info "File Monitor: Updating file:" (:file-name file) (file-name-to-thread-title (:file-name file)))
+                    (mark-file-as-clean (:id file))
+                    (update-file (:id file))))
+                dirty-files)))
+          (catch Throwable t
+            (timbre/error "File Monitor:" t)))
+        (Thread/sleep 100)))))

@@ -1,4 +1,5 @@
 (ns ju.util
+  (:require [ju.param :as param])
   (:import (java.net URLEncoder)
            (java.nio.file Files)
            (java.security MessageDigest)))
@@ -19,6 +20,46 @@
 (defmacro try-times
   [n & body]
   `(try-times* ~n (fn [] ~@body)))
+
+
+
+(defn valid-node-name? [node-name]
+  (and
+    (re-find #"^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])):[0-9]+(/[a-zA-Z0-9._]+)+$" node-name)
+    (not (re-find #"^192\." node-name))
+    (not (re-find #"^128\." node-name))
+    (not (re-find #"^localhost:" node-name))))
+
+(defn valid-file? [file]
+  (re-find #"^([0-9]+<>[0-9a-f]{32}<>.*\n)+$" file))
+
+(defn valid-file-name? [file-name]
+  (re-find #"^[0-9a-zA-Z]+_[0-9a-zA-Z_]+$" file-name))
+
+(defn valid-range? [range]
+  (if (or (re-find #"^[0-9]+$" range)
+          (re-find #"^-[0-9]+$" range)
+          (re-find #"^[0-9]+-$" range))
+    true
+    (let [match (re-find #"^([0-9]+)-([0-9]+)$" range)]
+      (and match (<= (Long/parseLong (nth match 1)) (Long/parseLong (nth match 2)))))))
+
+(defn unhexify [s]
+  (let [bytes (into-array Byte/TYPE
+                          (map (fn [[x y]]
+                                 (unchecked-byte (Integer/parseInt (str x y) 16)))
+                               (partition 2 s)))]
+    (String. bytes "UTF-8")))
+
+(defn file-name-to-thread-title
+  [file-name]
+  (and
+    (re-find #"^thread_(.*)$" file-name)
+    (unhexify (second (re-find #"^thread_(.*)$" file-name)))))
+
+(defn thread-title-to-file-name
+  [thread-title]
+  (str "thread_" (apply str (map #(format "%02X" %) (.getBytes thread-title "UTF-8")))))
 
 
 
@@ -53,3 +94,7 @@
                           (rem (* % 5) 8))
                         31))
                     (range 0 26)))))
+
+(defn valid-node?
+         [node-name]
+         (not (some #{node-name} (into #{} param/blocked-nodes))))

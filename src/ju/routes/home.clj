@@ -24,10 +24,10 @@
            (GET "/thread/:thread-title" [thread-title] (home-page thread-title))
            (GET "/thread/:thread-title/:qualifier"
                 [thread-title qualifier]
-             (timbre/debug "/thread/:thread-title/:qualifier")
              (cond
                (re-find #"^[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier)
-               (let [file-id (db/get-file-id-by-thread-title thread-title)
+               (let [_ (timbre/debug "/thread/:thread-title/:qualifier" thread-title qualifier)
+                     file-id (db/get-file-id-by-thread-title thread-title)
                      [_ record-id suffix] (re-find #"^([a-f0-9]{32})\.([a-zA-Z0-9]+)$" qualifier)
                      record (db/get-record-in-file-by-record-id file-id record-id)
                      body (String. (:body record) "UTF-8")
@@ -52,8 +52,9 @@
                     :body    (ByteArrayInputStream. (:thumbnail image))}))
 
                :else
-               (home-page (home-page "スレッド一覧"))
-               ))
+               (do
+                 (timbre/debug "/thread/:thread-title/:qualifier" thread-title qualifier)
+                 (home-page (home-page "スレッド一覧")))))
            (GET "/new-posts" [] (home-page "新着レスまとめ読み"))
            (GET "/create-new-thread" [] (home-page "新規スレッド作成"))
            (GET "/status" [] (home-page "状態"))

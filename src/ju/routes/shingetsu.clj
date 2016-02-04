@@ -63,44 +63,6 @@
 
 
 
-(defn valid-node-name? [node-name]
-  (and
-    (re-find #"^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])):[0-9]+(/[a-zA-Z0-9._]+)+$" node-name)
-    (not (re-find #"^192\." node-name))
-    (not (re-find #"^128\." node-name))
-    (not (re-find #"^localhost:" node-name))))
-
-(defn valid-file? [file]
-  (re-find #"^([0-9]+<>[0-9a-f]{32}<>.*\n)+$" file))
-
-(defn valid-file-name? [file-name]
-  (re-find #"^[0-9a-zA-Z]+_[0-9a-zA-Z_]+$" file-name))
-
-(defn valid-range? [range]
-  (if (or (re-find #"^[0-9]+$" range)
-          (re-find #"^-[0-9]+$" range)
-          (re-find #"^[0-9]+-$" range))
-    true
-    (let [match (re-find #"^([0-9]+)-([0-9]+)$" range)]
-      (and match (<= (Long/parseLong (nth match 1)) (Long/parseLong (nth match 2)))))))
-
-(defn unhexify [s]
-  (let [bytes (into-array Byte/TYPE
-                          (map (fn [[x y]]
-                                 (unchecked-byte (Integer/parseInt (str x y) 16)))
-                               (partition 2 s)))]
-    (String. bytes "UTF-8")))
-
-(defn file-name-to-thread-title
-  [file-name]
-  (and
-    (re-find #"^thread_(.*)$" file-name)
-    (unhexify (second (re-find #"^thread_(.*)$" file-name)))))
-
-(defn thread-title-to-file-name
-  [thread-title]
-  (str "thread_" (apply str (map #(format "%02X" %) (.getBytes thread-title "UTF-8")))))
-
 (defn is-post-spam?
   [file-name stamp record-id elements]
   (let  [thread-title (and (re-find #"^thread_(.*)$" file-name)
@@ -253,14 +215,19 @@
 (defn create-image
   [file-id stamp record-id elements deleted]
   (try
-    (let [image     (base64/decode (.getBytes (:attach elements)))
-          awt-image (ImageIO/read (new ByteArrayInputStream image))
-          thumbnail (if awt-image (create-thumbnail awt-image))]
+    (let [image    (if (:attach elements)
+                     (base64/decode
+                      (.getBytes (:attach elements))))
+          awt-image (if image
+                      (ImageIO/read
+                        (new ByteArrayInputStream image)))
+          thumbnail (if awt-image
+                      (create-thumbnail awt-image))]
       (when thumbnail
         (db/add-image
           {
            :file_id      file-id
-           :stamp        stamp
+           :stamp        (if (string? stamp) (Long/parseLong stamp) stamp)
            :record_id    record-id
            :suffix       (:suffix elements)
            :thumbnail    thumbnail
@@ -270,7 +237,7 @@
            :md5_string   (md5 image)
            :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
            :size         (count image)
-           :deleted      deleted
+           :deleted      (if deleted true false)
            })
         )
       true)
@@ -304,7 +271,7 @@
 (defn ping [node-name]
   (if-not (valid-node-name? node-name)
     (throw (IllegalArgumentException. "Invalid node name.")))
-  (if (some #{node-name} (into #{} param/blocked-nodes))
+  (if-not (valid-node? node-name)
     (throw (IllegalArgumentException. "Node was blocked.")))
 
   (try
@@ -333,7 +300,7 @@
     (throw (IllegalArgumentException. "Invalid node.")))
   (if (= node-name @server-node-name)
     (throw (Exception. "Invalid node.")))
-  (if (some #{node-name} (into #{} param/blocked-nodes))
+  (if-not (valid-node? node-name)
     (throw (IllegalArgumentException. "Node was blocked.")))
 
   (client/get (str "http://" node-name "/join/" (clojure.string/replace @server-node-name #"/" "+")) http-params-for-quick-commands)
@@ -343,7 +310,7 @@
   ; (timbre/debug "bye:" node-name)
   (if-not (valid-node-name? node-name)
     (throw (IllegalArgumentException. "Invalid node name.")))
-  (if (some #{node-name} (into #{} param/blocked-nodes))
+  (if-not (valid-node? node-name)
     (throw (IllegalArgumentException. "Node was blocked.")))
 
   (swap! active-nodes #(clojure.set/difference % #{node-name}))
@@ -352,7 +319,7 @@
 (defn node [node-name]
   (if-not (valid-node-name? node-name)
     (throw (IllegalArgumentException. "Invalid node name.")))
-  (if (some #{node-name} (into #{} param/blocked-nodes))
+  (if-not (valid-node? node-name)
     (throw (IllegalArgumentException. "Node was blocked.")))
 
   (let [response (client/get (str "http://" node-name "/node") http-params-for-quick-commands)
@@ -366,7 +333,7 @@
     (throw (IllegalArgumentException. "Invalid node name.")))
   (if-not (valid-range? range)
     (throw (IllegalArgumentException. "Invalid range.")))
-  (if (some #{node-name} (into #{} param/blocked-nodes))
+  (if-not (valid-node? node-name)
     (throw (IllegalArgumentException. "Node was blocked.")))
 
   (let [file (:body (client/get (str "http://" node-name "/recent/" range) http-params))
@@ -383,7 +350,7 @@
   ([node-name file-name stamp record-id sender-node-name]
    (if-not (valid-file-name? file-name)
      (throw (IllegalArgumentException. "Invalid file name.")))
-   (if (some #{node-name} (into #{} param/blocked-nodes))
+   (if-not (valid-node? node-name)
      (throw (IllegalArgumentException. "Node was blocked.")))
 
    (client/get
@@ -403,21 +370,27 @@
     (throw (IllegalArgumentException. "Invalid node name.")))
   (if (= node-name @server-node-name)
     (throw (Exception. "Invalid node name.")))
-  (if (some #{node-name} (into #{} param/blocked-nodes))
+  (if-not (valid-node? node-name)
     (throw (IllegalArgumentException. "Node was blocked.")))
 
   (when (ping node-name)
     ; Add as an active node if appropriate.
-    (if (and
-          (not (some #{node-name} @active-nodes))
-          (< (count @active-nodes) max-num-active-nodes))
-      (join node-name))
+    (try
+      (if (and
+            (not (some #{node-name} @active-nodes))
+            (< (count @active-nodes) max-num-active-nodes))
+        (join node-name))
+      (catch Throwable t
+        nil))
 
     ; Add as a search node if appropriate.
-    (if (and
-          (not (some #{node-name} @search-nodes))
-          (< (count @search-nodes) max-num-search-nodes))
-      (swap! search-nodes conj node-name))
+    (try
+      (if (and
+            (not (some #{node-name} @search-nodes))
+            (< (count @search-nodes) max-num-search-nodes))
+        (swap! search-nodes conj node-name))
+      (catch Throwable t
+        nil))
 
     ; Get a new node.
     (try
@@ -426,7 +399,9 @@
           (if (not (= new-node-name @server-node-name))
             (ping new-node-name))))
       (catch Exception e
-        nil))))
+        nil))
+
+    ))
 
 (defn check-nodes
   ([]
@@ -483,7 +458,7 @@
    (download-file-from-node node-name file-name range nil))
 
   ([node-name file-name range record-id]
-   (if (some #{node-name} (into #{} param/blocked-nodes))
+   (if-not (valid-node? node-name)
      (throw (IllegalArgumentException. "Node was blocked.")))
 
    (if-not (valid-node-name? node-name)
@@ -576,12 +551,12 @@
                          (:suffix elements)
                          node-name
                          nil)
-                       (if (:suffix elements)
+                       (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
                          (create-image file-id stamp record-id elements deleted))
                        )))
                  (catch Throwable t  (timbre/info (str "Skipped record: " (str t) " " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
              records))
-         (db/update-file file-id)
+         (db/mark-file-as-dirty file-id)
          ;(if-not (valid-file? file)
          ;  (throw (Exception. "Invalid file.")))
          (count records))))))
@@ -603,7 +578,7 @@
 
 (defn crawl-node [node-name]
   (timbre/info "Crawler: Crawling node:" node-name)
-  (if (some #{node-name} (into #{} param/blocked-nodes))
+  (if-not (valid-node? node-name)
     (throw (IllegalArgumentException. "Node was blocked.")))
   (try
     ; Try to download a list of files.
@@ -959,9 +934,9 @@
       (:suffix elements)
       @server-node-name
       remote-address)
-    (if (:suffix elements)
+    (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
       (create-image file-id stamp record-id elements false))
-    (db/update-file file-id)
+    (db/mark-file-as-dirty file-id)
     (db/process-update-command (:file-name file) stamp record-id)
     (do (future
           (swap! update-command-history conj entry)
@@ -1036,7 +1011,13 @@
                    node-name (if (re-find #"^:" node-name)
                                (str remote-addr node-name)
                                node-name)]
-               (timbre/info "/join" (get-remote-address request) node-name)
+               (timbre/info "/join"
+                            (get-remote-address request)
+                            node-name
+                            (valid-node-name? node-name)
+                            (not (= node-name @server-node-name))
+                            (not (some #{node-name} @active-nodes))
+                            (ping node-name))
                (when (and (valid-node-name? node-name)
                           (not (= node-name @server-node-name))
                           (not (some #{node-name} @active-nodes))
@@ -1270,7 +1251,7 @@
              (let [{:keys [thread-title]} (:params request)
                    _ (timbre/info "/api/images-in-thread" (get-remote-address request) thread-title)
                    file (db/get-file (thread-title-to-file-name thread-title))
-                   images (db/get-all-images-in-thread-without-images-and-thumbnails (:id file))
+                   images (db/get-all-images-in-thread-with-record-ids-and-suffixes-only (:id file))
                    images (map #(assoc % :thumbnail nil) images)
                    images (map #(assoc % :image nil) images)]
                {:body {:images images}}))
@@ -1569,39 +1550,3 @@
                      (taoensso.timbre/info "Processed" (:id record) "records."))))
                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))
   (ju.db.core/update-all-files))
-
-(defn delete-duplicate-posts
-  "Returns a set of records in file table that are special cases of duplicates.
-  e.g. NHK総合実況 -> nhk総合実況"
-  []
-  (dorun
-    (into #{}
-          (remove nil?
-                  (map (fn [file]
-                         (let [thread-title (ju.routes.shingetsu/file-name-to-thread-title (:file-name file))
-                               thread-title-lower-case (clojure.string/lower-case thread-title)]
-                           (if (and thread-title thread-title-lower-case (not (= thread-title thread-title-lower-case)))
-                             (let [records-in-original-file (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file))
-                                   file-lower-case (ju.db.core/get-file (ju.routes.shingetsu/thread-title-to-file-name thread-title-lower-case))
-                                   records-in-duplicate-file (and file-lower-case (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file-lower-case)))
-                                   duplicate-records (if file-lower-case (clojure.set/intersection
-                                                                                   (into #{} (map #(:record-id %) records-in-original-file))
-                                                                                   (into #{} (map #(:record-id %) records-in-duplicate-file)))
-                                                                         #{})]
-                               (when (and
-                                       file-lower-case
-                                       duplicate-records
-                                       (pos? (count duplicate-records)))
-                                 (timbre/debug
-                                   (str
-                                     thread-title
-                                     " -> " thread-title-lower-case
-                                     " " (count records-in-original-file)
-                                     " " (count records-in-duplicate-file)
-                                     " " (count duplicate-records)))
-                                 (dorun
-                                   (map #(db/mark-record-in-file-with-record-id-as-deleted (:id file-lower-case) %)
-                                        duplicate-records))
-                                 (db/update-file (:id file-lower-case))
-                                 )))))
-                       (ju.db.core/get-all-files))))))

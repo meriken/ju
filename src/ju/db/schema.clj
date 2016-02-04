@@ -74,7 +74,6 @@
                      :subprotocol "hsqldb"
                      :subname     (str "file:" db-name ".hsqldb"
                                        ";hsqldb.tx=mvcc"
-                                       ";tx_level=serializable"
                                        ";hsqldb.lob_file_scale=1")
                      :user        "sa"
                      :password    ""
@@ -86,7 +85,6 @@
                             :subprotocol "hsqldb"
                             :subname     (str "file:" backup-db-name ".hsqldb"
                                               ";hsqldb.tx=mvcc"
-                                              ";tx_level=serializable"
                                               ";hsqldb.lob_file_scale=1")
                             :user        "sa"
                             :password    ""
@@ -221,6 +219,7 @@
         [:num_records  bigint "DEFAULT 0"]
         [:num_deleted_records bigint "DEFAULT 0"]
         [:deleted "BOOLEAN DEFAULT FALSE"]
+        [:dirty "BOOLEAN DEFAULT FALSE"]
         [:size bigint "DEFAULT 0"]
         ;[:tags varchar "DEFAULT NULL"]
         ;[:suggested_tags varchar "DEFAULT NULL"]
@@ -239,7 +238,7 @@
         [:record_id    varchar "NOT NULL"]
         [:record_short_id varchar "NOT NULL"]
         [:body         blob "NOT NULL"]
-        [:time_created "TIMESTAMP NULL"]
+        [:time_created "TIMESTAMP NULL"] ; This is used to check for duplicates.
         [:deleted "BOOLEAN DEFAULT FALSE"]
         [:size         bigint "NOT NULL"]
         [:tags varchar "DEFAULT NULL"]
@@ -323,6 +322,9 @@
   (try (sql/db-do-commands db-spec "CREATE INDEX files_time_updated_index        ON files   ( time_updated                  );")
        (catch Throwable _ (timbre/info "Failed to create files_time_updated_index")))
 
+  (try (sql/db-do-commands db-spec "CREATE INDEX files_dirty_index ON files ( dirty );")
+       (catch Throwable _ (timbre/info "Failed to create files_dirty_index")))
+
 
 
   (try (sql/db-do-commands db-spec "CREATE INDEX records_index                   ON records ( file_id, deleted                       );")
@@ -336,6 +338,9 @@
 
   (try (sql/db-do-commands db-spec "CREATE INDEX records_stamp_desc_index        ON records ( file_id, stamp DESC, deleted           );")
        (catch Throwable _ (timbre/info "Failed to create records_stamp_desc_index")))
+
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_dirty_index ON records ( time_created DESC );")
+       (catch Throwable t (timbre/info "Failed to create records_dirty_index" t)))
 
   (try (sql/db-do-commands db-spec "CREATE INDEX records_record_id_index ON records ( file_id, record_id, deleted );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_id_index ON records ( file_id, record_id(32), deleted );")
@@ -390,7 +395,10 @@
 
 ; TODO
 (defn drop-indexes
-  [db-spec])
+  [db-spec]
+  (try
+    (sql/db-do-commands db-spec "DROP INDEX records_dirty_index;")
+    (catch Throwable _ (timbre/error "Failed to drop records_dirty_index"))))
 
 
 
