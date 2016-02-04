@@ -288,6 +288,7 @@
         (do (future (crawl-node node-name))))
       true)
     (catch Throwable t
+      (clojure.stacktrace/print-stack-trace t)
       (swap! active-nodes #(clojure.set/difference % #{node-name}))
       (swap! search-nodes #(clojure.set/difference % #{node-name}))
       false)))
