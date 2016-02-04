@@ -936,7 +936,7 @@
       remote-address)
     (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
       (create-image file-id stamp record-id elements false))
-    (db/mark-file-as-dirty file-id)
+    (db/update-file file-id)
     (db/process-update-command (:file-name file) stamp record-id)
     (do (future
           (swap! update-command-history conj entry)
