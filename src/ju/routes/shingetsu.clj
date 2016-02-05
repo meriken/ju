@@ -648,12 +648,12 @@
     (timbre/info "Crawler: Downloading lists of recently updated files...")
     (let [file-names (get-files-with-recent-command)
           designated-super-nodes (nth
-                                   (shuffle (into () (clojure.set/intersection @search-nodes param/initial-super-nodes)))
+                                   (shuffle (into () (clojure.set/intersection @search-nodes (into #{} param/initial-super-nodes))))
                                    0 nil)]
       (dorun (map #(db/add-file %) file-names))
       (when designated-super-nodes
         (timbre/info "Crawler: Crawling" designated-super-nodes "first...")
-        (crawl-node designated-super-nodes))
+        (crawl-node designated-super-nodes :randomize false))
       (dorun
         ((if param/enable-parallel-crawling pmap map)
           #(let [time-crawled (:time-crawled (db/get-node %))

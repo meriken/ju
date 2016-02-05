@@ -386,7 +386,7 @@
   (try (sql/db-do-commands db-spec "CREATE INDEX images_jane_md5_string_index ON images ( jane_md5_string );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_jane_md5_string_index ON images ( jane_md5_string(32) );")
                                (catch Throwable _ (timbre/info "Failed to create images_jane_md5_string_index")))))
-  (try (sql/db-do-commands db-spec "CREATE INDEX images_md5_string_index ON images ( jane_string );")
+  (try (sql/db-do-commands db-spec "CREATE INDEX images_md5_string_index ON images ( md5_string );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_md5_string_index ON images ( md5_string(32) );")
                                (catch Throwable _ (timbre/info "Failed to create images_md5_string_index")))))
   (try (sql/db-do-commands db-spec "CREATE INDEX images_origin_index ON images ( origin );")
