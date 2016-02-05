@@ -73,7 +73,8 @@
 (def hsqldb-db-spec {:classname   "org.hsqldb.jdbc.JDBCDriver"
                      :subprotocol "hsqldb"
                      :subname     (str "file:" db-name ".hsqldb"
-                                       ";hsqldb.tx=mvcc"
+                                       ";hsqldb.tx=locks"
+                                       ;";hsqldb.tx_level=serializable"
                                        ";hsqldb.lob_file_scale=1")
                      :user        "sa"
                      :password    ""
@@ -84,7 +85,8 @@
 (def hsqldb-backup-db-spec {:classname   "org.hsqldb.jdbc.JDBCDriver"
                             :subprotocol "hsqldb"
                             :subname     (str "file:" backup-db-name ".hsqldb"
-                                              ";hsqldb.tx=mvcc"
+                                              ";hsqldb.tx=locks"
+                                              ;";hsqldb.tx_level=serializable"
                                               ";hsqldb.lob_file_scale=1")
                             :user        "sa"
                             :password    ""

@@ -284,8 +284,7 @@
         (reset! server-node-name new-server-node-name))
       (when (not (db/known-node? node-name))
         (db/add-node node-name)
-        (db/mark-node-as-active node-name)
-        (do (future (crawl-node node-name))))
+        (db/mark-node-as-active node-name))
       true)
     (catch Throwable t
       (clojure.stacktrace/print-stack-trace t)
@@ -577,7 +576,10 @@
        (shuffle @search-nodes)))
    true))
 
-(defn crawl-node [node-name]
+(defn crawl-node
+  [node-name
+   & {:keys [randomize]
+      :or {randomize true}}]
   (timbre/info "Crawler: Crawling node:" node-name)
   (if-not (valid-node? node-name)
     (throw (IllegalArgumentException. "Node was blocked.")))
@@ -603,7 +605,9 @@
                                                   (if file (:time-updated file) nil))}))
                            file-names)
                       (db/get-all-files))
-          file-list (reverse (sort-by #(clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-updated %))) file-list))]
+          file-list (if randomize (shuffle file-list) file-list)
+          ;file-list (reverse (sort-by #(clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-updated %))) file-list))
+          ]
       (if (zero? (count file-names))
         (throw (Exception.)))
       ;(timbre/debug "crawl-node: Downloaded a list of files:" node-name)
@@ -637,25 +641,35 @@
           nil)))))
 
 (defn crawl-nodes
-  [force-crawling]
+  [& {:keys [force-crawling]
+      :or {force-crawling false}}]
   (timbre/info "Crawler: Crawling nodes...")
   (try
     (timbre/info "Crawler: Downloading lists of recently updated files...")
-    (let [file-names (get-files-with-recent-command)]
-      (dorun (map #(db/add-file %) file-names)))
-    (dorun
-      ((if param/enable-parallel-crawling pmap map)
-        #(let [time-crawled (:time-crawled (db/get-node %))
-               time-elapsed (and time-crawled (- (clj-time.coerce/to-long (clj-time.core/now)) (.getTime time-crawled)))]
-          (if (or force-crawling
-                  (nil? time-crawled)
-                  (>= time-elapsed crawl-node-interval))
-            (crawl-node %)
-            (timbre/info "Crawler: Skipped node:" % time-elapsed)))
-        (shuffle @search-nodes)))
+    (let [file-names (get-files-with-recent-command)
+          designated-super-nodes (nth
+                                   (shuffle (into () (clojure.set/intersection @search-nodes param/initial-super-nodes)))
+                                   0 nil)]
+      (dorun (map #(db/add-file %) file-names))
+      (when designated-super-nodes
+        (timbre/info "Crawler: Crawling" designated-super-nodes "first...")
+        (crawl-node designated-super-nodes))
+      (dorun
+        ((if param/enable-parallel-crawling pmap map)
+          #(let [time-crawled (:time-crawled (db/get-node %))
+                 time-elapsed (and time-crawled (- (clj-time.coerce/to-long (clj-time.core/now)) (.getTime time-crawled)))]
+            (if (or force-crawling
+                    (nil? time-crawled)
+                    (>= time-elapsed crawl-node-interval))
+              (crawl-node %)
+              (timbre/info "Crawler: Skipped node:" % time-elapsed)))
+          (shuffle
+            (if designated-super-nodes
+              (clojure.set/difference @search-nodes #{designated-super-nodes})
+              @search-nodes)))))
     (timbre/info "Crawler: Done crawling nodes.")
     (catch Throwable t
-      (timbre/error t)
+      (timbre/error "Crawler:" t)
       nil)))
 
 (defn start-crawler
@@ -664,11 +678,11 @@
     (future
       (Thread/sleep 60000)
       (timbre/info "Crawler started.")
-      (crawl-nodes true)
+      (crawl-nodes :force-crawling true)
       (while true
         (Thread/sleep crawl-nodes-interval)
         (try
-          (crawl-nodes false)
+          (crawl-nodes :force-crawling false)
           (catch Throwable t))))))
 
 
@@ -1012,18 +1026,11 @@
                    node-name (if (re-find #"^:" node-name)
                                (str remote-addr node-name)
                                node-name)]
-               (timbre/info "/join"
-                            (get-remote-address request)
-                            node-name
-                            (valid-node-name? node-name)
-                            (not (= node-name @server-node-name))
-                            (not (some #{node-name} @active-nodes))
-                            (ping node-name))
                (when (and (valid-node-name? node-name)
                           (not (= node-name @server-node-name))
-                          (not (some #{node-name} @active-nodes))
                           (ping node-name))
-                 (if (>= (count @active-nodes) max-num-active-nodes)
+                 (when (and (not (some #{node-name} @active-nodes))
+                            (>= (count @active-nodes) max-num-active-nodes))
                    (bye (first (shuffle @active-nodes))))
                  (swap! active-nodes conj node-name)
                  (->
@@ -1037,8 +1044,7 @@
                (timbre/info "/bye" (get-remote-address request) node-name)
                (when (and (valid-node-name? node-name)
                           (not (= node-name @server-node-name))
-                          (some #{node-name} @active-nodes)
-                          (re-find (re-pattern (str "^" (java.util.regex.Pattern/quote server-name) ":")) node-name))
+                          (some #{node-name} @active-nodes))
                  (swap! active-nodes #(clojure.set/difference % #{node-name}))
                  (->
                    (ok "BYEBYE")
@@ -1167,7 +1173,13 @@
            (GET (str param/server-path "/files") request
              (timbre/info "/files" (get-remote-address request))
              (->
-               (ok (apply str (sort (map #(str % "\n") (map :file-name (db/get-all-files))))))
+               (ok (apply str (map #(str % "\n")
+                                         (map :file-name
+                                              (remove #(or
+                                                        (some #{(:file-name %)} param/known-corrupt-files)
+                                                        (zero? (:num-records %)))
+                                                      (db/get-all-files))
+                                              ))))
                (content-type "text/plain; charset=UTF-8")))
 
 
@@ -1238,14 +1250,15 @@
                 {:keys [headers params body server-name] :as request}
              (timbre/info "/api/threads" (get-remote-address request))
              (let [n (:n params)
-                   n (if (zero? (count n)) nil n)]
-               (->> (if n
-                      (db/get-files-with-limit (Integer/parseInt n))
-                      (db/get-all-files))
-                    (remove #(or
-                              (some #{(:file-name %)} param/known-corrupt-files)
-                              (zero? (:num-records %))))
-                    (map #(assoc % :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))))))
+                   n (if (zero? (count n)) nil n)
+                   file-list (remove #(or
+                                       ;(not (= (:application %) "thread")) ; TODO
+                                       (some #{(:file-name %)} param/known-corrupt-files)
+                                       (zero? (:num-records %)))
+                                     (db/get-all-files))
+                   file-list (if n (take (Integer/parseInt n) file-list) file-list)]
+               (map #(assoc % :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
+                    file-list)))
 
            (POST "/api/images-in-thread"
                  request

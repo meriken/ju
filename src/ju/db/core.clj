@@ -107,7 +107,7 @@
   (pos? (count (select nodes (fields :id) (where {:node_name node-name})))))
 
 (defn add-node [node-name]
-  (transaction {:isolation :serializable}
+  (transaction
     (if-not (known-node? node-name)
       (insert nodes
               (values {:node-name node-name
@@ -192,7 +192,7 @@
   (if-not (re-find #"^[a-zA-Z0-9]+_[a-zA-Z0-9_]+$" file-name)
     (throw (IllegalArgumentException. "Invalid file name.")))
 
-  (transaction {:isolation :serializable}
+  (transaction
     (if-not (get-file-id file-name)
       (insert files
               (values {:file-name file-name
@@ -809,7 +809,7 @@
   (if-not (re-find #"^[a-f0-9]{32}$" record-id)
     (throw (IllegalArgumentException. (str "Invalid record ID: " record-id))))
 
-  (transaction {:isolation :serializable}
+  (transaction
     (let [existing-update-command (try (first (select update_commands (where {:file_name file-name :stamp stamp :record_id record-id}))) (catch Throwable _ nil))]
       (if (nil? existing-update-command)
       (insert update_commands
@@ -834,7 +834,7 @@
 (defn add-anchor
   [file-id source destination]
   ;(timbre/debug "add-anchor" file-id source destination)
-  (transaction {:isolation :serializable}
+  (transaction
     (when (zero? (count (select anchors (fields :id) (where { :file_id file-id :source source :destination destination}))))
       (insert anchors
               (values {:file_id file-id

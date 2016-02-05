@@ -9,6 +9,10 @@
    "caspar.ygg.io:8880/server"
    "balthazar.ygg.io:8880/server"
    "24.130.242.114:8000/server.cgi"])
+(def initial-super-nodes
+  ["melchior.ygg.io:8880/server"
+   "caspar.ygg.io:8880/server"
+   "balthazar.ygg.io:8880/server"])
 (def blocked-nodes
   [])
 
