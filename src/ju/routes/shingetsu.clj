@@ -80,6 +80,7 @@
       (and file-name
            (some #{file-name} param/known-corrupt-files))
       (and (:name elements) (= "bvd*mfs}@gmail.com" (:name elements)))
+      (= record-id "1487684b816147a7a5a610bc53289dec")
       (and thread-title
            (= thread-title "雑談")
            stamp
@@ -1201,10 +1202,8 @@
 
            (POST "/api/thread"
                  request
-             (timbre/info "/api/thread" (get-remote-address request))
              (let [{:keys [thread-title page-num page-size record-short-id download]} (:params request)
-                   ;page-num (Integer/parseInt page-num)
-                   ;page-size (Integer/parseInt page-size)
+                   _ (timbre/info "/api/thread" (get-remote-address request) thread-title page-num page-size record-short-id download)
                    file-id (db/get-file-id-by-thread-title thread-title)
                    file (db/get-file-by-id file-id)
                    _ (if (and file download)

@@ -590,17 +590,17 @@
   [file-id]
   (timbre/info "clean-mikas-second-spill-:" file-id)
   (let [duplicate-lists (remove #(= (count %) 1)
-                           (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
-                                               (remove #(or
-                                                                       (not (= (:file-id %) (:file-id record)))
-                                                                       (not (= (mod (:stamp %) 32400) (mod (:stamp record) 32400)))
-                                                                       (not (= (:record-id %) (:record-id record))))
-                                                                     (ju.db.core/get-records-by-short-id (:record-short-id record)))))
-                                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
+                                (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
+                                                    (remove #(or
+                                                              (not (= (:file-id %) (:file-id record)))
+                                                              (not (= (mod (:stamp %) 32400) (mod (:stamp record) 32400)))
+                                                              (not (= (:record-id %) (:record-id record))))
+                                                            (ju.db.core/get-records-by-short-id (:record-short-id record)))))
+                                     (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-in-file-without-bodies file-id))))
         sorted-duplicate-lists (map
-                                (fn [duplicate-list]
-                                  (map #(:id %) (sort #(> (:stamp %1) (:stamp %2)) duplicate-list)))
-                                duplicate-lists)
+                                 (fn [duplicate-list]
+                                   (map #(:id %) (sort #(> (:stamp %1) (:stamp %2)) duplicate-list)))
+                                 duplicate-lists)
         duplicates (into #{} (apply concat (map #(drop 1 %) sorted-duplicate-lists)))]
     (when (pos? (count duplicates))
       (timbre/info "clean-mikas-second-spill-:" (pr-str sorted-duplicate-lists))
@@ -626,7 +626,7 @@
                            (if (and thread-title thread-title-lower-case (not (= thread-title thread-title-lower-case)))
                              (let [records-in-original-file (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file))
                                    file-lower-case (ju.db.core/get-file (thread-title-to-file-name thread-title-lower-case))
-                                   records-in-duplicate-file (and file-lower-case (ju.db.core/get-all-active-and-deleted-records-in-file-without-bodies (:id file-lower-case)))
+                                   records-in-duplicate-file (and file-lower-case (ju.db.core/get-all-records-in-file-without-bodies (:id file-lower-case)))
                                    duplicate-records (if file-lower-case (clojure.set/intersection
                                                                            (into #{} (map #(:record-id %) records-in-original-file))
                                                                            (into #{} (map #(:record-id %) records-in-duplicate-file)))
