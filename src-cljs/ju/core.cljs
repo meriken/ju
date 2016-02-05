@@ -52,7 +52,6 @@
 (def service-name (atom nil))
 (def enable-recaptcha (atom param/enable-recaptcha))
 (def recaptcha-site-key (atom param/recaptcha-site-key))
-(def recaptcha-secret-key (atom param/recaptcha-secret-key))
 (def enable-google-analytics (atom param/enable-google-analytics))
 (def google-analytics-tracking-id (atom param/google-analytics-tracking-id))
 (def thumbnail-height (atom param/thumbnail-height))
@@ -1141,7 +1140,6 @@
                         (reset! service-name (:service-name status))
                         (reset! enable-recaptcha (:enable-recaptcha status))
                         (reset! recaptcha-site-key (:recaptcha-site-key status))
-                        (reset! recaptcha-secret-key (:recaptcha-secret-key status))
                         (reset! enable-google-analytics (:enable-google-analytics status))
                         (reset! google-analytics-tracking-id (:google-analytics-tracking-id status))
 

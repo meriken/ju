@@ -288,7 +288,6 @@
         (db/mark-node-as-active node-name))
       true)
     (catch Throwable t
-      (clojure.stacktrace/print-stack-trace t)
       (swap! active-nodes #(clojure.set/difference % #{node-name}))
       (swap! search-nodes #(clojure.set/difference % #{node-name}))
       false)))
@@ -1320,7 +1319,6 @@
                   :server-url-base (get-server-url-base)
                   :enable-recaptcha param/enable-recaptcha
                   :recaptcha-site-key param/recaptcha-site-key
-                  :recaptcha-secret-key param/recaptcha-secret-key
                   :enable-google-analytics param/enable-google-analytics
                   :google-analytics-tracking-id param/google-analytics-tracking-id
                   :thumbnail-height param/thumbnail-height}}}))
