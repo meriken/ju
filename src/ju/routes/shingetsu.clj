@@ -1274,9 +1274,7 @@
              (let [{:keys [thread-title]} (:params request)
                    _ (timbre/info "/api/images-in-thread" (get-remote-address request) thread-title)
                    file (db/get-file (thread-title-to-file-name thread-title))
-                   images (db/get-all-images-in-thread-with-record-ids-and-suffixes-only (:id file))
-                   images (map #(assoc % :thumbnail nil) images)
-                   images (map #(assoc % :image nil) images)]
+                   images (db/get-all-images-in-thread-with-record-ids-and-suffixes-only (:id file))]
                {:body {:images images}}))
 
            (POST "/api/post"

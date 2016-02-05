@@ -893,12 +893,16 @@
         (insert images (values image))))))
 
 (defn get-image [file-id record-id]
-  (nth (select images (where {:file_id file-id :record_id record-id})) 0 nil))
+  (nth (select images (where {:file_id file-id
+                              :record_id record-id
+                              :deleted false}))
+       0 nil))
 
 (defn get-all-images-in-thread-with-record-ids-and-suffixes-only
   [file-id]
   (select images
-          (where {:file_id file-id})
+          (where {:file_id file-id
+                  :deleted false})
           (fields :record_id :suffix)
           (order :stamp :DESC)))
 
