@@ -319,21 +319,41 @@
 
 (defn get-record-by-id
   [id]
-  (first (select records (where {:id id
-                                 :deleted false}))))
+  (nth
+    (select records (where {:id id
+                            :deleted false}))
+    0 nil))
 
 (defn get-record-in-file-by-record-id
   [file-id record-id]
-  (first (select records (where {:file_id file-id :record_id record-id :deleted false}))))
+  (nth
+    (select records (where {:file_id file-id :record_id record-id :deleted false}))
+    0 nil))
+
+(defn get-record-by-record-id
+  [record-id]
+  (nth
+    (select records (where {:record_id record-id :deleted false}))
+    0 nil))
 
 (defn get-record-in-file-by-short-id
   [file-id short-id]
-  (first
+  (nth
     (select records
             (where {:file_id file-id
                     :record_short_id short-id
                     :deleted false})
-            (limit 1))))
+            (limit 1))
+    0 nil))
+
+(defn get-record-by-short-id
+  [short-id]
+  (nth
+    (select records
+            (where {:record_short_id short-id
+                    :deleted false})
+            (limit 1))
+    0 nil))
 
 (defn get-records-on-page
   [file-id page-size page-num]
@@ -485,10 +505,19 @@
 
 (defn mark-record-as-deleted
   [id]
-  (update
-    records
-    (set-fields {:deleted true})
-    (where {:id id})))
+  (transaction
+    (let [record (get-record-by-id id)]
+      (when record
+        (update
+          records
+          (set-fields {:deleted true})
+          (where {:stamp (:stamp record)
+                  :record_id (:record-id record)}))
+        (update
+          images
+          (set-fields {:deleted true})
+          (where {:stamp (:stamp record)
+                  :record_id (:record-id record)}))))))
 
 (defn mark-record-in-file-with-record-id-as-deleted
   [file-id record-id]
@@ -897,7 +926,7 @@
         (try
           (while (remove-new-duplicate-records))
           (catch Throwable t
-            (clojure.stacktrace/print-stack-trace t)
+            ;(clojure.stacktrace/print-stack-trace t)
             (timbre/error "New Record Monitor:" t)))
         (Thread/sleep 100))))
 
