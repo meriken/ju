@@ -478,7 +478,7 @@
        ;(timbre/info (str "Blocked record on blacklist: " node-name " " file-name " " range " " record-id))
        nil
 
-       (= range "0-") ; Use /head to identify missing records.
+       (re-find #"-$" range) ; Use /head to identify missing records.
        (let [file (:body (try-times max-num-retries (client/get (str "http://" node-name "/head/" file-name "/" range) http-params)))
              file (if (nil? file) "" file)
              file (clojure.string/replace file #"(?m)^(?![0-9]+<>[0-9a-f]{32}).*$" "")
@@ -578,8 +578,9 @@
 
 (defn crawl-node
   [node-name
-   & {:keys [randomize]
-      :or {randomize true}}]
+   & {:keys [randomize recent]
+      :or {randomize true
+           recent false }}]
   (timbre/info "Crawler: Crawling node:" node-name)
   (if-not (valid-node? node-name)
     (throw (IllegalArgumentException. "Node was blocked.")))
@@ -616,7 +617,15 @@
           #(do
             (db/add-file (:file-name %))
             (try
-              (download-file-from-node node-name (:file-name %))
+              (download-file-from-node
+                node-name
+                (:file-name %)
+                (if recent
+                  (str
+                    (- (long (/ (clj-time.coerce/to-long (clj-time.core/now)) 1000))
+                       (* 30 24 60 60))
+                    "-")
+                  "0-"))
               (catch Throwable t
                 (timbre/info "Crawler: Failed to download file:" node-name (:file-name %)))))
           file-list))
@@ -649,10 +658,12 @@
     (let [file-names (get-files-with-recent-command)
           designated-super-nodes (nth
                                    (shuffle (into () (clojure.set/intersection @search-nodes (into #{} param/initial-super-nodes))))
-                                   0 nil)]
+                                   0 nil)
+          ]
       (dorun (map #(db/add-file %) file-names))
       (when designated-super-nodes
         (timbre/info "Crawler: Crawling" designated-super-nodes "first...")
+        (crawl-node designated-super-nodes :randomize false :recent true)
         (crawl-node designated-super-nodes :randomize false))
       (dorun
         ((if param/enable-parallel-crawling pmap map)
