@@ -348,6 +348,10 @@
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_id_index ON records ( file_id, record_id(32), deleted );")
                                (catch Throwable _ (timbre/info "Failed to create records_record_id_index")))))
 
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_record_id_only_index ON records ( record_id, deleted );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_id_only_index ON records ( record_id(32), deleted );")
+                               (catch Throwable _ (timbre/info "Failed to create records_record_id_only_index")))))
+
   (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_index   ON records ( file_id, record_short_id, deleted      );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX records_record_short_id_index   ON records ( file_id, record_short_id(8), deleted );")
                                (catch Throwable _ (timbre/info "Failed to create records_record_short_id_index")))))
