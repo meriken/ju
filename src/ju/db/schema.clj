@@ -375,6 +375,8 @@
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX update_commands_file_name_index ON update_commands ( file_name(128) );")
                                (catch Throwable _ (timbre/info "Failed to create update_commands_file_name_index")))))
 
+
+
   (try (sql/db-do-commands db-spec "CREATE INDEX anchors_index                   ON anchors         ( file_id, destination  );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX anchors_index                   ON anchors         ( file_id, destination(8)  );")
                                (catch Throwable _ (timbre/info "Failed to create anchors_index")))))
@@ -396,15 +398,41 @@
   (try (sql/db-do-commands db-spec "CREATE INDEX images_origin_index ON images ( origin );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX images_origin_index ON images ( origin(128) );")
                                (catch Throwable _ (timbre/info "Failed to create images_origin_index")))))
-
   )
 
-; TODO
 (defn drop-indexes
   [db-spec]
-  (try
-    (sql/db-do-commands db-spec "DROP INDEX records_dirty_index;")
-    (catch Throwable _ (timbre/error "Failed to drop records_dirty_index"))))
+  (doall (map
+           #(do
+             (try
+               (sql/db-do-commands db-spec (str "DROP INDEX " % ";"))
+               (catch Throwable _ (timbre/error (str "Failed to drop " %)))))
+           ["files_index"
+            "files_time_updated_index"
+            "files_dirty_index"
+
+            "records_index"
+            "records_size_index"
+            "records_stamp_index"
+            "records_stamp_desc_index"
+            "records_dirty_index"
+            "records_record_id_index"
+            "records_record_id_only_index"
+            "records_record_short_id_index"
+            "records_record_short_id_only_index"
+
+            "blocked_records_index"
+
+            "update_commands_index"
+            "update_commands_file_name_index"
+
+            "anchors_index"
+
+            "images_index"
+            "images_record_id_index"
+            "images_jane_md5_string_index"
+            "images_md5_string_index"
+            "images_origin_index"])))
 
 
 

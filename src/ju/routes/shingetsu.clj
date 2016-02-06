@@ -80,7 +80,11 @@
       (and file-name
            (some #{file-name} param/known-corrupt-files))
       (and (:name elements) (= "bvd*mfs}@gmail.com" (:name elements)))
-      (= record-id "1487684b816147a7a5a610bc53289dec")
+      (some #{record-id} #{"1ee4305022f5734d1b519142b5c1234a"
+                           "1487684b816147a7a5a610bc53289dec"
+                           "a7d2b82c3dc4370879c4f8619c1eb0e8"
+                           "e49fea10d5c9fddf41246d54b4f5a11b"
+                           "2534c8c95f0497f8e75cc1da0113edcb"})
       (and thread-title
            (= thread-title "雑談")
            stamp

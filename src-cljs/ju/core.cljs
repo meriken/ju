@@ -423,10 +423,14 @@
                                    :title "エラー"
                                    :message "書き込みに失敗しました。"
                                    :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
-      (open-internal-page
-        (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
-        (session/get :thread-title)
-        :first-new-post))))
+      (do
+        (js/setTimeout
+          (fn []
+            (open-internal-page
+              (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
+              (session/get :thread-title)
+              :first-new-post))
+          500)))))
 
 (defn post-form
   []
