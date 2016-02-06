@@ -25,10 +25,10 @@
 (def static-server-node-name nil)
 (def server-path "/server")
 (def static-server-url-base nil)
+(def wait-time-after-post 0)
 
 (def service-name "匿名掲示板")
 (def anonymous-users-handle "新月名無しさん")
-
 (def thumbnail-height 256)
 
 (def enable-recaptcha false)

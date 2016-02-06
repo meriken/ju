@@ -975,7 +975,8 @@
                      (update % (:file-name file) stamp record-id)
                      (catch Throwable t
                        (timbre/error t)))
-                   @active-nodes))))))
+                   @active-nodes))))
+    (Thread/sleep param/wait-time-after-post)))
 
 (defn
   bracket-link-to-2ch-style-link
