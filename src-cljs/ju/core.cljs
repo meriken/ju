@@ -47,6 +47,9 @@
 
 (def new-post-notification (atom false))
 (def server-status (atom nil))
+
+; parameters in server-status
+(def admin (atom false))
 (def server-node-name (atom nil))
 (def server-url-base (atom nil))
 (def service-name (atom nil))
@@ -99,7 +102,7 @@
 
 (defn process-jump-command
   []
-  ;(.log js/console (str "process-jump-command: " @jump-command))
+  (.log js/console (str "process-jump-command: " @jump-command))
   (cond
     (= @jump-command :bottom)
     (js/setTimeout #(.scrollTop ($ (keyword "html,body")) (.height ($ js/document))) 0)
@@ -163,7 +166,7 @@
          [:ul.nav.navbar-nav
           [nav-link "/" "目次" :home]
           [nav-link "/recent-threads" "スレッド一覧" :recent-threads]
-          [nav-link "/new-posts" "新着レスまとめ読み" :new-posts]
+          [nav-link "/new-posts" "新着レス" :new-posts]
           ;[nav-link "/create-new-thread" "新規スレッド作成" :create-new-thread]
           [nav-link "/status" "状態" :status]
           [nav-link "/help" "使い方" :help]]]]])))
@@ -227,14 +230,14 @@
    [:div.row
     [:div#main-menu-column.col-sm-6
      [:div#main-menu.list-group
-      [:a {:on-click handle-click-on-link :href "/recent-threads" :class "list-group-item"} "最近更新されたスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
-      [:a {:on-click handle-click-on-link :href "/threads" :class "list-group-item"} "全てのスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      [:a {:on-click handle-click-on-link :href "/recent-threads" :class "list-group-item"} "最近更新されたスレッド一覧" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      [:a {:on-click handle-click-on-link :href "/threads" :class "list-group-item"} "スレッド一覧" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a
        {:on-click handle-click-on-link
         :href     "/new-posts"
         :class    (str "list-group-item"
                        (if @new-post-notification " list-group-item-danger"))}
-       "新着レスまとめ読み"
+       "新着レス"
        [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/create-new-thread" :class "list-group-item"} "新規スレッド作成" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/status" :class "list-group-item"} "状態" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
@@ -246,22 +249,22 @@
       [:div.panel-body
        (map (fn [group]
               [:div.btn-group.btn-group-sm {:role "group" :key (my-uuid)}
-               (map #(do [:a.btn.btn-success {:key (my-uuid)} %]) group)])
-            [["質問" "雑談" "ニュース" "実況"]
-             ["生活", "料理", "日課"]
-             ["画像", "動画", "二次元", "三次元", "18禁"]
-             ["趣味", "音楽", "テレビ"]
-             ["漫画", "アニメ", "ゲーム", "2ch"]
-             ["PC", "ソフトウェア", "ハードウェア"]
-             ["開発", "プログラミング", "IT", "P2P"]
-             ["新月", "運用", "スレ一覧", "テスト"]
-             ["きれいな新月", "裏"]])]]]]])
+               (map #(do
+                      [:a.btn.btn-success
+                       {:key (my-uuid)
+                        :href (str "/threads?tag=" (js/encodeURIComponent %))
+                        :on-click handle-click-on-link}
+                       %])
+                    group)])
+            param/standard-tags)]]]]])
 
 (defn recent-threads-page []
   [(keyword (str "div.container"
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
-   [:h3 "最近更新されたスレッド"]
+   [:h3 (if (session/get :tag)
+          (str "最近更新された「" (session/get :tag) "」タグの付いたスレッド一覧")
+          "最近更新されたスレッド一覧")]
    [:div#content
     [:div.btn-group.btn-group-sm.btn-group-justified.refresh-threads-button
     [:a.btn.btn-default
@@ -279,7 +282,9 @@
   [(keyword (str "div.container"
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
-   [:h3 "全てのスレッド"]
+   [:h3 (if (session/get :tag)
+          (str "「" (session/get :tag) "」タグの付いたスレッド一覧")
+          "スレッド一覧")]
    [:div#content
     [:div.btn-group.btn-group-sm.btn-group-justified.refresh-threads-button
     [:a.btn.btn-default
@@ -291,18 +296,6 @@
   []
   (fn []
       [:span
-       ;[:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
-       ; [:a.btn.btn-default
-       ;  {:on-click handle-click-on-link
-       ;   :href (str (session/get :href-base) "?download-thread=1")}
-       ;  "このスレッドをダウンロード"]]
-
-       [:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
-        [:a.btn.btn-default
-         {:on-click handle-click-on-link
-          :href (str (session/get :href-base) "/images")}
-         "このスレッドの画像一覧"]]
-
        [:div.btn-group.btn-group-sm.btn-group-justified.page-jump-buttons
        [:a.btn.btn-default.first-page
         {:on-click handle-click-on-link
@@ -497,7 +490,41 @@
       [:h3 (session/get :thread-title)]]
      [:div#content
       (if (and @posts-displayed? (session/get :page-num))
-        [#'top-page-jump-buttons])
+        [:div
+         (if (pos? (count (session/get :tags)))
+           [:div.btn-group.btn-group-sm.page-jump-buttons
+            {:style {:margin-right "10px"}}
+            (map #(do [:a.btn.btn-success
+                       {:on-click handle-click-on-link
+                        :href (str "/threads?tag=" (js/encodeURIComponent %))}
+                       %])
+                 (session/get :tags))])
+
+         [:div.btn-group.btn-group-sm.page-jump-buttons
+          (if @admin
+            [:a.btn.btn-default
+             {:on-click handle-click-on-link
+              :href (str (session/get :href-base) "/tags")}
+             "タグ編集"])
+          (if @admin
+            [:a.btn.btn-default
+             {:on-click #(do (reset! jump-command :top)
+                             (handle-click-on-link %))
+              :href (str (session/get :href-base) "?download-thread=1")}
+             "ダウンロード"])
+          [:a.btn.btn-default
+           {:on-click handle-click-on-link
+            :href (str (session/get :href-base) "/images")}
+           "画像一覧"]
+          (comment
+          [:a.btn.btn-default
+            [:span.glyphicon.glyphicon-cog
+             {:style {:font-size "12px"}}]
+            [:span.glyphicon.glyphicon-triangle-bottom
+             {:style {:font-size "8px"
+                      :margin-left "2px"}}]])]
+
+         [#'top-page-jump-buttons]])
       (if @posts-displayed?
         (session/get :posts))
       (if (and @posts-displayed? (session/get :page-num))
@@ -508,7 +535,7 @@
   [(keyword (str "div.container"
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
-   [:h3 "新着レスまとめ読み"]
+   [:h3 "新着レス"]
    [:div#content
     (session/get :posts)]])
 
@@ -525,6 +552,109 @@
     "」の画像一覧(新着順)"]
    [:div#content
     (session/get :images)]])
+
+(defn editable-tag-button
+  [tag-string]
+  (fn [tag-string]
+    [:a.btn.btn-success
+     {:data-toggle "button"
+      :aria-pressed (if (some #{tag-string} (into #{} (session/get :new-tags))) "true" "false")
+      :class (if (some #{tag-string} (into #{} (session/get :new-tags))) "active" "")
+      :on-click (fn [e]
+                  (if (some #{tag-string} (into #{} (session/get :new-tags)))
+                    (session/put! :new-tags  (into [] (remove #(= % tag-string) (session/get :new-tags))))
+                    (session/put! :new-tags  (into (session/get :new-tags) [tag-string]))))}
+     tag-string]))
+
+(defn update-thread-tags
+  [e]
+  (.preventDefault e)
+  (let [result (atom nil)
+        response (atom nil)
+        _ (ajax "/api/update-thread-tags"
+                {:method   "POST"
+                 :success  (fn [_response] (.log js/console "success") (reset! result :success) (reset! response (clojure.walk/keywordize-keys (js->clj _response))))
+                 :error    (fn [_response] (.log js/console "error") (reset! result :error) (reset! response (clojure.walk/keywordize-keys (js->clj _response))))
+                 :async    false
+                 :dataType "json"
+                 :data     {:thread-title    (session/get :thread-title)
+                            :tags            (session/get :new-tags)}})]
+    (if (or (= @result :error) (not (:success @response)))
+      (.show js/BootstrapDialog (clj->js
+                                  {:type (.-TYPE_DANGER js/BootstrapDialog)
+                                   :title "エラー"
+                                   :message (str "タグの更新に失敗しました。")
+                                   :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
+      (open-internal-page
+        (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
+        (session/get :thread-title)
+        :first-new-post))))
+
+(defn tags-page []
+  [(keyword (str "div.container"
+                 (if (not @navbar-enabled?) ".without-navbar")
+                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
+   [:h3 "「"
+    [:a
+     {:style {:color "black"}
+      :on-click handle-click-on-link
+      :href (str (session/get :href-base))}
+     (session/get :thread-title)]
+    "」のタグ編集"]
+   [:div#content
+
+    [:div.panel.panel-default
+     {:key (my-uuid) }
+     [:div.panel-heading "現在のタグ"]
+     [:div.panel-body
+      {:style {:padding-bottom "5px"}}
+      (if (pos? (count (session/get :tags)))
+        [:div.btn-group.btn-group-sm.page-jump-buttons
+         {:style {:margin-right "10px"}}
+         (map #(do [editable-tag-button %]) (session/get :tags))]
+        [:div {:style {:padding-bottom "5px"}}"現在タグは設定されていません。"])]]
+
+    [:div.panel.panel-default
+     {:key (my-uuid) }
+     [:div.panel-heading "新しいタグ"]
+     [:div.panel-body
+      {:style {:padding-bottom "5px"}}
+      (if (pos? (count (session/get :new-tags)))
+        [:div.btn-group.btn-group-sm.page-jump-buttons
+         {:style {:margin-right "10px"}}
+         (map #(do [editable-tag-button %]) (session/get :new-tags))]
+        [:div {:style {:padding-bottom "5px"}}"現在タグは設定されていません。"])]]
+
+    [:div.panel.panel-default
+     {:key (my-uuid) }
+     [:div.panel-heading "タグ候補"]
+     [:div.panel-body
+      {:style {:padding-bottom "5px"}}
+      (if (pos? (count (session/get :suggested-tags)))
+        [:div.btn-group.btn-group-sm.page-jump-buttons
+         {:style {:margin-right "10px"}}
+         (map #(do [editable-tag-button %]) (session/get :suggested-tags))]
+        [:div {:style {:padding-bottom "5px"}}"タグ候補はありません。"])]]
+
+    [:div#tag-menu.panel.panel-default
+     [:div.panel-heading "基本タグ"]
+     [:div.panel-body
+      (map (fn [group]
+             [:div.btn-group.btn-group-sm {:role "group" :key (my-uuid)}
+              (map #(do [editable-tag-button %]) group)])
+           param/standard-tags)]]
+
+    [:div.btn-group.btn-group-default.btn-group-justified
+     {:style {:margin-right "10px" :margin-bottom "10px"}}
+     [:a.btn.btn-default
+      {:on-click (fn [e]
+                   (reset! jump-command :top)
+                   (.back (.-history js/window)))}
+      "取り消し"]
+     [:a.btn.btn-primary
+      {:on-click update-thread-tags}
+      "変更"]]
+    ]])
 
 (defn create-new-thread-page []
   [(keyword (str "div.container"
@@ -596,6 +726,7 @@
    :threads #'threads-page
    :recent-threads #'recent-threads-page
    :thread #'thread-page
+   :tags #'tags-page
    :images #'images-page
    :new-posts #'new-posts-page
    :create-new-thread #'create-new-thread-page
@@ -660,6 +791,18 @@
                           :padding "0 6px"
                           :font-weight :normal}}
            (:num-records %)]
+          (map (fn [tag]
+                 [:span {:style {:border "solid 1px #797"
+                                 :background-color "#beb"
+                                 :color "#000"
+                                 :opacity 0.7
+                                 :border-radius "4px"
+                                 :margin-left "4px"
+                                 :font-size 11
+                                 :padding "0 6px"
+                                 :font-weight :normal}}
+                  tag])
+               (:tags %))
           [:span.glyphicon.glyphicon-chevron-right.pull-right]])
        response)]))
 
@@ -669,7 +812,8 @@
        {:handler #(thread-list-handler % dest)
         :response-format :json
         :keywords? true
-        :params {:n (if (= dest :recent-threads) 100 nil)}}))
+        :params {:n (if (= dest :recent-threads) 100 nil)
+                 :tag (session/get :tag)}}))
 
 (defn fetch-threads! [dest]
   ;(session/put! dest [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
@@ -896,7 +1040,7 @@
 
               ]
      reverse-anchors (remove nil? (map #(if (= (:destination %) (:record-short-id post)) (:source %) nil) anchors))
-     ascii-art? (and (:body post) (re-find #"　 | 　" (:body post)))
+     ascii-art? (and (:body post) (re-find #"　 | 　|人人人" (:body post)))
      body-with-image [{:class (if ascii-art? "ascii-art" "")}
                       body
                       (if (and body-exists? thumbnail-exists?) [:hr])
@@ -939,9 +1083,11 @@
   [response]
   (let [num-posts (:num-posts response)
         num-pages (+ (quot num-posts page-size) (if (pos? (rem num-posts page-size)) 1 0))]
-    ;(.log js/console "posts-handler:" num-posts num-pages (clj->js (:anchors response)))
+    (.log js/console "posts-handler:" num-posts num-pages (clj->js response))
     (session/put! :num-posts num-posts)
     (session/put! :num-pages num-pages)
+    (session/put! :tags (:tags response))
+    (session/put! :new-tags (:tags response))
     (session/put!
       :posts
       [(with-meta (fn [] [:div#posts
@@ -1000,7 +1146,7 @@
 (defn fetch-posts!
   [thread-title page-num record-short-id]
   (.log js/console "fetch-posts!:" thread-title page-num record-short-id)
-  (if @download-thread?
+  (if true ; @download-thread?
     (session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
     (session/put! :posts nil))
   (POST (str "/api/thread" )
@@ -1009,7 +1155,11 @@
          :format :json
          :response-format :json
          :keywords? true
-         :params {:thread-title thread-title :page-num page-num :page-size page-size :record-short-id record-short-id :download @download-thread?}}))
+         :params {:thread-title thread-title
+                  :page-num page-num
+                  :page-size page-size
+                  :record-short-id record-short-id
+                  :download @download-thread?}}))
 
 (defn fetch-new-posts!
   []
@@ -1135,6 +1285,7 @@
          {:method   "GET"
           :success  (fn [response]
                       (let [status (:status (clojure.walk/keywordize-keys (js->clj response)))]
+                        (reset! admin (:admin status))
                         (reset! server-node-name (:server-node-name status))
                         (reset! server-url-base (:server-url-base status))
                         (reset! service-name (:service-name status))
@@ -1188,6 +1339,9 @@
               (or
                 (nil? (:posts query))
                 (not  (= (:posts query) "0"))))
+      (session/put! :tag
+              (if (not (nil? (:tag query)))
+                (js/decodeURIComponent (:tag query))))
       query)
     (catch js/Error e (.log js/console e) {})))
 
@@ -1198,9 +1352,10 @@
     (set! (.-title js/document)
           (str (case (session/get :page)
                  :home "目次"
-                 :threads "全てのスレッド"
-                 :recent-threads "最近更新されたスレッド"
+                 :threads "スレッド一覧"
+                 :recent-threads "最近更新されたスレッド一覧"
                  :thread (session/get :thread-title)
+                 :tags (str "「" (session/get :thread-title) "」のタグ編集")
                  :images (str "「" (session/get :thread-title) "」の画像一覧")
                  :new-posts "新着レスまとめ読み"
                  :create-new-thread "新規スレッド作成"
@@ -1240,10 +1395,23 @@
   (if @posts-displayed?
     (fetch-posts! thread-title 0 nil))
   (session/put! :thread-title thread-title)
+  (session/put! :tags [])
   (session/put! :page-num 0)
   (session/put! :record-short-id nil)
   (session/put! :href-base (str "/thread/" (js/decodeURIComponent thread-title)))
   (session/put! :page :thread)
+  (set-title))
+
+(secretary/defroute
+  "/thread/:thread-title/tags"
+  [thread-title]
+  (process-query-string)
+  (reset! jump-command :top)
+  (fetch-posts! thread-title 0 nil)
+  (session/put! :thread-title thread-title)
+  (session/put! :tags [])
+  (session/put! :new-tags [])
+  (session/put! :page :tags)
   (set-title))
 
 (secretary/defroute
@@ -1267,6 +1435,7 @@
     (if @posts-displayed?
       (fetch-posts! thread-title page-num record-short-id))
     (session/put! :thread-title thread-title)
+    (session/put! :tags [])
     (session/put! :page-num page-num)
     (session/put! :record-short-id record-short-id)
     (session/put! :href-base (str "/thread/" (js/decodeURIComponent thread-title)))

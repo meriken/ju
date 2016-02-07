@@ -69,6 +69,7 @@
 (defentity blocked_records (normalize-keys))
 (defentity update_commands (normalize-keys))
 (defentity anchors (normalize-keys))
+(defentity file_tags (normalize-keys))
 
 
 
@@ -222,6 +223,33 @@
     (delete files (where {:id file-id}))
     (delete records (where {:file_id file-id}))
     (delete anchors (where {:file_id file-id}))))
+
+
+
+(defn add-file-tag [file-id tag-string]
+  (if (re-find #"[ 　<>&]" tag-string)
+    (throw (IllegalArgumentException. "Invalid tag string")))
+
+  (transaction
+    (if (zero? (count (select file_tags (fields :id) (where {:file_id file-id :tag_string tag-string}))))
+      (insert file_tags
+              (values {:file_id file-id
+                       :tag_string tag-string
+                       :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))})))))
+
+(defn get-tags-for-file
+  [file-id]
+  (select file_tags
+          (where {:file_id file-id})))
+
+(defn update-tags-for-file
+  [file-id new-tags]
+  (transaction
+    (delete file_tags
+            (where {:file_id file-id}))
+    (dorun (map #(add-file-tag file-id %)
+                new-tags))))
+
 
 
 (declare add-anchor)

@@ -243,7 +243,7 @@
         [:time_created "TIMESTAMP NULL"] ; This is used to check for duplicates.
         [:deleted "BOOLEAN DEFAULT FALSE"]
         [:size         bigint "NOT NULL"]
-        [:tags varchar "DEFAULT NULL"]
+        ;[:tags varchar "DEFAULT NULL"]
         [:suffix         varchar "DEFAULT NULL"]
         [:dat_file_line         varchar "DEFAULT NULL"]
         [:origin         varchar "DEFAULT NULL"]
@@ -262,6 +262,18 @@
         [:record_id    varchar "NOT NULL"]
         [:time_created "TIMESTAMP NULL"]
         [:origin        varchar "DEFAULT NULL"]))))
+
+(defn create-file-tags-table
+  [db-spec]
+  (let [{:keys [id bigint blob varchar varchar-unique varchar-ignorecase-unique]} (db-types db-spec)]
+    (sql/db-do-commands
+      db-spec
+      (sql/create-table-ddl
+        :file_tags
+        [:id           id]
+        [:file_id      bigint "NOT NULL"]
+        [:tag_string   varchar "NOT NULL"]
+        [:time_created "TIMESTAMP NULL"]))))
 
 (defn create-anchors-table
   [db-spec]
@@ -380,6 +392,15 @@
   (try (sql/db-do-commands db-spec "CREATE INDEX anchors_index                   ON anchors         ( file_id, destination  );")
        (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX anchors_index                   ON anchors         ( file_id, destination(8)  );")
                                (catch Throwable _ (timbre/info "Failed to create anchors_index")))))
+
+
+
+  (try (sql/db-do-commands db-spec "CREATE INDEX file_tags_index ON file_tags ( tag_string );")
+       (catch Throwable _ (try (sql/db-do-commands db-spec "CREATE INDEX file_tags_index ON file_tags ( tag_string(128) );")
+                               (catch Throwable _ (timbre/info "Failed to create file_tags_index")))))
+
+  (try (sql/db-do-commands db-spec "CREATE INDEX file_tags_file_id_index ON file_tags ( file_id );")
+       (catch Throwable _ (timbre/info "Failed to create file_tags_file_id_index")))
 
 
 

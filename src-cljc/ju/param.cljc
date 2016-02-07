@@ -2,6 +2,8 @@
 
 
 
+(def admin-remote-address #"^(0:0:0:0:0:0:0:1|127\.0\.0\.1)$")
+
 (def initial-nodes
   ["node.shingetsu.info:8000/server.cgi"
    "node.fuktommy.com:8000/server.cgi"
@@ -30,6 +32,16 @@
 (def service-name "匿名掲示板")
 (def anonymous-users-handle "新月名無しさん")
 (def thumbnail-height 256)
+(def standard-tags
+  [["質問" "雑談" "ニュース" "実況"]
+   ["生活", "料理", "日課"]
+   ["画像", "動画", "二次元", "三次元", "18禁"]
+   ["趣味", "音楽", "テレビ"]
+   ["漫画", "アニメ", "ゲーム", "2ch"]
+   ["PC", "ソフトウェア", "ハードウェア"]
+   ["開発", "プログラミング", "IT", "P2P"]
+   ["新月", "運用", "スレ一覧", "テスト"]
+   ["きれいな新月", "裏"]])
 
 (def enable-recaptcha false)
 (def recaptcha-site-key nil)

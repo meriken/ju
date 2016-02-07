@@ -555,14 +555,12 @@
                          (:suffix elements)
                          node-name
                          nil)
+                       (db/mark-file-as-dirty file-id)
                        (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
                          (create-image file-id stamp record-id elements deleted))
                        )))
                  (catch Throwable t  (timbre/info (str "Skipped record: " (str t) " " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
              records))
-         (db/mark-file-as-dirty file-id)
-         ;(if-not (valid-file? file)
-         ;  (throw (Exception. "Invalid file.")))
          (count records))))))
 
 (defn download-file
@@ -1221,11 +1219,13 @@
                    anchors (into [] (apply concat (map (fn [destnation]
                                                          ;(timbre/info file-id destnation (apply str (db/get-anchors file-id destnation)))
                                                          (db/get-anchors file-id destnation))
-                                                       (map :record-short-id results))))]
+                                                       (map :record-short-id results))))
+                   tags (into [] (map :tag-string (db/get-tags-for-file file-id)))]
                ;(timbre/info "anchors:" (apply str anchors))
                {:body {:num-posts (:num-records file)
                        :posts     results
-                       :anchors   anchors}}))
+                       :anchors   anchors
+                       :tags      tags}}))
 
            (POST "/api/new-posts"
                  request
@@ -1262,16 +1262,21 @@
 
            (GET "/api/threads"
                 {:keys [headers params body server-name] :as request}
-             (timbre/info "/api/threads" (get-remote-address request))
-             (let [n (:n params)
+             (let [{:keys [n tag]} params
+                   _ (timbre/info "/api/threads" (get-remote-address request) n tag)
                    n (if (zero? (count n)) nil n)
                    file-list (remove #(or
                                        ;(not (= (:application %) "thread")) ; TODO
                                        (some #{(:file-name %)} param/known-corrupt-files)
-                                       (zero? (:num-records %)))
+                                       (zero? (:num-records %))
+                                       (and tag
+                                            (pos? (count tag))
+                                            (not (some #{tag} (into #{} (map :tag-string (db/get-tags-for-file (:id %))))))))
                                      (db/get-all-files))
                    file-list (if n (take (Integer/parseInt n) file-list) file-list)]
-               (map #(assoc % :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
+               (map #(-> %
+                         (assoc :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
+                         (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %))))))
                     file-list)))
 
            (POST "/api/images-in-thread"
@@ -1305,6 +1310,19 @@
                  (timbre/error t)
                  (internal-server-error "NG"))))
 
+           (POST "/api/update-thread-tags"
+                 request
+             (if (re-find param/admin-remote-address (:remote-addr request))
+               (try
+                 (let [{:keys [thread-title tags]} (:params request)
+                       _ (timbre/debug "/api/update-thread-tags" (get-remote-address request) thread-title (pr-str tags))
+                       file (db/get-file (thread-title-to-file-name thread-title))]
+                   (db/update-tags-for-file (:id file) tags)
+                   {:body {:success true}})
+                 (catch Throwable t
+                   (timbre/error t)
+                   {:body {:success false}}))))
+
            (GET "/api/status" request
              ;(timbre/info "/api/status" (get-remote-address request))
              (let [cache-size (reduce + (map :size (db/get-all-files)))]
@@ -1318,6 +1336,7 @@
                   :active-nodes (into [] (sort @active-nodes))
                   :search-nodes (into [] (sort @search-nodes))
 
+                  :admin (if (re-find param/admin-remote-address (:remote-addr request)) true false)
                   :server-node-name @server-node-name
                   :server-url-base (get-server-url-base)
                   :enable-recaptcha param/enable-recaptcha
