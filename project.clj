@@ -58,6 +58,7 @@
                  [log4j "1.2.17" :exclusions [javax.mail/mail javax.jms/jms com.sun.jdmk/jmxtools com.sun.jmx/jmxri]]
                  [com.twelvemonkeys.imageio/imageio-core "3.1.1"]
                  [com.twelvemonkeys.imageio/imageio-jpeg "3.1.1"]
+                 [cheshire "5.5.0"]
                  ]
 
   :min-lein-version "2.0.0"

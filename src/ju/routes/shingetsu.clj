@@ -20,7 +20,8 @@
             [clj-time.coerce]
             [clj-time.format]
             [clj-time.predicates]
-            [clojure.data.codec.base64 :as base64])
+            [clojure.data.codec.base64 :as base64]
+            [cheshire.core])
   (:import (java.net URLEncoder)
            (java.nio.file Files)
            (java.security MessageDigest)
@@ -1050,6 +1051,8 @@
     (reverse (sort-by :time-updated file-list))))
 
 (def api-threads-cache (atom nil))
+(def api-threads-response-cache (atom nil))
+(def api-threads-100-response-cache (atom nil))
 
 (defn start-api-cache-manager
   []
@@ -1058,6 +1061,14 @@
       (timbre/info "API Cache Manager started.")
       (while true
         (reset! api-threads-cache (doall (create-thread-list nil nil)))
+        (reset! api-threads-response-cache
+                {:status 200
+                 :headers {"Content-Type" "application/json; charset=utf-8"}
+                 :body (cheshire.core/generate-string @api-threads-cache)})
+        (reset! api-threads-100-response-cache
+                {:status 200
+                 :headers {"Content-Type" "application/json; charset=utf-8"}
+                 :body (cheshire.core/generate-string (take 100 @api-threads-cache))})
         (Thread/sleep 500)))))
 
 (defroutes shingetsu-routes
@@ -1322,9 +1333,10 @@
                  (create-thread-list n tag)
                  (do
                    (timbre/debug "@api-threads-cache")
-                   (if n
-                     (take n @api-threads-cache)
-                     @api-threads-cache)))))
+                   (case n
+                     nil @api-threads-response-cache
+                     100 @api-threads-100-response-cache
+                     (take n @api-threads-cache))))))
 
            (POST "/api/images-in-thread"
                  request
