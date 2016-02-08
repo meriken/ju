@@ -785,7 +785,8 @@
                     thread-last-accessed "list-group-item-info"
                     :else "")}
           thread-title ; " (ID:" (str (:id %)) ")"
-          [:span {:style {:border "solid 1px #999"
+          [:span {:style {:display "inline-block"
+                          :border "solid 1px #999"
                           :background-color "#eee"
                           :color "#000"
                           :opacity 0.7
@@ -797,7 +798,8 @@
            (:num-records %)]
           (map (fn [tag]
                  [:span {:key (my-uuid)
-                         :style {:border "solid 1px #797"
+                         :style {:display "inline-block"
+                                 :border "solid 1px #797"
                                  :background-color "#beb"
                                  :color "#000"
                                  :opacity 0.7
