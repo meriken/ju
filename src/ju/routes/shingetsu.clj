@@ -1046,7 +1046,9 @@
         file-list (if n (take n file-list) file-list)
         file-list (map #(-> %
                             (assoc :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
-                            (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %))))))
+                            (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %)))))
+                            (assoc :thread-title (file-name-to-thread-title (:file-name %)))
+                            (dissoc :dirty :deleted :time-first-post :application :size :time-created :suggested-tags :id :num-deleted-records))
                        file-list)]
     (reverse (sort-by :time-updated file-list))))
 

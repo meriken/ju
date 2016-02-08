@@ -772,43 +772,22 @@
     [:div#threads.list-group
      (map
        #(let
-         [thread-title (unhexify (clojure.string/replace (:file-name %) #"^thread_" ""))
+         [thread-title (:thread-title %) ;(unhexify (clojure.string/replace (:file-name %) #"^thread_" ""))
           thread-last-accessed (.getItem js/localStorage (str "thread-last-accessed-" thread-title))
           new-posts? (and thread-last-accessed (> (:time-updated %) (js/parseInt thread-last-accessed)))]
 
          [:a.list-group-item.jump-to-first-new-post
           {:href (file-name-to-path (:file-name %))
            :on-click handle-click-on-link
-           :key (my-uuid)
+           :key (:file-name %)
            :class (cond
                     new-posts? "list-group-item-danger"
                     thread-last-accessed "list-group-item-info"
                     :else "")}
           thread-title ; " (ID:" (str (:id %)) ")"
-          [:span {:style {:display "inline-block"
-                          :border "solid 1px #999"
-                          :background-color "#eee"
-                          :color "#000"
-                          :opacity 0.7
-                          :border-radius "4px"
-                          :margin-left "4px"
-                          :font-size 11
-                          :padding "0 6px"
-                          :font-weight :normal}}
-           (:num-records %)]
+          [:span.num-posts (:num-records %)]
           (map (fn [tag]
-                 [:span {:key (my-uuid)
-                         :style {:display "inline-block"
-                                 :border "solid 1px #797"
-                                 :background-color "#beb"
-                                 :color "#000"
-                                 :opacity 0.7
-                                 :border-radius "4px"
-                                 :margin-left "4px"
-                                 :font-size 11
-                                 :padding "0 6px"
-                                 :font-weight :normal}}
-                  tag])
+                 [:span.tag {:key tag :style {}} tag])
                (:tags %))
           [:span.glyphicon.glyphicon-chevron-right.pull-right]])
        response)]))
