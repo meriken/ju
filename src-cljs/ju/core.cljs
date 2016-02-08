@@ -1578,5 +1578,6 @@
   (check-new-post-notification!)
   (js/setInterval check-new-post-notification! 30000)
   (js/setInterval fetch-server-status! 30000)
-  (js/setInterval #(when (= (session/get :page) :recent-threads) (reset! jump-command nil) (update-threads :recent-threads)) 60000)
-  (js/setInterval #(when (= (session/get :page) :threads) (reset! jump-command nil) (update-threads :threads)) 180000))
+  ;(js/setInterval #(when (= (session/get :page) :recent-threads) (reset! jump-command nil) (update-threads :recent-threads)) 60000)
+  ;(js/setInterval #(when (= (session/get :page) :threads) (reset! jump-command nil) (update-threads :threads)) 180000)
+  )
