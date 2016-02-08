@@ -458,17 +458,18 @@
                          (try
                            (let [match (re-find #"^[0-9]+<>[0-9a-f]{32}<>(thread_[0-9A-F]+)(<>.*)?$" record)
                                  file-name (nth match 1 nil)
-                                 tags-string (nth (re-find #"^<>tag:(.+)$" (nth match 2 "")) 1 nil)
+                                 tags-string (if (nth match 2 "") (nth (re-find #"^<>tag:(.+)$" (nth match 2 "")) 1 nil))
                                  tags (if tags-string
                                         (clojure.string/split tags-string #" +")
                                         '())
                                  tags (remove #(re-find #"[ 　<>&]" %) tags )]
                              (when (and file-name (not (some #{file-name} param/known-corrupt-files)))
                                (db/add-file file-name)
-                                 (let [file-id (:id (db/get-file file-name))]
-                                   (db/add-suggested-tags file-id tags)
-                                   (if add-tags
-                                     (dorun (map #(db/add-file-tag file-id %) tags))))
+                               (if (pos? (count tags))
+                               (let [file-id (:id (db/get-file file-name))]
+                                 (db/add-suggested-tags file-id tags)
+                                 (if add-tags
+                                   (dorun (map #(db/add-file-tag file-id %) tags)))))
                                file-name))
                            (catch Throwable _)))
                        records)

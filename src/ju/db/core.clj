@@ -228,7 +228,9 @@
   [file-id tags]
   (let [tag-string (:suggested-tags (get-file-by-id file-id))
         tags (if tag-string
-               (clojure.set/union (into #{} (clojure.string/split tag-string #" +") (into #{} tags)))
+               (clojure.set/union
+                 (into #{} (clojure.string/split tag-string #" +"))
+                 (into #{} tags))
                tags)
         tag-string (clojure.string/replace
                      (apply str (map #(str % " ") tags))
