@@ -76,7 +76,7 @@
       (and thread-title
            (:name elements) (pos? (count (:name elements)))
            (:body elements)
-           (re-find #"ジミーチュウ|ダンヒル|ゴヤール|クリスチャンディオール|[Aa]mbien|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci" (:body elements)))
+           (re-find #"ジミーチュウ|ダンヒル|ゴヤール|クリスチャンディオール|[Aa]mbien|ケイト・スペード|シドニーハミルトン|スーパーコピー|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci" (:body elements)))
       (and file-name
            (some #{file-name} param/known-corrupt-files))
       (and (:name elements) (= "bvd*mfs}@gmail.com" (:name elements)))
@@ -447,12 +447,33 @@
           (check-nodes)
           (catch Throwable t))))))
 
-(defn get-files-with-recent-command []
-  (let [records (clojure.string/split (apply str (pmap #(try (recent %1 "0-") (catch Throwable _)) @search-nodes)) #"\n")
-        records (remove #(not (re-find #"^[0-9]+<>[0-9a-f]{32}<>thread_[0-9A-F]+(<>.*)?$" %)) records)
-        file-names (map #(second (re-find #"^[0-9]+<>[0-9a-f]{32}<>(thread_[0-9A-F]+)(<>.*)?$" %)) records)
-        file-names (clojure.set/difference (into #{} file-names) param/known-corrupt-files)]
-    file-names))
+(defn get-files-with-recent-command
+  ([]
+    (get-files-with-recent-command false))
+  ([add-tags]
+    (let [records (clojure.string/split (apply str (pmap #(try (recent %1 "0-") (catch Throwable _)) @search-nodes)) #"\n")
+          records (remove #(not (re-find #"^[0-9]+<>[0-9a-f]{32}<>thread_[0-9A-F]+(<>.*)?$" %)) records)
+          file-names (map
+                       (fn [record]
+                         (try
+                           (let [match (re-find #"^[0-9]+<>[0-9a-f]{32}<>(thread_[0-9A-F]+)(<>.*)?$" record)
+                                 file-name (nth match 1 nil)
+                                 tags-string (nth (re-find #"^<>tag:(.+)$" (nth match 2 "")) 1 nil)
+                                 tags (if tags-string
+                                        (clojure.string/split tags-string #" +")
+                                        '())
+                                 tags (remove #(re-find #"[ 　<>&]" %) tags )]
+                             (when (and file-name (not (some #{file-name} param/known-corrupt-files)))
+                               (db/add-file file-name)
+                                 (let [file-id (:id (db/get-file file-name))]
+                                   (db/add-suggested-tags file-id tags)
+                                   (if add-tags
+                                     (dorun (map #(db/add-file-tag file-id %) tags))))
+                               file-name))
+                           (catch Throwable _)))
+                       records)
+          file-names (remove nil? file-names)]
+      (doall file-names))))
 
 (defn download-file-from-node
   ([node-name file-name]
@@ -660,9 +681,7 @@
     (let [file-names (get-files-with-recent-command)
           designated-super-nodes (nth
                                    (shuffle (into () (clojure.set/intersection @search-nodes (into #{} param/initial-super-nodes))))
-                                   0 nil)
-          ]
-      (dorun (map #(db/add-file %) file-names))
+                                   0 nil)]
       (when designated-super-nodes
         (timbre/info "Crawler: Crawling" designated-super-nodes "first...")
         (crawl-node designated-super-nodes :randomize false :recent true)
@@ -1220,12 +1239,16 @@
                                                          ;(timbre/info file-id destnation (apply str (db/get-anchors file-id destnation)))
                                                          (db/get-anchors file-id destnation))
                                                        (map :record-short-id results))))
-                   tags (into [] (map :tag-string (db/get-tags-for-file file-id)))]
+                   tags (into [] (map :tag-string (db/get-tags-for-file file-id)))
+                   suggested-tags (if (:suggested-tags file)
+                                    (into [] (clojure.string/split (:suggested-tags file) #" +"))
+                                    [])]
                ;(timbre/info "anchors:" (apply str anchors))
                {:body {:num-posts (:num-records file)
                        :posts     results
                        :anchors   anchors
-                       :tags      tags}}))
+                       :tags      tags
+                       :suggested-tags suggested-tags}}))
 
            (POST "/api/new-posts"
                  request
@@ -1265,19 +1288,20 @@
              (let [{:keys [n tag]} params
                    _ (timbre/info "/api/threads" (get-remote-address request) n tag)
                    n (if (zero? (count n)) nil n)
+                   file-list (if (and tag (pos? (count tag)))
+                           (db/get-files-with-tag tag)
+                           (db/get-all-files))
                    file-list (remove #(or
                                        ;(not (= (:application %) "thread")) ; TODO
                                        (some #{(:file-name %)} param/known-corrupt-files)
-                                       (zero? (:num-records %))
-                                       (and tag
-                                            (pos? (count tag))
-                                            (not (some #{tag} (into #{} (map :tag-string (db/get-tags-for-file (:id %))))))))
-                                     (db/get-all-files))
-                   file-list (if n (take (Integer/parseInt n) file-list) file-list)]
-               (map #(-> %
-                         (assoc :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
-                         (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %))))))
-                    file-list)))
+                                       (zero? (:num-records %)))
+                                     file-list)
+                   file-list (if n (take (Integer/parseInt n) file-list) file-list)
+                   file-list (map #(-> %
+                                       (assoc :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
+                                       (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %))))))
+                                  file-list)]
+               (reverse (sort-by :time-updated file-list))))
 
            (POST "/api/images-in-thread"
                  request

@@ -224,6 +224,20 @@
     (delete records (where {:file_id file-id}))
     (delete anchors (where {:file_id file-id}))))
 
+(defn add-suggested-tags
+  [file-id tags]
+  (let [tag-string (:suggested-tags (get-file-by-id file-id))
+        tags (if tag-string
+               (clojure.set/union (into #{} (clojure.string/split tag-string #" +") (into #{} tags)))
+               tags)
+        tag-string (clojure.string/replace
+                     (apply str (map #(str % " ") tags))
+                     #" +$" "")
+        tag-string (if (= tag-string "") nil tag-string)]
+    (update files
+            (where {:id file-id})
+            (set-fields {:suggested_tags tag-string}))))
+
 
 
 (defn add-file-tag [file-id tag-string]
@@ -249,6 +263,15 @@
             (where {:file_id file-id}))
     (dorun (map #(add-file-tag file-id %)
                 new-tags))))
+
+(defn get-files-with-tag
+  [tag-string]
+  (apply concat
+    (map (fn [file-tag]
+           (select files
+                   (where {:id (:file-id file-tag)})))
+         (select file_tags
+                 (where {:tag_string tag-string})))))
 
 
 

@@ -224,7 +224,7 @@
         [:dirty "BOOLEAN DEFAULT FALSE"]
         [:size bigint "DEFAULT 0"]
         ;[:tags varchar "DEFAULT NULL"]
-        ;[:suggested_tags varchar "DEFAULT NULL"]
+        [:suggested_tags varchar "DEFAULT NULL"]
         ))))
 
 (defn create-records-table
@@ -462,6 +462,7 @@
   [db-spec]
   (create-nodes-table db-spec)
   (create-files-table db-spec)
+  (create-file-tags-table db-spec)
   (create-records-table db-spec)
   (create-blocked-records-table db-spec)
   (create-update-commands-table db-spec)

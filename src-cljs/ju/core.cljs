@@ -1088,6 +1088,7 @@
     (session/put! :num-pages num-pages)
     (session/put! :tags (:tags response))
     (session/put! :new-tags (:tags response))
+    (session/put! :suggested-tags (:suggested-tags response))
     (session/put!
       :posts
       [(with-meta (fn [] [:div#posts
