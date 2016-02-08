@@ -1032,6 +1032,34 @@
              (* 9 60 60))
           "/ )]]")))))
 
+(defn create-thread-list
+  [n tag]
+  (let [file-list (if (and tag (pos? (count tag)))
+                    (db/get-files-with-tag tag)
+                    (db/get-all-files))
+        file-list (remove #(or
+                            ;(not (= (:application %) "thread")) ; TODO
+                            (some #{(:file-name %)} param/known-corrupt-files)
+                            (zero? (:num-records %)))
+                          file-list)
+        file-list (if n (take n file-list) file-list)
+        file-list (map #(-> %
+                            (assoc :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
+                            (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %))))))
+                       file-list)]
+    (reverse (sort-by :time-updated file-list))))
+
+(def api-threads-cache (atom nil))
+
+(defn start-api-cache-manager
+  []
+  (do
+    (future
+      (timbre/info "API Cache Manager started.")
+      (while true
+        (reset! api-threads-cache (create-thread-list nil nil))
+        (Thread/sleep 500)))))
+
 (defroutes shingetsu-routes
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
            ; Shingetsu Protocol Commands ;
@@ -1287,22 +1315,12 @@
            (GET "/api/threads"
                 {:keys [headers params body server-name] :as request}
              (let [{:keys [n tag]} params
-                   _ (timbre/info "/api/threads" (get-remote-address request) n tag)
-                   n (if (zero? (count n)) nil n)
-                   file-list (if (and tag (pos? (count tag)))
-                           (db/get-files-with-tag tag)
-                           (db/get-all-files))
-                   file-list (remove #(or
-                                       ;(not (= (:application %) "thread")) ; TODO
-                                       (some #{(:file-name %)} param/known-corrupt-files)
-                                       (zero? (:num-records %)))
-                                     file-list)
-                   file-list (if n (take (Integer/parseInt n) file-list) file-list)
-                   file-list (map #(-> %
-                                       (assoc :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
-                                       (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %))))))
-                                  file-list)]
-               (reverse (sort-by :time-updated file-list))))
+                   n (if (zero? (count n)) nil (Integer/parseInt n))
+                   _ (timbre/info "/api/threads" (get-remote-address request) n tag)]
+               (if (or n tag)
+                 (create-thread-list n tag)
+                 @api-threads-cache)
+               ))
 
            (POST "/api/images-in-thread"
                  request

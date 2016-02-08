@@ -131,6 +131,7 @@
   (db/start-database-monitor)
   (shingetsu/start-node-monitor)
   (shingetsu/start-crawler)
+  (shingetsu/start-api-cache-manager)
   (start-http-server (http-port port))
   (open-web-browser port)
   (timbre/info "HTTP server started on port:" @shingetsu/http-server-port))

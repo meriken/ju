@@ -495,7 +495,8 @@
            [:div.btn-group.btn-group-sm.page-jump-buttons
             {:style {:margin-right "10px"}}
             (map #(do [:a.btn.btn-success
-                       {:on-click handle-click-on-link
+                       {:key (my-uuid)
+                        :on-click handle-click-on-link
                         :href (str "/threads?tag=" (js/encodeURIComponent %))}
                        %])
                  (session/get :tags))])
@@ -792,7 +793,8 @@
                           :font-weight :normal}}
            (:num-records %)]
           (map (fn [tag]
-                 [:span {:style {:border "solid 1px #797"
+                 [:span {:key (my-uuid)
+                         :style {:border "solid 1px #797"
                                  :background-color "#beb"
                                  :color "#000"
                                  :opacity 0.7
