@@ -1318,12 +1318,13 @@
                    n (if (zero? (count n)) nil (Integer/parseInt n))
                    tag (if (zero? (count tag)) nil tag)
                    _ (timbre/info "/api/threads" (get-remote-address request) n tag)]
-               (if (or n tag)
+               (if tag
                  (create-thread-list n tag)
                  (do
                    (timbre/debug "@api-threads-cache")
-                   @api-threads-cache))
-               ))
+                   (if n
+                     (take n @api-threads-cache)
+                     @api-threads-cache)))))
 
            (POST "/api/images-in-thread"
                  request
