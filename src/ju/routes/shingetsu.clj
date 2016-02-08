@@ -1057,7 +1057,7 @@
     (future
       (timbre/info "API Cache Manager started.")
       (while true
-        (reset! api-threads-cache (create-thread-list nil nil))
+        (reset! api-threads-cache (doall (create-thread-list nil nil)))
         (Thread/sleep 500)))))
 
 (defroutes shingetsu-routes
