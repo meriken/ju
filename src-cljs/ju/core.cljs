@@ -226,10 +226,9 @@
    [:p
     "「" @service-name "」は新月ネットワークに参加しているP2P型の匿名掲示板です。"
     [:a {:href "/terms" :on-click handle-click-on-link} "新月ネットワーク利用規約"] "を守った上で、自由に利用してください。"
-    (if param/static-server-url-base
-      [:span "2ちゃんねる専用ブラウザで利用する場合は「"
-       (str param/static-server-url-base "2ch/")
-       "」を外部板として登録してください。"])]
+    [:span "2ちゃんねる専用ブラウザで利用する場合は "
+       [:strong  (str @server-url-base "/2ch/")]
+       " を外部板として登録してください。"]]
 
    [:div.row
     [:div#main-menu-column.col-sm-6
