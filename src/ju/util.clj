@@ -44,6 +44,9 @@
     (let [match (re-find #"^([0-9]+)-([0-9]+)$" range)]
       (and match (<= (Long/parseLong (nth match 1)) (Long/parseLong (nth match 2)))))))
 
+(defn hexify [s]
+  (apply str (map #(format "%02X" %) (.getBytes s "UTF-8"))))
+
 (defn unhexify [s]
   (let [bytes (into-array Byte/TYPE
                           (map (fn [[x y]]

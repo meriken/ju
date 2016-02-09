@@ -1073,6 +1073,23 @@
                  :body (cheshire.core/generate-string (take 100 @api-threads-cache))})
         (Thread/sleep 500)))))
 
+(defn create-2ch-subject-txt
+  [sorted-files]
+  (->> sorted-files
+       (remove #(or
+                 ;(not (= (:application "thread") %))
+                 (some #{(:file-name %)} param/known-corrupt-files)
+                 (zero? (:num-records %))))
+       (map #(try
+              (str
+                (+ (long (/ (clj-time.coerce/to-long (:time-first-post %)) 1000)) (* 9 60 60))
+                ".dat<>"
+                (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4
+                  (unhexify (second (re-find #"^thread_(.*)$" (:file-name %)))))
+                " (" (:num-records %) ")\n")
+              (catch Throwable _ "")))
+       (apply str)))
+
 (defroutes shingetsu-routes
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
            ; Shingetsu Protocol Commands ;
@@ -1408,61 +1425,101 @@
 
 
 
+           (GET "/bbsmenu.html"
+                {:keys [headers params body server-name] :as request}
+             ;(timbre/info "/2ch/subject.txt" (get-remote-address request))
+             (->
+               (ok
+                 (str
+                   "<HTML>\n"
+                   "<HEAD>\n"
+                   "<META http-equiv=\"Content-Type\" content=\"text/html; charset=Shift_JIS\">\n"
+                   "<TITLE>BBS MENU for " param/service-name "</TITLE>\n"
+                   "<BASE TARGET=\"cont\">\n"
+                   "</HEAD>\n"
+                   "<BODY TEXT=\"#CC3300\" BGCOLOR=\"#FFFFFF\" link=\"#0000FF\" alink=\"#ff0000\" vlink=\"#660099\">\n"
+                   "<font size=2>\n"
+                   "<br><br><B>" param/service-name "</B><br>\n"
+                   "<A HREF=" (get-server-url-base) "/2ch/>全てのスレッド</A>\n"
+                   (apply str
+                          (map (fn [heading items]
+                                 (clojure.string/replace
+                                   (str
+                                     "<br><br><B>" heading "</B><br>\n"
+                                     (apply str
+                                            (map (fn [item]
+                                                   (str "<A HREF=" (get-server-url-base) "/2ch_" (hexify item) "/>" item"</A><br>\n"))
+                                                 items)))
+                                   #"<br>$"
+                                   ""))
+                               ["一般" "生活" "画像・動画" "趣味" "オタク" "コンピューター" "開発" "新月" "その他"]
+                               param/standard-tags))
+                   "</FONT>\n"
+                   "</BODY>\n"
+                   "</HTML>"))
+               (content-type "text/html; charset=Shift_JIS")))
+
            (GET "/2ch/"
                 {:keys [headers params body server-name] :as request}
-             (redirect "/recent-threads"))
+             (redirect "/threads"))
+
+           (GET "/:board-name/"
+                {:keys [headers params body server-name] :as request}
+             ;(timbre/info "/:board-name/subject.txt" (get-remote-address request))
+             (let [board-name (:board-name params)
+                   match (re-find #"^2ch_([A-F0-9]+)$" board-name)]
+               (when match
+                 (redirect (str "/threads?tag=" (percent-encode (unhexify (second match))))))))
 
            (GET "/2ch/subject.txt"
                 {:keys [headers params body server-name] :as request}
              ;(timbre/info "/2ch/subject.txt" (get-remote-address request))
-             (let [files (db/get-all-files)
-                   lines (->> files
-                              (remove #(or
-                                        (not (= (:application "thread")))
-                                        (some #{(:file-name %)} param/known-corrupt-files)
-                                        (zero? (:num-records %))))
-                              (map #(try
-                                     (str
-                                       (+ (long (/ (clj-time.coerce/to-long (:time-first-post %)) 1000)) (* 9 60 60))
-                                       ".dat<>"
-                                       (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4
-                                         (unhexify (second (re-find #"^thread_(.*)$" (:file-name %)))))
-                                       " (" (:num-records %) ")\n")
-                                     (catch Throwable _ ""))))]
-               (->
-                 (ok (apply str lines))
-                 (content-type "text/plain; charset=windows-31j"))))
-
-           (GET "/2ch/head.txt"
-                {:keys [headers params body server-name] :as request}
              (->
-               (ok (str
-                     "新月 - P2P anonymous BBS<br>\n"
-                     "<br>\n"
-                     "http://shingetsu.info/<br>\n"
-                     "<br>\n"
-                     "次の利用規約に同意した方のみ新月ネットワークに参加できます。<br>\n"
-                     "<br>\n"
-                     "(投稿者の責任または免責)<br>\n"
-                     "1. 投稿者は投稿した記事に使用、改変または再配布の条件を記述しなければならない。<br>\n"
-                     "   条件は新月の仕組みに矛盾するものであってはならない。<br>\n"
-                     "2. 第1項の条件の記述がない場合には、利用者は投稿者が使用、<br>\n"
-                     "   改変または再配布を制限しないことに同意したものとみなすことができる。<br>\n"
-                     "3. 投稿者は第1項の条件または第2項の同意が正しいことに責任を持つ。<br>\n"
-                     "4. 投稿者は法律に定めのない限り、個別の記事で宣言しない限り、<br>\n"
-                     "   かつ第3項に反しない限り、記事の内容が正しいこと、役に立つこと、<br>\n"
-                     "   または不愉快でないことなどについて保証しない。<br>\n"
-                     "<br>\n"
-                     "(ノード管理者の責任または免責)<br>\n"
-                     "5. ノード管理者は記事または掲示板を自由に編集または削除できる。<br>\n"
-                     "6. ノード管理者は法律に定めのない限り、<br>\n"
-                     "   ノードを管理・運営することで知った情報についての守秘義務を負わない。<br>\n"
-                     "7. ノード管理者は法律に定めのない限り、記事の内容が正しいこと、役に立つこと、<br>\n"
-                     "   または不愉快でないことなどについて保証しない。<br>\n"
-                     "8. ノード管理者は自分の管理するノードに対して、<br>\n"
-                     "   特定のユーザ、特定のノード、全ての利用者または全てのノードが<br>\n"
-                     "   一時的または永続的に接続できることを保証しない。<br>"))
+               (ok (create-2ch-subject-txt (db/get-all-files)))
                (content-type "text/plain; charset=windows-31j")))
+
+           (GET "/:board-name/subject.txt"
+                {:keys [headers params body server-name] :as request}
+             ;(timbre/info "/:board-name/subject.txt" (get-remote-address request))
+             (let [board-name (:board-name params)
+                   match (re-find #"^2ch_([A-F0-9]+)$" board-name)]
+               (when match
+                 (->
+                   (ok (create-2ch-subject-txt (sort-by :time-updated #(.after %1 %2) (db/get-files-with-tag (unhexify (second match))))))
+                   (content-type "text/plain; charset=windows-31j")))))
+
+           (GET "/:board-name/head.txt"
+                {:keys [headers params body server-name] :as request}
+             (let [board-name (:board-name params)]
+               (when (re-find #"^2ch(_[A-F0-9]+)?$" board-name)
+                 (->
+                   (ok (str
+                         "新月 - P2P anonymous BBS<br>\n"
+                         "<br>\n"
+                         "http://shingetsu.info/<br>\n"
+                         "<br>\n"
+                         "次の利用規約に同意した方のみ新月ネットワークに参加できます。<br>\n"
+                         "<br>\n"
+                         "(投稿者の責任または免責)<br>\n"
+                         "1. 投稿者は投稿した記事に使用、改変または再配布の条件を記述しなければならない。<br>\n"
+                         "   条件は新月の仕組みに矛盾するものであってはならない。<br>\n"
+                         "2. 第1項の条件の記述がない場合には、利用者は投稿者が使用、<br>\n"
+                         "   改変または再配布を制限しないことに同意したものとみなすことができる。<br>\n"
+                         "3. 投稿者は第1項の条件または第2項の同意が正しいことに責任を持つ。<br>\n"
+                         "4. 投稿者は法律に定めのない限り、個別の記事で宣言しない限り、<br>\n"
+                         "   かつ第3項に反しない限り、記事の内容が正しいこと、役に立つこと、<br>\n"
+                         "   または不愉快でないことなどについて保証しない。<br>\n"
+                         "<br>\n"
+                         "(ノード管理者の責任または免責)<br>\n"
+                         "5. ノード管理者は記事または掲示板を自由に編集または削除できる。<br>\n"
+                         "6. ノード管理者は法律に定めのない限り、<br>\n"
+                         "   ノードを管理・運営することで知った情報についての守秘義務を負わない。<br>\n"
+                         "7. ノード管理者は法律に定めのない限り、記事の内容が正しいこと、役に立つこと、<br>\n"
+                         "   または不愉快でないことなどについて保証しない。<br>\n"
+                         "8. ノード管理者は自分の管理するノードに対して、<br>\n"
+                         "   特定のユーザ、特定のノード、全ての利用者または全てのノードが<br>\n"
+                         "   一時的または永続的に接続できることを保証しない。<br>"))
+                   (content-type "text/plain; charset=windows-31j")))))
 
            (GET "/2ch/SETTING.TXT"
                 {:keys [headers params body server-name] :as request}
@@ -1472,108 +1529,127 @@
                      "BBS_NONAME_NAME=" param/anonymous-users-handle "\n"))
                (content-type "text/plain; charset=windows-31j")))
 
-           (GET "/test/read.cgi/2ch/:thread-number"
-                request
-             (let [thread-number (:thread-number (:params request))
-                   _ (timbre/info "/test/read.cgi/2ch/:thread-number" thread-number)
-                   file (db/get-file-by-thread-number thread-number)
-                   _ (if (nil? file) (throw (Exception.)))]
-               (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))
+           (GET "/:board-name/SETTING.TXT"
+                {:keys [headers params body server-name] :as request}
+             (let [board-name (:board-name params)
+                   match (re-find #"^2ch_([A-F0-9]+)$" board-name)]
+               (when match
+                 (->
+                   (ok (str
+                         "BBS_TITLE=" (unhexify (second match)) "@" param/service-name "\n"
+                         "BBS_NONAME_NAME=" param/anonymous-users-handle "\n"))
+                   (content-type "text/plain; charset=windows-31j")))))
 
-           (GET "/test/read.cgi/2ch/:thread-number/"
-                request
-             (let [thread-number (:thread-number (:params request))
-                   _ (timbre/info "/test/read.cgi/2ch/:thread-number/" thread-number)
-                   file (db/get-file-by-thread-number thread-number)
-                   _ (if (nil? file) (throw (Exception.)))]
-               (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))
+           (GET "/test/read.cgi/:board-name/:thread-number"
+                {:keys [headers params body server-name] :as request}
+             (let [board-name (:board-name params)]
+               (when (re-find #"^2ch(_[A-F0-9]+)?$" board-name)
+                 (let [thread-number (:thread-number (:params request))
+                       _ (timbre/info "/test/read.cgi/:board-name/:thread-number" thread-number)
+                       file (db/get-file-by-thread-number thread-number)
+                       _ (if (nil? file) (throw (Exception.)))]
+                   (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))))
 
-           (GET "/test/read.cgi/2ch/:thread-number/:qualifier"
-                request
-             (let [{:keys [thread-number qualifier]} (:params request)
-                   _ (timbre/info "/test/read.cgi/2ch/:thread-number/:qualifier" thread-number qualifier)
-                   file (db/get-file-by-thread-number thread-number)
-                   _ (if (nil? file) (throw (Exception.)))
-                   records (db/get-all-records-in-file-without-bodies (:id file))
-                   post-numbers-map (apply merge
-                                     (remove
-                                       nil?
-                                       (map
-                                         #(try
-                                           {%2 (second (re-find #"^(.{8})" (:record-id %1)))}
-                                           (catch Throwable _
-                                             nil))
-                                         records
-                                         (range 1 (inc (count records))))))
-                   _ (timbre/debug (str post-numbers-map))
-                   record-short-id (try (get post-numbers-map (Integer/parseInt qualifier)) (catch Throwable _ nil))]
-               (redirect
-                 (str
-                   "/thread/"
-                   (percent-encode (file-name-to-thread-title (:file-name file)))
-                   (if record-short-id
-                     (str "/" record-short-id))))))
+           (GET "/test/read.cgi/:board-name/:thread-number/"
+                {:keys [headers params body server-name] :as request}
+             (let [board-name (:board-name params)]
+               (when (re-find #"^2ch(_[A-F0-9]+)?$" board-name)
+                 (let [thread-number (:thread-number (:params request))
+                       _ (timbre/info "/test/read.cgi/:board-name/:thread-number/" thread-number)
+                       file (db/get-file-by-thread-number thread-number)
+                       _ (if (nil? file) (throw (Exception.)))]
+                   (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))))
 
-           (GET "/2ch/dat/:dat-file-name"
-                 request
-             (let [{:keys [dat-file-name]} (:params request)
-                   _ (timbre/info "/2ch/dat/:dat-file-name" (get-remote-address request) dat-file-name)
-                   [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)
-                   file (db/get-file-by-thread-number thread-number)
-                   _ (if (nil? file) (throw (Exception.)))
-                   results (db/get-all-records-in-file-without-bodies (:id file))
-                   anchor-map (apply merge
-                                     (remove
-                                       nil?
-                                       (map
-                                         #(try
-                                           {(str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2)}
-                                           (catch Throwable _
-                                             nil))
-                                         results
-                                         (range 1 (inc (count results))))))
-                   thread-title (file-name-to-thread-title (:file-name file))
-                   posts-as-strings (doall (remove
-                                             nil?
-                                             (map
-                                               #(try
-                                                 (str
-                                                   (cond
-                                                     (nil? (:dat-file-line %1))
-                                                     (str "?<>?<>????/?/?(?) ??:??:?? ID:" (:record-short-id %1) "<>")
+           (GET "/test/read.cgi/:board-name/:thread-number/:qualifier"
+                {:keys [headers params body server-name] :as request}
+             (let [board-name (:board-name params)]
+               (when (re-find #"^2ch(_[A-F0-9]+)?$" board-name)
+                 (let [{:keys [thread-number qualifier]} (:params request)
+                       _ (timbre/info "/test/read.cgi/:board-name/:thread-number/:qualifier" thread-number qualifier)
+                       file (db/get-file-by-thread-number thread-number)
+                       _ (if (nil? file) (throw (Exception.)))
+                       records (db/get-all-records-in-file-without-bodies (:id file))
+                       post-numbers-map (apply merge
+                                               (remove
+                                                 nil?
+                                                 (map
+                                                   #(try
+                                                     {%2 (second (re-find #"^(.{8})" (:record-id %1)))}
+                                                     (catch Throwable _
+                                                       nil))
+                                                   records
+                                                   (range 1 (inc (count records))))))
+                       _ (timbre/debug (str post-numbers-map))
+                       record-short-id (try (get post-numbers-map (Integer/parseInt qualifier)) (catch Throwable _ nil))]
+                   (redirect
+                     (str
+                       "/thread/"
+                       (percent-encode (file-name-to-thread-title (:file-name file)))
+                       (if record-short-id
+                         (str "/" record-short-id))))))))
 
-                                                     (not (or (re-find #"&gt;&gt;" (:dat-file-line %1))
-                                                              (re-find #"\[\[" (:dat-file-line %1))))
-                                                     (:dat-file-line %1)
-
-                                                     :else ; This is costly.
-                                                     (-> (:dat-file-line %1)
-                                                         (clojure.string/replace
-                                                           #"&gt;&gt;[a-f0-9]{8}"
-                                                           (fn [s] (get anchor-map s s)))
-                                                         (clojure.string/replace
-                                                           #"\[\[[^\]]+\]\]"
-                                                           bracket-link-to-2ch-style-link)))
-                                                   (if (:suffix %1)
-                                                     (str
-                                                       (if-not (re-find #"<>$" (:dat-file-line %1))
-                                                         "<br>")
-                                                       (get-server-url-base)
-                                                       "/thread"
-                                                       "/" (java.net.URLEncoder/encode thread-title "UTF-8")
-                                                       "/" (:record-id %1) "." (:suffix %1)))
-                                                   "<>"
-                                                   (if (= %2 1)
-                                                     (str (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
-                                                   "\n")
-                                                 (catch Throwable t
-                                                   (timbre/debug (str t))
-                                                   (str (:dat-file-line %1) "<>\n")))
+           (GET "/:board-name/dat/:dat-file-name"
+                {:keys [headers params body server-name] :as request}
+             (let [board-name (:board-name params)]
+               (when (re-find #"^2ch(_[A-F0-9]+)?$" board-name)
+                 (let [{:keys [dat-file-name]} (:params request)
+                       _ (timbre/info "/:board-name/dat/:dat-file-name" (get-remote-address request) dat-file-name)
+                       [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)
+                       file (db/get-file-by-thread-number thread-number)
+                       _ (if (nil? file) (throw (Exception.)))
+                       results (db/get-all-records-in-file-without-bodies (:id file))
+                       anchor-map (apply merge
+                                         (remove
+                                           nil?
+                                           (map
+                                             #(try
+                                               {(str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2)}
+                                               (catch Throwable _
+                                                 nil))
                                              results
-                                             (range 1 (inc (count results))))))]
-               (->
-                 (ok (apply str posts-as-strings))
-                 (content-type "text/plain; charset=windows-31j"))))
+                                             (range 1 (inc (count results))))))
+                       thread-title (file-name-to-thread-title (:file-name file))
+                       posts-as-strings (doall (remove
+                                                 nil?
+                                                 (map
+                                                   #(try
+                                                     (str
+                                                       (cond
+                                                         (nil? (:dat-file-line %1))
+                                                         (str "?<>?<>????/?/?(?) ??:??:?? ID:" (:record-short-id %1) "<>")
+
+                                                         (not (or (re-find #"&gt;&gt;" (:dat-file-line %1))
+                                                                  (re-find #"\[\[" (:dat-file-line %1))))
+                                                         (:dat-file-line %1)
+
+                                                         :else ; This is costly.
+                                                         (-> (:dat-file-line %1)
+                                                             (clojure.string/replace
+                                                               #"&gt;&gt;[a-f0-9]{8}"
+                                                               (fn [s] (get anchor-map s s)))
+                                                             (clojure.string/replace
+                                                               #"\[\[[^\]]+\]\]"
+                                                               bracket-link-to-2ch-style-link)))
+                                                       (if (:suffix %1)
+                                                         (str
+                                                           (if-not (re-find #"<>$" (:dat-file-line %1))
+                                                             "<br>")
+                                                           (get-server-url-base)
+                                                           "/thread"
+                                                           "/" (java.net.URLEncoder/encode thread-title "UTF-8")
+                                                           "/" (:record-id %1) "." (:suffix %1)))
+                                                       "<>"
+                                                       (if (= %2 1)
+                                                         (str (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
+                                                       "\n")
+                                                     (catch Throwable t
+                                                       (timbre/debug (str t))
+                                                       (str (:dat-file-line %1) "<>\n")))
+                                                   results
+                                                   (range 1 (inc (count results))))))]
+                   (->
+                     (ok (apply str posts-as-strings))
+                     (content-type "text/plain; charset=windows-31j"))))))
 
 
 

@@ -177,9 +177,6 @@
           (pos? (count files)))
       (first files))))
 
-(defn hexify [s]
-  (apply str (map #(format "%02X" %) (.getBytes s "UTF-8"))))
-
 (defn get-file-id-by-thread-title
   [thread-title]
   (let [file-name (str "thread_" (hexify thread-title))
