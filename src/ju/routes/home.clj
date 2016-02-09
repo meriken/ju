@@ -55,6 +55,28 @@
                (do
                  (timbre/debug "/thread/:thread-title/:qualifier" thread-title qualifier)
                  (home-page (home-page "スレッド一覧")))))
+
+           (GET "/thread/:file-name/:record-id/:stamp-and-suffix"
+                [file-name record-id stamp-and-suffix]
+             (timbre/info "/thread/:file-name/:record-id/:stamp-and-suffix" file-name record-id stamp-and-suffix)
+             (when (and
+                     (re-find #"^thread_[0-9A-F]+$" file-name)
+                     (re-find #"^[0-9a-f]{32}$" record-id)
+                     (re-find #"^[0-9]+\.[a-zA-Z0-9]+$" stamp-and-suffix))
+               (let [file-id (:id (db/get-file file-name))
+                     [_ stamp suffix] (re-find #"^([0-9]+)\.([a-zA-Z0-9]+)$" stamp-and-suffix)
+                     record (db/get-record-in-file-by-record-id file-id record-id)
+                     body (String. (:body record) "UTF-8")
+                     elements (->> (clojure.string/split body #"<>")
+                                   (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                   (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                   (apply merge))]
+                 ;(timbre/debug (:suffix elements))
+                 (if (= suffix (:suffix elements))
+                   {:status  200
+                    :headers {"Content-Type" (ring.util.mime-type/ext-mime-type suffix)}
+                    :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))))
+
            (GET "/new-posts" [] (home-page "新着レスまとめ読み"))
            (GET "/create-new-thread" [] (home-page "新規スレッド作成"))
            (GET "/status" [] (home-page "状態"))

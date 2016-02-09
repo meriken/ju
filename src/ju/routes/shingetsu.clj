@@ -1656,10 +1656,16 @@
            (POST "/test/bbs.cgi"
                  request
              (try
-               (let [{:keys [bbs key FROM mail password MESSAGE attachment g-recaptcha-response]} (:form-params request)
+               (let [{:keys [subject bbs key FROM mail password MESSAGE attachment submit]} (:form-params request)
                      _ (timbre/debug "/test/bbs.cgi" (get-remote-address request) bbs key)
                      remote-address (get-remote-address request)
-                     file (db/get-file-by-thread-number key)
+                     file (if (and subject
+                                   (pos? (count subject))
+                                   (= submit "新規スレッド作成"))
+                            (do
+                              (db/add-file (thread-title-to-file-name subject))
+                              (db/get-file (thread-title-to-file-name subject)))
+                            (db/get-file-by-thread-number key))
                      thread-title (file-name-to-thread-title (:file-name file))
                      results (db/get-all-records-in-file-without-bodies (:id file))
                      anchor-map (apply merge
