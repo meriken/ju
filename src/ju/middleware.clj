@@ -91,6 +91,12 @@
           (nth match 1)
           (percent-encode-everything (nth match 2)))))
 
+    (re-find #"^\+" s)
+    (percent-encode-everything
+      (str
+        "%20"
+        (apply str (drop 1 s))))
+
     :else
     (percent-encode-everything
       (str
@@ -99,7 +105,7 @@
 
 (defn percent-decode-for-2ch-post
   [s]
-  (timbre/debug s)
+  (timbre/debug "percent-decode-for-2ch-post:" s)
   (percent-decode (percent-encode-everything s) "windows-31j"))
 
 (defn wrap-2ch-post
