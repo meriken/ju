@@ -1452,7 +1452,7 @@
                                                  items)))
                                    #"<br>$"
                                    ""))
-                               ["一般" "生活" "画像・動画" "趣味" "オタク" "コンピューター" "開発" "新月" "その他"]
+                               param/standard-tag-headings
                                param/standard-tags))
                    "</FONT>\n"
                    "</BODY>\n"
