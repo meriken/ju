@@ -394,48 +394,40 @@
       "最初 " [:span.glyphicon.glyphicon-forward]]]])
 
 ; This is rather tricky.
-(def recaptcha-widget-id (atom nil))
 (defn recaptcha []
   (fn []
     [(with-meta #(if @enable-recaptcha [:div#g-recaptcha.g-recaptcha {:data-sitekey @recaptcha-site-key}])
                 {:component-did-mount (fn [this]
                                         (if @enable-recaptcha
                                           (try
-                                            (reset! recaptcha-widget-id
-                                                    (.render js/grecaptcha
-                                                             "g-recaptcha"
-                                                             (clj->js {:sitekey @recaptcha-site-key})))
+                                            (.render js/grecaptcha
+                                                     "g-recaptcha"
+                                                     (clj->js {:sitekey @recaptcha-site-key}))
                                             (.removeClass ($ :#g-recaptcha) "g-recaptcha")
                                             (catch js/Error _))))})]))
 
 (defn submit-post
   [e]
   (.preventDefault e)
-  (if (and @enable-recaptcha (zero? (count (.getResponse js/grecaptcha @recaptcha-widget-id))))
-    (.show js/BootstrapDialog (clj->js
-                                {:type (.-TYPE_DANGER js/BootstrapDialog)
-                                 :title "エラー"
-                                 :message "「書き込む」ボタンの下にあるチェックボックスをクリックして、ロボットでないことを証明してください。"
-                                 :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
-    (let [result (atom nil)
-          _ (ajax "/api/post"
-                  {:method      "POST"
-                   :success     (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
-                   :error       (fn [] (reset! result :error))
-                   :async       false
-                   :contentType false
-                   :processData false
-                   :data        (js/FormData. (.getElementById js/document "post-form"))})]
-      (if (= @result :error)
-        (.show js/BootstrapDialog (clj->js
-                                    {:type (.-TYPE_DANGER js/BootstrapDialog)
-                                     :title "エラー"
-                                     :message "書き込みに失敗しました。"
-                                     :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
-        (open-internal-page
-          (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
-          (session/get :thread-title)
-          :first-new-post)))))
+  (let [result (atom nil)
+        _ (ajax "/api/post"
+                {:method      "POST"
+                 :success     (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
+                 :error       (fn [] (reset! result :error))
+                 :async       false
+                 :contentType false
+                 :processData false
+                 :data        (js/FormData. (.getElementById js/document "post-form"))})]
+    (if (= @result :error)
+      (.show js/BootstrapDialog (clj->js
+                                  {:type (.-TYPE_DANGER js/BootstrapDialog)
+                                   :title "エラー"
+                                   :message "書き込みに失敗しました。"
+                                   :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
+      (open-internal-page
+        (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
+        (session/get :thread-title)
+        :first-new-post))))
 
 (defn post-form
   []
