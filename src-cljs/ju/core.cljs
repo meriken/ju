@@ -168,8 +168,10 @@
           [nav-link "/recent-threads" "スレッド一覧" :recent-threads]
           [nav-link "/new-posts" "新着レス" :new-posts]
           ;[nav-link "/create-new-thread" "新規スレッド作成" :create-new-thread]
-          [nav-link "/status" "状態" :status]
-          [nav-link "/help" "使い方" :help]]]]])))
+          (if @admin
+            [nav-link "/status" "状態" :status])
+          ;[nav-link "/help" "使い方" :help]
+          ]]]])))
 
 (defn navbar-bottom
   []
@@ -242,9 +244,12 @@
                        (if @new-post-notification " list-group-item-danger"))}
        "新着レス"
        [:span.glyphicon.glyphicon-chevron-right.pull-right]]
-      [:a {:on-click handle-click-on-link :href "/create-new-thread" :class "list-group-item"} "新規スレッド作成" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
-      [:a {:on-click handle-click-on-link :href "/status" :class "list-group-item"} "状態" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
-      [:a {:on-click handle-click-on-link :href "/help" :class "list-group-item"} "使い方" [:span.glyphicon.glyphicon-chevron-right.pull-right]]]]
+
+      ;[:a {:on-click handle-click-on-link :href "/create-new-thread" :class "list-group-item"} "新規スレッド作成" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      (if @admin
+        [:a {:on-click handle-click-on-link :href "/status" :class "list-group-item"} "状態" [:span.glyphicon.glyphicon-chevron-right.pull-right]])
+      ;[:a {:on-click handle-click-on-link :href "/help" :class "list-group-item"} "使い方" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      ]]
 
     [:div#tag-menu-column.col-sm-6
      [:div#tag-menu.panel.panel-default
@@ -389,40 +394,48 @@
       "最初 " [:span.glyphicon.glyphicon-forward]]]])
 
 ; This is rather tricky.
+(def recaptcha-widget-id (atom nil))
 (defn recaptcha []
   (fn []
     [(with-meta #(if @enable-recaptcha [:div#g-recaptcha.g-recaptcha {:data-sitekey @recaptcha-site-key}])
                 {:component-did-mount (fn [this]
                                         (if @enable-recaptcha
                                           (try
-                                            (.render js/grecaptcha
-                                                     "g-recaptcha"
-                                                     (clj->js {:sitekey @recaptcha-site-key}))
+                                            (reset! recaptcha-widget-id
+                                                    (.render js/grecaptcha
+                                                             "g-recaptcha"
+                                                             (clj->js {:sitekey @recaptcha-site-key})))
                                             (.removeClass ($ :#g-recaptcha) "g-recaptcha")
                                             (catch js/Error _))))})]))
 
 (defn submit-post
   [e]
   (.preventDefault e)
-  (let [result (atom nil)
-                _ (ajax "/api/post"
-                        {:method      "POST"
-                         :success     (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
-                         :error       (fn [] (reset! result :error))
-                         :async       false
-                         :contentType false
-                         :processData false
-                         :data        (js/FormData. (.getElementById js/document "post-form"))})]
-    (if (= @result :error)
-      (.show js/BootstrapDialog (clj->js
-                                  {:type (.-TYPE_DANGER js/BootstrapDialog)
-                                   :title "エラー"
-                                   :message "書き込みに失敗しました。"
-                                   :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
-      (open-internal-page
-        (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
-        (session/get :thread-title)
-        :first-new-post))))
+  (if (and @enable-recaptcha (zero? (count (.getResponse js/grecaptcha @recaptcha-widget-id))))
+    (.show js/BootstrapDialog (clj->js
+                                {:type (.-TYPE_DANGER js/BootstrapDialog)
+                                 :title "エラー"
+                                 :message "「書き込む」ボタンの下にあるチェックボックスをクリックして、ロボットでないことを証明してください。"
+                                 :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
+    (let [result (atom nil)
+          _ (ajax "/api/post"
+                  {:method      "POST"
+                   :success     (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
+                   :error       (fn [] (reset! result :error))
+                   :async       false
+                   :contentType false
+                   :processData false
+                   :data        (js/FormData. (.getElementById js/document "post-form"))})]
+      (if (= @result :error)
+        (.show js/BootstrapDialog (clj->js
+                                    {:type (.-TYPE_DANGER js/BootstrapDialog)
+                                     :title "エラー"
+                                     :message "書き込みに失敗しました。"
+                                     :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
+        (open-internal-page
+          (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
+          (session/get :thread-title)
+          :first-new-post)))))
 
 (defn post-form
   []
@@ -949,10 +962,10 @@
                         {:href (str "/thread/" (js/encodeURIComponent thread-title) "/" (:record-short-id post) "?post-form=1")
                          :on-click handle-click-on-link}
                         "このレスに返信する"]]
-                  [:li [:a
-                        {:href (str "/thread/" (js/encodeURIComponent thread-title) "/" (:record-short-id post) "?post-form=1")
-                         :on-click handle-click-on-link}
-                        "このレスに返信する(引用付き)"]]
+                  ;[:li [:a
+                  ;      {:href (str "/thread/" (js/encodeURIComponent thread-title) "/" (:record-short-id post) "?post-form=1")
+                  ;       :on-click handle-click-on-link}
+                  ;      "このレスに返信する(引用付き)"]]
                   [:li.divider {:role "separator"}]
                   (map #(do
                          [:li {:key (my-uuid)}
