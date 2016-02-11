@@ -100,7 +100,8 @@
                 "externs/hoverIntent.js"
                 "externs/twitter-bootstrap.js"
                 "externs/blueimp.js"
-                "externs/highlight.js"]
+                "externs/highlight.js"
+                "externs/emojione.js"]
       :pretty-print true}}}}
   
   :profiles
