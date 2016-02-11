@@ -927,7 +927,8 @@
                           (list [:span {:dangerouslySetInnerHTML {:__html spaces}}] rest))))
                  (map #(if (string? %) (process-links %) %))
                  (map #(if (string? %) (process-anchors % thread-title) %))
-                 (map #(if (string? %) (process-bracket-links %) %))))
+                 (map #(if (string? %) (process-bracket-links %) %))
+                 (map #(if (string? %) [:span.string %] %))))
      md5 (Md5.)
      _ (.update md5 (:pubkey post) (count (:pubkey post)))
      href-base (str "/thread/" (js/encodeURIComponent thread-title))
@@ -1102,6 +1103,12 @@
                               (:posts response)))])
                   {:component-did-mount
                    #(do
+                     (.each ($ (keyword ".post .string:not(.processed)"))
+                            (fn []
+                              (this-as s
+                                (.html ($ s)
+                                       (.unicodeToImage js/emojione (.text ($ s))))
+                                (.addClass ($ s) "processed"))))
                      (process-jump-command))})])))
 
 (defn new-posts-handler
