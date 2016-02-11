@@ -1038,6 +1038,7 @@
   (let [file-list (if (and tag (pos? (count tag)))
                     (db/get-files-with-tag tag)
                     (db/get-all-files))
+
         file-list (remove #(or
                             ;(not (= (:application %) "thread")) ; TODO
                             (some #{(:file-name %)} param/known-corrupt-files)
@@ -1051,6 +1052,33 @@
                             (dissoc :dirty :deleted :time-first-post :application :size :time-created :suggested-tags :id :num-deleted-records))
                        file-list)]
     (reverse (sort-by :time-updated file-list))))
+
+(defn create-related-thread-list
+  [thread-title n]
+  (try
+    (let [file-id (db/get-file-id-by-thread-title thread-title)
+          tags (map :tag-string (db/get-tags-for-file file-id))
+          tags (clojure.set/difference (into #{} tags) #{"きれいな新月"})
+          file-ids (map :id (apply concat (map db/get-files-with-tag tags)))
+          file-ids (shuffle (into () (clojure.set/difference (into #{} file-ids) #{file-id})))
+          file-list (map db/get-file-by-id file-ids)
+
+          file-list (remove #(or
+                              ;(not (= (:application %) "thread")) ; TODO
+                              (some #{(:file-name %)} param/known-corrupt-files)
+                              (nil? (:num-records %))
+                              (zero? (:num-records %)))
+                            file-list)
+          file-list (if n (take n file-list) file-list)
+          file-list (map #(-> %
+                              (assoc :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
+                              (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %)))))
+                              (assoc :thread-title (file-name-to-thread-title (:file-name %)))
+                              (dissoc :dirty :deleted :time-first-post :application :size :time-created :suggested-tags :id :num-deleted-records))
+                         file-list)]
+      file-list)
+    (catch Throwable t
+      (clojure.stacktrace/print-stack-trace t))))
 
 (def api-threads-cache (atom nil))
 (def api-threads-response-cache (atom nil))
@@ -1307,7 +1335,8 @@
                        :posts     results
                        :anchors   anchors
                        :tags      tags
-                       :suggested-tags suggested-tags}}))
+                       :suggested-tags suggested-tags
+                       :related-threads (create-related-thread-list thread-title 5)}}))
 
            (POST "/api/new-posts"
                  request
@@ -1356,6 +1385,14 @@
                      nil @api-threads-response-cache
                      100 @api-threads-100-response-cache
                      (take n @api-threads-cache))))))
+
+           ; Not used
+           (GET "/api/related-threads"
+                {:keys [headers params body server-name] :as request}
+             (let [{:keys [thread-title n]} params
+                   n (if (zero? (count n)) nil (Integer/parseInt n))
+                   _ (timbre/info "/api/related-threads" (get-remote-address request) n)]
+               (create-related-thread-list thread-title n)))
 
            (POST "/api/images-in-thread"
                  request

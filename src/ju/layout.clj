@@ -24,7 +24,8 @@
           :page template
           :csrf-token *anti-forgery-token*
           :servlet-context *app-context*
-          :title (if (:title params) (:title params) param/service-name))))
+          :title (if (:title params) (:title params) param/service-name)
+          :google-site-verification param/google-site-verification)))
     "text/html; charset=utf-8"))
 
 (defn error-page

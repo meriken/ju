@@ -488,6 +488,45 @@
             '())))
   (js/setTimeout #(highlight-code-block) 0))
 
+(defn tags-for-thread
+  []
+  (fn []
+    [:div.btn-group.btn-group-sm.page-jump-buttons
+     {:style {:margin-right "10px"}}
+     (map #(do [:a.btn.btn-success
+                {:key (my-uuid)
+                 :on-click handle-click-on-link
+                 :href (str "/threads?tag=" (js/encodeURIComponent %))}
+                %])
+          (session/get :tags))]))
+
+(defn thread-menu
+  []
+  (fn []
+    [:div.btn-group.btn-group-sm.page-jump-buttons
+     (if @admin
+       [:a.btn.btn-default
+        {:on-click handle-click-on-link
+         :href (str (session/get :href-base) "/tags")}
+        "タグ編集"])
+     (if @admin
+       [:a.btn.btn-default
+        {:on-click #(do (reset! jump-command :top)
+                        (handle-click-on-link %))
+         :href (str (session/get :href-base) "?download-thread=1")}
+        "ダウンロード"])
+     [:a.btn.btn-default
+      {:on-click handle-click-on-link
+       :href (str (session/get :href-base) "/images")}
+      "画像一覧"]
+     (comment
+       [:a.btn.btn-default
+        [:span.glyphicon.glyphicon-cog
+         {:style {:font-size "12px"}}]
+        [:span.glyphicon.glyphicon-triangle-bottom
+         {:style {:font-size "8px"
+                  :margin-left "2px"}}]])]))
+
 (defn thread-page []
     [(keyword (str "div.container"
                    (if (not @navbar-enabled?) ".without-navbar")
@@ -500,44 +539,17 @@
       (if (and @posts-displayed? (session/get :page-num))
         [:div
          (if (pos? (count (session/get :tags)))
-           [:div.btn-group.btn-group-sm.page-jump-buttons
-            {:style {:margin-right "10px"}}
-            (map #(do [:a.btn.btn-success
-                       {:key (my-uuid)
-                        :on-click handle-click-on-link
-                        :href (str "/threads?tag=" (js/encodeURIComponent %))}
-                       %])
-                 (session/get :tags))])
-
-         [:div.btn-group.btn-group-sm.page-jump-buttons
-          (if @admin
-            [:a.btn.btn-default
-             {:on-click handle-click-on-link
-              :href (str (session/get :href-base) "/tags")}
-             "タグ編集"])
-          (if @admin
-            [:a.btn.btn-default
-             {:on-click #(do (reset! jump-command :top)
-                             (handle-click-on-link %))
-              :href (str (session/get :href-base) "?download-thread=1")}
-             "ダウンロード"])
-          [:a.btn.btn-default
-           {:on-click handle-click-on-link
-            :href (str (session/get :href-base) "/images")}
-           "画像一覧"]
-          (comment
-          [:a.btn.btn-default
-            [:span.glyphicon.glyphicon-cog
-             {:style {:font-size "12px"}}]
-            [:span.glyphicon.glyphicon-triangle-bottom
-             {:style {:font-size "8px"
-                      :margin-left "2px"}}]])]
-
+           [tags-for-thread])
+         [thread-menu]
          [#'top-page-jump-buttons]])
       (if @posts-displayed?
         (session/get :posts))
       (if (and @posts-displayed? (session/get :page-num))
-        [#'bottom-page-jump-buttons])]
+        [:div
+         [#'bottom-page-jump-buttons]
+         [tags-for-thread]
+         [thread-menu]
+         (session/get :related-threads)])]
      [#'post-form]])
 
 (defn new-posts-page []
@@ -1080,6 +1092,7 @@
     (session/put! :tags (:tags response))
     (session/put! :new-tags (:tags response))
     (session/put! :suggested-tags (:suggested-tags response))
+    (thread-list-handler (:related-threads response) :related-threads)
     (session/put!
       :posts
       [(with-meta (fn [] [:div#posts
@@ -1141,6 +1154,7 @@
   (if true ; @download-thread?
     (session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
     (session/put! :posts nil))
+  (session/put! :recent-threads nil)
   (POST (str "/api/thread" )
         {:handler posts-handler
          :error-handler posts-error-handler

@@ -449,6 +449,9 @@
 
             "anchors_index"
 
+            "file_tags_index"
+            "file_tags_file_id_index"
+
             "images_index"
             "images_record_id_index"
             "images_jane_md5_string_index"
