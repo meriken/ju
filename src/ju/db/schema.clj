@@ -353,6 +353,9 @@
   (try (sql/db-do-commands db-spec "CREATE INDEX records_stamp_desc_index        ON records ( file_id, stamp DESC, deleted           );")
        (catch Throwable _ (timbre/info "Failed to create records_stamp_desc_index")))
 
+  (try (sql/db-do-commands db-spec "CREATE INDEX records_stamp_desc_only_index        ON records ( stamp DESC, deleted           );")
+       (catch Throwable _ (timbre/info "Failed to create records_stamp_desc_only_index")))
+
   (try (sql/db-do-commands db-spec "CREATE INDEX records_dirty_index ON records ( time_created DESC );")
        (catch Throwable t (timbre/info "Failed to create records_dirty_index" t)))
 

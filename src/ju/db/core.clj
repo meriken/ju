@@ -343,8 +343,8 @@
 (defn get-recent-records
   [n]
   (select records
-          (where {:deleted false})
           (order :stamp :desc)
+          (where {:deleted false})
           (limit n)))
 
 (defn get-records-in-file-by-short-id
