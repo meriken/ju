@@ -340,6 +340,13 @@
                   :deleted false})
           (order :stamp :ASC)))
 
+(defn get-recent-records
+  [n]
+  (select records
+          (where {:deleted false})
+          (order :stamp :desc)
+          (limit n)))
+
 (defn get-records-in-file-by-short-id
   [file-id short-id]
   (select records

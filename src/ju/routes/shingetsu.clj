@@ -14,6 +14,7 @@
             [ju.param :as param]
             [ju.util :refer :all]
             [ju.db.core :as db]
+            [ju.routes.home :as home]
             [clojure.math.numeric-tower :refer [expt]]
             [clojure.data.codec.base64]
             [clj-time.core]
@@ -21,7 +22,8 @@
             [clj-time.format]
             [clj-time.predicates]
             [clojure.data.codec.base64 :as base64]
-            [cheshire.core])
+            [cheshire.core]
+            [clj-rss.core])
   (:import (java.net URLEncoder)
            (java.nio.file Files)
            (java.security MessageDigest)
@@ -1341,9 +1343,24 @@
            (POST "/api/new-posts"
                  request
              (timbre/info "/api/new-posts" (get-remote-address request))
-             (let [{:keys [threads]} (:params request)
+             (let [{:keys [threads rss]} (:params request)
                    ;_ (timbre/debug threads)
-                   results (remove nil?
+                   results (if rss
+                             (map
+                               (fn [threads]
+                                 (let []
+                                   {:thread-title  (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id (first threads)))))
+                                    :posts (into [] (apply concat (map :posts threads)))
+                                    :anchors (into [] (apply concat (map :anchors threads)))}))
+                               (partition-by
+                                 :file-id
+                                 (map (fn [record]
+                                        (let []
+                                          {:file-id (:file-id record)
+                                           :posts [(process-record-body record)]
+                                           :anchors (into [] (db/get-anchors (:file-id record)  (:record-short-id record)))}))
+                                      (db/get-recent-records 100))))
+                             (remove nil?
                                    (map (fn [thread]
                                            (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))
                                                  posts (map process-record-body
@@ -1357,8 +1374,8 @@
                                                {:thread-title (:thread-title thread)
                                                 :posts posts
                                                 :anchors anchors})))
-                                         threads))]
-               {:body {:threads (into [] results)}}))
+                                         threads)))]
+               {:body {:threads (into [] results) :rss rss}}))
 
            (POST "/api/new-post-notification"
                  request
@@ -1745,7 +1762,45 @@
                             "<body><!-- 2ch_X:error -->\n"
                             "ＥＲＲＯＲ - エラーが発生しました。\n"
                             "<hr>(Ju 2ch Interface)</body></html>"))
-                   (content-type "text/html; charset=windows-31j"))))))
+                   (content-type "text/html; charset=windows-31j")))))
+
+
+
+           (GET "/rss"
+                {:keys [headers params body server-name] :as request}
+             (timbre/info "/rss" (get-remote-address request))
+             (if-not (or (nil? (get headers "accept" nil)) (re-find #"^(.*,)?(application|\*)/(rss\+xml|\*)(,.*)?$" (get headers "accept")))
+               (home/home-page "RSSフィード")
+               (->
+                 (ok
+                   (clj-rss.core/channel-xml
+                     {:title param/service-name :link (str (get-server-url-base) "/") :description "新月ネットワークの匿名掲示板"}
+                     (map
+                       (fn [record]
+                         (let [record (ju.db.core/get-record-by-id (:id record))
+                               body (String. (:body record) "UTF-8")
+                               elements (->> (clojure.string/split body #"<>")
+                                             (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                             (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                             (apply merge))
+                               thread-title (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id record))))]
+                           {:title (str
+                                     "["
+                                     (org.apache.commons.lang3.StringEscapeUtils/unescapeHtml4 thread-title)
+                                     "]"
+                                     (if (:body elements)
+                                       (str
+                                         " "
+                                         (-> (org.apache.commons.lang3.StringEscapeUtils/unescapeHtml4 (:body elements))
+                                             (clojure.string/replace #"<br>" "")
+                                             (clojure.string/replace #"^(.{40}).+$" "$1…")
+                                             ))))
+                            :link (str (get-server-url-base) "/thread/" (percent-encode thread-title) "/" (:record-short-id record))
+                            :pubDate (clj-time.coerce/to-date (clj-time.coerce/from-long (* (:stamp record) 1000)))
+                            }))
+                       (db/get-recent-records 50))))
+                 (content-type "application/rss+xml; charset=UTF-8"))))
+              )
 
 
 

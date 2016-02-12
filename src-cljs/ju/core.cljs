@@ -74,7 +74,7 @@
    (reset! jump-command new-jump-command)))
 
 (defn handle-click-on-link [e]
-  (.log js/console "handle-click-on-link" e)
+  ;(.log js/console "handle-click-on-link" e)
   (let [$target ($ (.-target e))
         href (.-href (.-target e))
         href (if href href (.-href (.-parentElement (.-target e))))
@@ -102,7 +102,7 @@
 
 (defn process-jump-command
   []
-  (.log js/console (str "process-jump-command: " @jump-command))
+  ;(.log js/console (str "process-jump-command: " @jump-command))
   (cond
     (= @jump-command :bottom)
     (js/setTimeout #(.scrollTop ($ (keyword "html,body")) (.height ($ js/document))) 0)
@@ -243,6 +243,12 @@
         :class    (str "list-group-item"
                        (if @new-post-notification " list-group-item-danger"))}
        "新着レス"
+       [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      [:a
+       {:on-click handle-click-on-link
+        :href     "/rss"
+        :class    "list-group-item"}
+       "RSSフィード"
        [:span.glyphicon.glyphicon-chevron-right.pull-right]]
 
       ;[:a {:on-click handle-click-on-link :href "/create-new-thread" :class "list-group-item"} "新規スレッド作成" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
@@ -556,7 +562,7 @@
   [(keyword (str "div.container"
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
-   [:h3 "新着レス"]
+   [:h3 (if (= (session/get :page) :new-posts) "新着レス" "RSSフィード(新着降順)")]
    [:div#content
     (session/get :posts)]])
 
@@ -750,6 +756,7 @@
    :tags #'tags-page
    :images #'images-page
    :new-posts #'new-posts-page
+   :rss #'new-posts-page
    :create-new-thread #'create-new-thread-page
    :status #'status-page
    :help #'help-page
@@ -928,7 +935,7 @@
                  (map #(if (string? %) (process-links %) %))
                  (map #(if (string? %) (process-anchors % thread-title) %))
                  (map #(if (string? %) (process-bracket-links %) %))
-                 (map #(if (string? %) [:span.string %] %))))
+                 (map #(if (string? %) [:span.string {:key (my-uuid)} %] %))))
      md5 (Md5.)
      _ (.update md5 (:pubkey post) (count (:pubkey post)))
      href-base (str "/thread/" (js/encodeURIComponent thread-title))
@@ -1121,27 +1128,29 @@
                     (if (zero? (count (:threads response)))
                       [:div.alert.alert-info "既読スレッドの新着レスはありません。"]
                       [:div#new-posts
-                       (map
-                         (fn [thread]
-                           [:div.thread
-                            [:a
-                             {:href (str "/thread/" (js/encodeURIComponent (:thread-title thread)))
-                              :on-click handle-click-on-link}
-                             [:div.alert.alert-info.thread-title (:thread-title thread)]]
-                            (map
-                              (fn [post]
-                                (generate-html-for-post post :new-posts (:thread-title thread) (:anchors thread)))
-                              (:posts thread))])
-                         (:threads response))]))
+                       (doall (map
+                                (fn [thread]
+                                  [:div.thread
+                                   {:key (my-uuid)}
+                                   [:a
+                                    {:href (str "/thread/" (js/encodeURIComponent (:thread-title thread)))
+                                     :on-click handle-click-on-link}
+                                    [:div.alert.alert-info.thread-title (:thread-title thread)]]
+                                   (doall (map
+                                            (fn [post]
+                                              (generate-html-for-post post :new-posts (:thread-title thread) (:anchors thread)))
+                                            (:posts thread)))])
+                                (:threads response)))]))
                   {:component-did-mount
                    (fn []
-                     (reset! new-post-notification false)
-                     (dorun
-                       (map
-                         #(.setItem js/localStorage
-                                    (str "thread-last-accessed-" (:thread-title %))
-                                    (str (long (/ (.getTime (js/Date.)) 1000))))
-                         (:threads response))))})])))
+                     (when (not (:rss response))
+                       (reset! new-post-notification false)
+                       (dorun
+                         (map
+                           #(.setItem js/localStorage
+                                      (str "thread-last-accessed-" (:thread-title %))
+                                      (str (long (/ (.getTime (js/Date.)) 1000))))
+                           (:threads response)))))})])))
 
 (defn posts-error-handler
   [response]
@@ -1158,9 +1167,7 @@
 (defn fetch-posts!
   [thread-title page-num record-short-id]
   (.log js/console "fetch-posts!:" thread-title page-num record-short-id)
-  (if true ; @download-thread?
-    (session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
-    (session/put! :posts nil))
+  (session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
   (session/put! :recent-threads nil)
   (POST (str "/api/thread" )
         {:handler posts-handler
@@ -1175,22 +1182,24 @@
                   :download @download-thread?}}))
 
 (defn fetch-new-posts!
-  []
-  ;(.log js/console "fetch-new-posts!:" thread-title page-num record-short-id)
-  ;(session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
-  (let [threads (remove nil?
-                        (map #(if (re-find #"^thread-last-accessed-" (.key js/localStorage %))
-                               {:thread-title (clojure.string/replace (.key js/localStorage %) #"^thread-last-accessed-" "")
-                                :time-last-accessed (js/parseInt (.getItem js/localStorage (.key js/localStorage %)))})
-                             (range (.-length js/localStorage))))]
-    (session/put! :posts nil)
-    (POST (str "/api/new-posts" )
-          {:handler new-posts-handler
-           :error-handler posts-error-handler
-           :format :json
-           :response-format :json
-           :keywords? true
-           :params {:threads threads}})))
+  ([]
+   (fetch-new-posts! false))
+  ([rss]
+    ;(.log js/console "fetch-new-posts!:" thread-title page-num record-short-id)
+    ;(session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
+   (let [threads (remove nil?
+                         (map #(if (re-find #"^thread-last-accessed-" (.key js/localStorage %))
+                                {:thread-title (clojure.string/replace (.key js/localStorage %) #"^thread-last-accessed-" "")
+                                 :time-last-accessed (js/parseInt (.getItem js/localStorage (.key js/localStorage %)))})
+                              (range (.-length js/localStorage))))]
+     (session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
+     (POST (str "/api/new-posts" )
+           {:handler new-posts-handler
+            :error-handler posts-error-handler
+            :format :json
+            :response-format :json
+            :keywords? true
+            :params {:threads threads :rss (if rss true false)}}))))
 
 (defn launch-image-viewer-for-images
   [link event]
@@ -1360,7 +1369,7 @@
 
 (defn set-title
   [& [params]]
-  (.log js/console (str (session/get :page)))
+  ;(.log js/console (str (session/get :page)))
   (if (session/get :page)
     (set! (.-title js/document)
           (str (case (session/get :page)
@@ -1370,7 +1379,8 @@
                  :thread (session/get :thread-title)
                  :tags (str "「" (session/get :thread-title) "」のタグ編集")
                  :images (str "「" (session/get :thread-title) "」の画像一覧")
-                 :new-posts "新着レスまとめ読み"
+                 :new-posts "新着レス"
+                 :rss "RSSフィード"
                  :create-new-thread "新規スレッド作成"
                  :status "状態"
                  :help "使い方"
@@ -1381,6 +1391,7 @@
 
 (secretary/defroute "/" [] (process-query-string) (reset! jump-command :top) (session/put! :page :home) (set-title))
 (secretary/defroute "/new-posts" [] (process-query-string) (fetch-new-posts!) (session/put! :page :new-posts) (set-title))
+(secretary/defroute "/rss" [] (process-query-string) (fetch-new-posts! true) (session/put! :page :rss) (set-title))
 (secretary/defroute "/create-new-thread" [] (process-query-string) (session/put! :page :create-new-thread) (set-title))
 (secretary/defroute "/help" [] (process-query-string) (session/put! :page :help) (set-title))
 (secretary/defroute "/terms" [] (process-query-string) (session/put! :page :terms) (set-title))
