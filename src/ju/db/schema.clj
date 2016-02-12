@@ -439,6 +439,7 @@
             "records_size_index"
             "records_stamp_index"
             "records_stamp_desc_index"
+            "records_stamp_desc_only_index"
             "records_dirty_index"
             "records_record_id_index"
             "records_record_id_only_index"

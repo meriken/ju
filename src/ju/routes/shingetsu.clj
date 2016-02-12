@@ -521,7 +521,7 @@
              records (clojure.set/difference (into #{} records) (into #{} existing-records))
              blocked-records (map #(do {:stamp (:stamp %) :record-id (:record-id %)}) blocked-records)
              records (clojure.set/difference (into #{} records) (into #{} blocked-records))]
-         (if (<= (count records) 1)
+         (if true ; (<= (count records) 1) ;TODO: Use an intelligent guess to predict the size of response.
            (dorun (map #(download-file-from-node node-name file-name (str (:stamp %)) (:record-id %)) records))
            (let [stamps (map :stamp records)
                  oldest (apply min stamps)
@@ -852,7 +852,13 @@
           start (try (Long/parseLong (if match (nth match 1) (nth (re-find #"^([0-9]*)$" range) 1))) (catch Throwable t nil))
           end (try (Long/parseLong (if match (nth match 2) (nth (re-find #"^([0-9]*)$" range) 1))) (catch Throwable t nil))
           record-id (:record-id params)]
-      (if (and (valid-file-name? file-name) (valid-range? range))
+      (if (and
+            (valid-file-name? file-name)
+            (valid-range? range)
+            (or
+              without-bodies
+              (>= param/max-get-command-rersponse-size
+                  (reduce + (map :size (db/get-records-in-file-with-range-without-bodies file-id start end))))))
         (->
           (ok (apply
                 str
