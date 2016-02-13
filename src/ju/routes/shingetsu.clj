@@ -521,7 +521,7 @@
              records (clojure.set/difference (into #{} records) (into #{} existing-records))
              blocked-records (map #(do {:stamp (:stamp %) :record-id (:record-id %)}) blocked-records)
              records (clojure.set/difference (into #{} records) (into #{} blocked-records))]
-         (if true ; (<= (count records) 1) ;TODO: Use an intelligent guess to predict the size of response.
+         (if (<= (count records) 1) ;TODO: Use an intelligent guess to predict the size of response.
            (dorun (map #(download-file-from-node node-name file-name (str (:stamp %)) (:record-id %)) records))
            (let [stamps (map :stamp records)
                  oldest (apply min stamps)
@@ -565,6 +565,16 @@
                        (timbre/info (str "Blocked record with invalid ID: " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 "")))
                        (db/add-blocked-record-with-origin file-name stamp record-id node-name))
 
+                     (and (:stamp elements) (not (= (:stamp elements) (str stamp))))
+                     (do
+                       (timbre/info (str "Blocked record with invalid stamp: " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 "")))
+                       (db/add-blocked-record-with-origin file-name stamp record-id node-name))
+
+                     (and (:file_name elements) (not (= (:file_name elements) (:file-name file))))
+                     (do
+                       (timbre/info (str "Blocked record with invalid file name: " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 "")))
+                       (db/add-blocked-record-with-origin file-name stamp record-id node-name))
+
                      :else
                      (let [deleted (is-post-spam? file-name stamp record-id elements)]
                        (db/add-record
@@ -584,7 +594,9 @@
                        (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
                          (create-image file-id stamp record-id elements deleted))
                        )))
-                 (catch Throwable t  (timbre/info (str "Skipped record: " (str t) " " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
+                 (catch Throwable t
+                   ;(clojure.stacktrace/print-stack-trace t)
+                   (timbre/info (str "Skipped record: " (str t) " " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
              records))
          (count records))))))
 
@@ -959,7 +971,9 @@
                           (let [match (re-find #"\.([a-zA-Z0-9]+)$" (:filename attachment))]
                             (if match (second match) "bin"))))
                       (if (and name (pos? (count name))) (str "<>name:" (escape-special-characters name)))
-                      (if (and mail (pos? (count mail))) (str "<>mail:" (escape-special-characters mail))))
+                      (if (and mail (pos? (count mail))) (str "<>mail:" (escape-special-characters mail)))
+                      (str "<>stamp:" stamp)
+                      (str "<>file_name:" (:file-name file)))
         record-body (if (or (nil? password) (zero? (count password)))
                       record-body
                       (let [{:keys [public-key signature]} (sign-post record-body password)]
@@ -1091,6 +1105,7 @@
 (def api-threads-cache (atom nil))
 (def api-threads-response-cache (atom nil))
 (def api-threads-100-response-cache (atom nil))
+(def api-new-posts-rss-response-cache (atom nil))
 
 (defn start-api-cache-manager
   []
@@ -1107,6 +1122,26 @@
                 {:status 200
                  :headers {"Content-Type" "application/json; charset=utf-8"}
                  :body (cheshire.core/generate-string (take 100 @api-threads-cache))})
+        (reset! api-new-posts-rss-response-cache
+                {:status 200
+                 :headers {"Content-Type" "application/json; charset=utf-8"}
+                 :body (cheshire.core/generate-string
+                         {:threads
+                          (into []
+                                (doall(map
+                                        (fn [threads]
+                                          (let []
+                                            {:thread-title  (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id (first threads)))))
+                                             :posts (into [] (apply concat (map :posts threads)))
+                                             :anchors (into [] (distinct (apply concat (map :anchors threads))))}))
+                                        (partition-by
+                                          :file-id
+                                          (map (fn [record]
+                                                 (let []
+                                                   {:file-id (:file-id record)
+                                                    :posts [(process-record-body record)]
+                                                    :anchors (into [] (db/get-anchors (:file-id record)  (:record-short-id record)))}))
+                                               (db/get-recent-records 100))))))})})
         (Thread/sleep 500)))))
 
 (defn create-2ch-subject-txt
@@ -1330,10 +1365,10 @@
                                (db/get-records-in-file-by-short-id file-id record-short-id)
                                (db/get-records-on-page file-id page-size page-num)))
                    ;_ (timbre/debug (str (count results)))
-                   anchors (into [] (apply concat (map (fn [destnation]
+                   anchors (into [] (distinct (apply concat (map (fn [destnation]
                                                          ;(timbre/info file-id destnation (apply str (db/get-anchors file-id destnation)))
                                                          (db/get-anchors file-id destnation))
-                                                       (map :record-short-id results))))
+                                                       (map :record-short-id results)))))
                    tags (into [] (map :tag-string (db/get-tags-for-file file-id)))
                    suggested-tags (if (:suggested-tags file)
                                     (into [] (clojure.string/split (:suggested-tags file) #" +"))
@@ -1349,39 +1384,27 @@
            (POST "/api/new-posts"
                  request
              (timbre/info "/api/new-posts" (get-remote-address request))
-             (let [{:keys [threads rss]} (:params request)
-                   ;_ (timbre/debug threads)
-                   results (if rss
-                             (map
-                               (fn [threads]
-                                 (let []
-                                   {:thread-title  (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id (first threads)))))
-                                    :posts (into [] (apply concat (map :posts threads)))
-                                    :anchors (into [] (apply concat (map :anchors threads)))}))
-                               (partition-by
-                                 :file-id
-                                 (map (fn [record]
-                                        (let []
-                                          {:file-id (:file-id record)
-                                           :posts [(process-record-body record)]
-                                           :anchors (into [] (db/get-anchors (:file-id record)  (:record-short-id record)))}))
-                                      (db/get-recent-records 100))))
-                             (remove nil?
-                                   (map (fn [thread]
-                                           (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))
-                                                 posts (map process-record-body
-                                                            (db/get-new-records-in-file file-id (:time-last-accessed thread)))
-                                                 ;_ (timbre/debug thread (count posts))
-                                                 anchors (into [] (apply concat (map (fn [destnation]
-                                                                                       (db/get-anchors file-id destnation))
-                                                                                     (map :record-short-id posts))))]
-                                             (if (zero? (count posts))
-                                               nil
-                                               {:thread-title (:thread-title thread)
-                                                :posts posts
-                                                :anchors anchors})))
-                                         threads)))]
-               {:body {:threads (into [] results) :rss rss}}))
+             (let [{:keys [threads rss]} (:params request)]
+               (if rss
+                 @api-new-posts-rss-response-cache
+                 {:body
+                  {:threads
+                   (into []
+                         (remove nil?
+                                 (map (fn [thread]
+                                        (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))
+                                              posts (map process-record-body
+                                                         (db/get-new-records-in-file file-id (:time-last-accessed thread)))
+                                              ;_ (timbre/debug thread (count posts))
+                                              anchors (distinct (into [] (apply concat (map (fn [destnation]
+                                                                                              (db/get-anchors file-id destnation))
+                                                                                            (map :record-short-id posts)))))]
+                                          (if (zero? (count posts))
+                                            nil
+                                            {:thread-title (:thread-title thread)
+                                             :posts posts
+                                             :anchors anchors})))
+                                      threads)))}})))
 
            (POST "/api/new-post-notification"
                  request
