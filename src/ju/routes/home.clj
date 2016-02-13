@@ -55,7 +55,7 @@
                :else
                (do
                  (timbre/debug "/thread/:thread-title/:qualifier" thread-title qualifier)
-                 (home-page (home-page "スレッド一覧")))))
+                 (home-page "全てのスレッド"))))
 
            (GET "/thread/:file-name/:record-id/:stamp-and-suffix"
                 [file-name record-id stamp-and-suffix]
@@ -78,7 +78,7 @@
                     :headers {"Content-Type" (ring.util.mime-type/ext-mime-type suffix)}
                     :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))))
 
-           (GET "/new-posts" [] (home-page "新着レスまとめ読み"))
+           (GET "/new-posts" [] (home-page "新着レス"))
            (GET "/create-new-thread" [] (home-page "新規スレッド作成"))
            (GET "/status" [] (home-page "状態"))
            (GET "/help" [] (home-page "使い方"))

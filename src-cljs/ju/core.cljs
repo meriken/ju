@@ -235,8 +235,8 @@
    [:div.row
     [:div#main-menu-column.col-sm-6
      [:div#main-menu.list-group
-      [:a {:on-click handle-click-on-link :href "/recent-threads" :class "list-group-item"} "最近更新されたスレッド一覧" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
-      [:a {:on-click handle-click-on-link :href "/threads" :class "list-group-item"} "スレッド一覧" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      [:a {:on-click handle-click-on-link :href "/recent-threads" :class "list-group-item"} "最近更新されたスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      [:a {:on-click handle-click-on-link :href "/threads" :class "list-group-item"} "全てのスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a
        {:on-click handle-click-on-link
         :href     "/new-posts"
@@ -277,19 +277,19 @@
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 (if (session/get :tag)
-          (str "最近更新された「" (session/get :tag) "」タグの付いたスレッド一覧")
-          "最近更新されたスレッド一覧")]
+          (str "最近更新された「" (session/get :tag) "」タグの付いたスレッド")
+          "最近更新されたスレッド")]
    [:div#content
     [:div.btn-group.btn-group-sm.btn-group-justified.refresh-threads-button
     [:a.btn.btn-default
      {:on-click #(do (reset! jump-command :top) (fetch-threads! :recent-threads))}
-     [:span.glyphicon.glyphicon-refresh] "スレッド一覧を更新する"]]
+     [:span.glyphicon.glyphicon-refresh] "スレッド一覧を更新"]]
     (session/get :recent-threads)
     [:div.btn-group.btn-group-sm.btn-group-justified.refresh-threads-button
      [:a.btn.btn-default
      {:on-click handle-click-on-link
       :href "/threads"}
-     "全てのスレッドを表示する"]]
+     "全てのスレッドを表示"]]
     ]])
 
 (defn threads-page []
@@ -297,8 +297,8 @@
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 (if (session/get :tag)
-          (str "「" (session/get :tag) "」タグの付いたスレッド一覧")
-          "スレッド一覧")]
+          (str "「" (session/get :tag) "」タグの付いたスレッド")
+          "全てのスレッド")]
    [:div#content
     [:div.btn-group.btn-group-sm.btn-group-justified.refresh-threads-button
     [:a.btn.btn-default
@@ -1374,8 +1374,8 @@
     (set! (.-title js/document)
           (str (case (session/get :page)
                  :home "目次"
-                 :threads "スレッド一覧"
-                 :recent-threads "最近更新されたスレッド一覧"
+                 :threads "全てのスレッド"
+                 :recent-threads "最近更新されたスレッド"
                  :thread (session/get :thread-title)
                  :tags (str "「" (session/get :thread-title) "」のタグ編集")
                  :images (str "「" (session/get :thread-title) "」の画像一覧")

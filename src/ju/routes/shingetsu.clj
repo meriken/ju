@@ -1128,7 +1128,7 @@
                  :body (cheshire.core/generate-string
                          {:threads
                           (into []
-                                (doall(map
+                                (doall (map
                                         (fn [threads]
                                           (let []
                                             {:thread-title  (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id (first threads)))))
