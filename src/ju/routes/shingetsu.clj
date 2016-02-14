@@ -936,6 +936,59 @@
               (sort-by :id (db/get-all-records-with-ids-only)))))
 
 
+(defn
+  bracket-link-to-2ch-style-link
+  [s]
+  (if (re-find #"\[\[([^\]]+)/([a-f0-9]{8})\]\]" s)
+    ; with ID
+    (let [[_ thread-title record-short-id] (re-find #"\[\[([^\]]+)/([a-f0-9]{8})\]\]" s)
+          file-name (thread-title-to-file-name thread-title)
+          file (db/get-file file-name)]
+      (if (or (nil? file) (nil? (:time-first-post file)))
+        s
+        (let [records (db/get-all-records-in-file-with-record-short-ids-only (:id file))
+              post-numbers-map (apply merge (map
+                                              (fn [record post-number]
+                                                {(:record-short-id record) post-number})
+                                              records
+                                              (range 1 (inc (count records)))))
+              post-number (get post-numbers-map record-short-id nil)]
+          (str
+            "[[" thread-title "/" record-short-id "( "
+            (get-server-url-base) "/test/read.cgi/2ch/"
+            (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
+               (* 9 60 60))
+            "/" (if post-number (str post-number)) " )"))))
+    ; without ID
+    (let [thread-title (second (re-find #"\[\[([^\]]+)\]\]" s))
+          file-name (thread-title-to-file-name thread-title)
+          file (db/get-file file-name)]
+      (if (or (nil? file) (nil? (:time-first-post file)))
+        s
+        (str
+          "[[" thread-title "( "
+          (get-server-url-base) "/test/read.cgi/2ch/"
+          (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
+             (* 9 60 60))
+          "/ )]]")))))
+
+(defn update-dat-file-lines-in-all-records
+  []
+  (dorun (map #(try
+                (let [record (process-record-body (db/get-record-by-id (:id %)))
+                      dat-file-line (convert-record-into-dat-file-line record)]
+                  (if (zero? (mod (:id %) 100))
+                    (timbre/info "update-dat-file-lines-in-all-records:" (:id %)))
+                  (db/update-dat-file-line
+                    (:id %)
+                    dat-file-line
+                    (:suffix record)))
+                (catch Throwable t
+                  (timbre/info "update-dat-file-lines-in-all-records:" (str t) (:id %))))
+              (sort-by :id (db/get-all-records-with-ids-only)))))
+
+
+
 (defn process-post
   [thread-title name mail password body attachment remote-address]
   (let [file-id (db/get-file-id-by-thread-title thread-title)
@@ -1020,42 +1073,6 @@
                    @active-nodes))))
     (Thread/sleep param/wait-time-after-post)))
 
-(defn
-  bracket-link-to-2ch-style-link
-  [s]
-  (if (re-find #"\[\[([^\]]+)/([a-f0-9]{8})\]\]" s)
-    ; with ID
-    (let [[_ thread-title record-short-id] (re-find #"\[\[([^\]]+)/([a-f0-9]{8})\]\]" s)
-          file-name (thread-title-to-file-name thread-title)
-          file (db/get-file file-name)]
-      (if (or (nil? file) (nil? (:time-first-post file)))
-        s
-        (let [records (db/get-all-records-in-file-with-record-short-ids-only (:id file))
-              post-numbers-map (apply merge (map
-                                             (fn [record post-number]
-                                               {(:record-short-id record) post-number})
-                                             records
-                                             (range 1 (inc (count records)))))
-              post-number (get post-numbers-map record-short-id nil)]
-          (str
-            "[[" thread-title "/" record-short-id "( "
-            (get-server-url-base) "/test/read.cgi/2ch/"
-            (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
-               (* 9 60 60))
-            "/" (if post-number (str post-number)) " )"))))
-    ; without ID
-    (let [thread-title (second (re-find #"\[\[([^\]]+)\]\]" s))
-          file-name (thread-title-to-file-name thread-title)
-          file (db/get-file file-name)]
-      (if (or (nil? file) (nil? (:time-first-post file)))
-        s
-        (str
-          "[[" thread-title "( "
-          (get-server-url-base) "/test/read.cgi/2ch/"
-          (+ (long (/ (clj-time.coerce/to-long (clj-time.coerce/from-sql-time (:time-first-post file))) 1000))
-             (* 9 60 60))
-          "/ )]]")))))
-
 (defn create-thread-list
   [n tag]
   (let [file-list (if (and tag (pos? (count tag)))
@@ -1128,17 +1145,92 @@
      :headers {"Content-Type" "application/json; charset=utf-8"}
      :body (cheshire.core/generate-string
              {:num-posts (:num-records file)
-            :posts     results
-            :anchors   anchors
-            :tags      tags
-            :suggested-tags suggested-tags
-            :related-threads (create-related-thread-list thread-title 5)})}))
+              :posts     results
+              :anchors   anchors
+              :tags      tags
+              :suggested-tags suggested-tags
+              :related-threads (create-related-thread-list thread-title 5)})}))
 
 (def api-thread-response-cache (atom {}))
 (def api-threads-cache (atom nil))
 (def api-threads-response-cache (atom nil))
 (def api-threads-100-response-cache (atom nil))
 (def api-new-posts-rss-response-cache (atom nil))
+(def dat-file-response-cache (atom {}))
+
+(defn create-dat-file-response
+  [thread-number]
+  (let [file (db/get-file-by-thread-number thread-number)
+        results (db/get-all-records-in-file-without-bodies (:id file))
+        anchor-map (apply merge
+                          (remove
+                            nil?
+                            (map
+                              #(try
+                                {(str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2)}
+                                (catch Throwable _
+                                  nil))
+                              results
+                              (range 1 (inc (count results))))))
+        thread-title (file-name-to-thread-title (:file-name file))
+        posts-as-strings (doall (remove
+                                  nil?
+                                  (map
+                                    #(try
+                                      (str
+                                        (cond
+                                          (nil? (:dat-file-line %1))
+                                          (str "?<>?<>????/?/?(?) ??:??:?? ID:" (:record-short-id %1) "<>")
+
+                                          (not (or (re-find #"&gt;&gt;" (:dat-file-line %1))
+                                                   (re-find #"\[\[" (:dat-file-line %1))))
+                                          (:dat-file-line %1)
+
+                                          :else ; This is costly.
+                                          (-> (:dat-file-line %1)
+                                              (clojure.string/replace
+                                                #"&gt;&gt;[a-f0-9]{8}"
+                                                (fn [s] (get anchor-map s s)))
+                                              (clojure.string/replace
+                                                #"\[\[[^\]]+\]\]"
+                                                bracket-link-to-2ch-style-link)))
+                                        (if (:suffix %1)
+                                          (str
+                                            (if-not (re-find #"<>$" (:dat-file-line %1))
+                                              "<br>")
+                                            (get-server-url-base)
+                                            "/thread"
+                                            "/" (java.net.URLEncoder/encode thread-title "UTF-8")
+                                            "/" (:record-id %1) "." (:suffix %1)))
+                                        "<>"
+                                        (if (= %2 1)
+                                          (str (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
+                                        "\n")
+                                      (catch Throwable t
+                                        (timbre/debug (str t))
+                                        (str (:dat-file-line %1) "<>\n")))
+                                    results
+                                    (range 1 (inc (count results))))))
+        response (->
+                   (ok (apply str posts-as-strings))
+                   (content-type "text/plain; charset=windows-31j"))]
+    (swap! dat-file-response-cache assoc thread-number
+           {:thread-number thread-number
+            :num-records (:num-records file)
+            :time-updated (:time-updated file)
+            :response response})
+    response))
+
+(defn update-dat-file-response-cache
+  [thread-number]
+  (let [file (db/get-file-by-thread-number thread-number)
+        _ (if (nil? file) (throw (Exception.)))
+        cache-entry (get @dat-file-response-cache thread-number nil)]
+    (if (and cache-entry
+             (= (:num-records cache-entry) (:num-records file))
+             (= (:time-updated cache-entry) (:time-updated file)))
+      (:response cache-entry)
+      (create-dat-file-response thread-number))))
 
 (defn update-api-thread-cache
   [thread-title page-num page-size]
@@ -1170,18 +1262,20 @@
               :tags tags}))
     response))
 
-(defn update-api-thread-cache-for-all-files
+(defn update-thread-cache-for-all-files
   ([]
-   (update-api-thread-cache-for-all-files 0))
+   (update-thread-cache-for-all-files 0))
   ([wait-time]
    (try
      (dorun
        (map
          (fn [file]
-           (if (and
-                 (:num-records file)
-                 (pos? (:num-records file))
-                 (not (some #{(:file-name file)} param/known-corrupt-files)))
+           (when (and
+                   (:num-records file)
+                   (pos? (:num-records file))
+                   (not (some #{(:file-name file)} param/known-corrupt-files)))
+             (update-dat-file-response-cache
+               (str (+ (long (/ (clj-time.coerce/to-long (:time-first-post file)) 1000)) (* 9 60 60))))
              (dorun (map
                       (fn [page-num]
                         (update-api-thread-cache (file-name-to-thread-title (:file-name file)) page-num param/page-size)
@@ -1234,10 +1328,10 @@
   (do
     (future
       (timbre/info "Thread API Cache Manager started.")
-      (update-api-thread-cache-for-all-files)
+      (update-thread-cache-for-all-files)
       (timbre/info "Thread API Cache Manager: Initial caching completed.")
       (while true
-        (update-api-thread-cache-for-all-files 100)))))
+        (update-thread-cache-for-all-files 100)))))
 
 (defn create-2ch-subject-txt
   [sorted-files]
@@ -1753,62 +1847,8 @@
                (when (re-find #"^2ch(_[A-F0-9]+)?$" board-name)
                  (let [{:keys [dat-file-name]} (:params request)
                        _ (timbre/info "/:board-name/dat/:dat-file-name" (get-remote-address request) dat-file-name)
-                       [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)
-                       file (db/get-file-by-thread-number thread-number)
-                       _ (if (nil? file) (throw (Exception.)))
-                       results (db/get-all-records-in-file-without-bodies (:id file))
-                       anchor-map (apply merge
-                                         (remove
-                                           nil?
-                                           (map
-                                             #(try
-                                               {(str "&gt;&gt;" (second (re-find #"^(.{8})" (:record-id %1)))) (str "&gt;&gt;" %2)}
-                                               (catch Throwable _
-                                                 nil))
-                                             results
-                                             (range 1 (inc (count results))))))
-                       thread-title (file-name-to-thread-title (:file-name file))
-                       posts-as-strings (doall (remove
-                                                 nil?
-                                                 (map
-                                                   #(try
-                                                     (str
-                                                       (cond
-                                                         (nil? (:dat-file-line %1))
-                                                         (str "?<>?<>????/?/?(?) ??:??:?? ID:" (:record-short-id %1) "<>")
-
-                                                         (not (or (re-find #"&gt;&gt;" (:dat-file-line %1))
-                                                                  (re-find #"\[\[" (:dat-file-line %1))))
-                                                         (:dat-file-line %1)
-
-                                                         :else ; This is costly.
-                                                         (-> (:dat-file-line %1)
-                                                             (clojure.string/replace
-                                                               #"&gt;&gt;[a-f0-9]{8}"
-                                                               (fn [s] (get anchor-map s s)))
-                                                             (clojure.string/replace
-                                                               #"\[\[[^\]]+\]\]"
-                                                               bracket-link-to-2ch-style-link)))
-                                                       (if (:suffix %1)
-                                                         (str
-                                                           (if-not (re-find #"<>$" (:dat-file-line %1))
-                                                             "<br>")
-                                                           (get-server-url-base)
-                                                           "/thread"
-                                                           "/" (java.net.URLEncoder/encode thread-title "UTF-8")
-                                                           "/" (:record-id %1) "." (:suffix %1)))
-                                                       "<>"
-                                                       (if (= %2 1)
-                                                         (str (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 thread-title)))
-                                                       "\n")
-                                                     (catch Throwable t
-                                                       (timbre/debug (str t))
-                                                       (str (:dat-file-line %1) "<>\n")))
-                                                   results
-                                                   (range 1 (inc (count results))))))]
-                   (->
-                     (ok (apply str posts-as-strings))
-                     (content-type "text/plain; charset=windows-31j"))))))
+                       [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)]
+                   (update-dat-file-response-cache thread-number)))))
 
 
 
