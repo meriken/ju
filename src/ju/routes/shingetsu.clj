@@ -262,7 +262,7 @@
                  (let [record (db/get-record-by-id (:id record))
                        body (String. (:body record) "UTF-8")
                        elements (->> (clojure.string/split body #"<>")
-                                     (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                     (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
                                      (map #(do {(keyword (nth % 1)) (nth % 2)}))
                                      (apply merge))]
                    (create-image (:file-id record) (:stamp record) (:record-id record) elements (:deleted record))))))
@@ -553,7 +553,7 @@
                        record-id (nth match 2)
                        body (.getBytes (nth match 3) "UTF-8")
                        elements (->> (clojure.string/split (nth match 3) #"<>")
-                                     (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                     (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
                                      (map #(do {(keyword (nth % 1)) (nth % 2)}))
                                      (apply merge))]
                    (cond
@@ -897,7 +897,7 @@
   [record]
   (let [body (String. (:body record) "UTF-8")
         elements (->> (clojure.string/split body #"<>")
-                      (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                      (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
                       (map #(do {(keyword (nth % 1)) (nth % 2)}))
                       (apply merge))
         target (and (:target elements)
@@ -972,8 +972,8 @@
                             (if match (second match) "bin"))))
                       (if (and name (pos? (count name))) (str "<>name:" (escape-special-characters name)))
                       (if (and mail (pos? (count mail))) (str "<>mail:" (escape-special-characters mail)))
-                      (str "<>stamp:" stamp)
-                      (str "<>file_name:" (:file-name file)))
+                      "<>stamp:" stamp
+                      "<>file_name:" (:file-name file))
         record-body (if (or (nil? password) (zero? (count password)))
                       record-body
                       (let [{:keys [public-key signature]} (sign-post record-body password)]
@@ -982,12 +982,13 @@
                           "<>pubkey:" public-key
                           "<>sign:" signature
                           "<>target:body"
+                          (if attachment? ",attach,suffix")
                           (if (and name (pos? (count name))) ",name")
                           (if (and mail (pos? (count mail))) ",mail")
-                          (if attachment? ",attach,suffix"))))
+                          ",stamp,file_name")))
         record-id (md5 record-body)
         elements (->> (clojure.string/split record-body #"<>")
-                      (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                      (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
                       (map #(do {(keyword (nth % 1)) (nth % 2)}))
                       (apply merge))
         entry {:file-name (:file-name file) :stamp stamp :record-id record-id}]
@@ -1884,7 +1885,7 @@
                          (let [record (ju.db.core/get-record-by-id (:id record))
                                body (String. (:body record) "UTF-8")
                                elements (->> (clojure.string/split body #"<>")
-                                             (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                             (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
                                              (map #(do {(keyword (nth % 1)) (nth % 2)}))
                                              (apply merge))
                                thread-title (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id record))))]
@@ -1914,7 +1915,7 @@
                  (let [record (ju.db.core/get-record-by-id (:id record))
                        body (String. (:body record) "UTF-8")
                        elements (->> (clojure.string/split body #"<>")
-                                     (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                     (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
                                      (map #(do {(keyword (nth % 1)) (nth % 2)}))
                                      (apply merge))
                        file-name (:file-name (ju.db.core/get-file-by-id (:file-id record)))
