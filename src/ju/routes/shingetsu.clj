@@ -1102,6 +1102,38 @@
     (catch Throwable t
       (clojure.stacktrace/print-stack-trace t))))
 
+(defn process-api-thread-command
+  [thread-title page-num page-size record-short-id download]
+  (let [ file-id (db/get-file-id-by-thread-title thread-title)
+        file (db/get-file-by-id file-id)
+        _ (if (and file download)
+            (download-file (:file-name file)))
+        results (map
+                  process-record-body
+                  (if (and record-short-id (pos? (count record-short-id)))
+                    (db/get-records-in-file-by-short-id file-id record-short-id)
+                    (db/get-records-on-page file-id page-size page-num)))
+        ;_ (timbre/debug (str (count results)))
+        anchors (into [] (distinct (apply concat (map (fn [destnation]
+                                                        ;(timbre/info file-id destnation (apply str (db/get-anchors file-id destnation)))
+                                                        (db/get-anchors file-id destnation))
+                                                      (map :record-short-id results)))))
+        tags (into [] (map :tag-string (db/get-tags-for-file file-id)))
+        suggested-tags (if (:suggested-tags file)
+                         (into [] (clojure.string/split (:suggested-tags file) #" +"))
+                         [])]
+    ;(timbre/info "anchors:" (apply str anchors))
+    {:status 200
+     :headers {"Content-Type" "application/json; charset=utf-8"}
+     :body (cheshire.core/generate-string
+             {:num-posts (:num-records file)
+            :posts     results
+            :anchors   anchors
+            :tags      tags
+            :suggested-tags suggested-tags
+            :related-threads (create-related-thread-list thread-title 5)})}))
+
+(def api-thread-response-cache (atom {}))
 (def api-threads-cache (atom nil))
 (def api-threads-response-cache (atom nil))
 (def api-threads-100-response-cache (atom nil))
@@ -1353,33 +1385,35 @@
 
            (POST "/api/thread"
                  request
-             (let [{:keys [thread-title page-num page-size record-short-id download]} (:params request)
-                   _ (timbre/info "/api/thread" (get-remote-address request) thread-title page-num page-size record-short-id download)
-                   file-id (db/get-file-id-by-thread-title thread-title)
-                   file (db/get-file-by-id file-id)
-                   _ (if (and file download)
-                       (download-file (:file-name file)))
-                   results (map
-                             process-record-body
-                             (if (and record-short-id (pos? (count record-short-id)))
-                               (db/get-records-in-file-by-short-id file-id record-short-id)
-                               (db/get-records-on-page file-id page-size page-num)))
-                   ;_ (timbre/debug (str (count results)))
-                   anchors (into [] (distinct (apply concat (map (fn [destnation]
-                                                         ;(timbre/info file-id destnation (apply str (db/get-anchors file-id destnation)))
-                                                         (db/get-anchors file-id destnation))
-                                                       (map :record-short-id results)))))
-                   tags (into [] (map :tag-string (db/get-tags-for-file file-id)))
-                   suggested-tags (if (:suggested-tags file)
-                                    (into [] (clojure.string/split (:suggested-tags file) #" +"))
-                                    [])]
-               ;(timbre/info "anchors:" (apply str anchors))
-               {:body {:num-posts (:num-records file)
-                       :posts     results
-                       :anchors   anchors
-                       :tags      tags
-                       :suggested-tags suggested-tags
-                       :related-threads (create-related-thread-list thread-title 5)}}))
+             (let [{:keys [thread-title page-num page-size record-short-id download]} (:params request)]
+               (timbre/info "/api/thread" (get-remote-address request) thread-title page-num page-size record-short-id download)
+               (let [check-cache? (and
+                                  (not download)
+                                  (not (and record-short-id (pos? (count record-short-id)))))
+                     cache-entry (if check-cache?
+                                   (get @api-thread-response-cache [thread-title page-num page-size] nil))
+                     file (db/get-file (thread-title-to-file-name thread-title))
+                     tags (into #{} (map :tag-string (db/get-tags-for-file (:id file))))
+                     use-cache? (and
+                                  cache-entry
+                                  (= (:num-records file) (:num-records cache-entry))
+                                  (= (:time-updated file) (:time-updated cache-entry))
+                                  (= tags (:tags cache-entry)))
+                     response (if use-cache?
+                                (:response cache-entry)
+                                (process-api-thread-command thread-title page-num page-size record-short-id download))]
+                 (if-not use-cache?
+                   (swap! api-thread-response-cache
+                          assoc
+                          [thread-title page-num page-size]
+                          {:response response
+                           :num-records (:num-records file)
+                           :time-updated (:time-updated file)
+                           :tags tags}))
+                 (if use-cache?
+                   (timbre/info "/api/thread:" thread-title "Served response in cache.")
+                   (timbre/info "/api/thread:" thread-title "Generated response."))
+                 response)))
 
            (POST "/api/new-posts"
                  request
