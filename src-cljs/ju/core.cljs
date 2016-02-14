@@ -35,7 +35,6 @@
 
 
 
-(def page-size 20)
 (def jump-command (atom :top))
 (def history (atom nil))
 (def navbar-collapsed? (atom true))
@@ -1093,7 +1092,7 @@
 (defn posts-handler
   [response]
   (let [num-posts (:num-posts response)
-        num-pages (+ (quot num-posts page-size) (if (pos? (rem num-posts page-size)) 1 0))]
+        num-pages (+ (quot num-posts param/page-size) (if (pos? (rem num-posts param/page-size)) 1 0))]
     (.log js/console "posts-handler:" num-posts num-pages (clj->js response))
     (session/put! :num-posts num-posts)
     (session/put! :num-pages num-pages)
@@ -1177,7 +1176,7 @@
          :keywords? true
          :params {:thread-title thread-title
                   :page-num page-num
-                  :page-size page-size
+                  :param/page-size param/page-size
                   :record-short-id record-short-id
                   :download @download-thread?}}))
 
@@ -1550,7 +1549,7 @@
                                                            :dataType "json"
                                                            :data     {:thread-title    (attr ($ element) "data-thread-title")
                                                                       :page-num        nil
-                                                                      :page-size       nil
+                                                                      :param/page-size       nil
                                                                       :record-short-id (attr ($ element) "data-record-short-id")}})
                                                   post (first (:posts @result))]
                                               (reset! jump-command nil)

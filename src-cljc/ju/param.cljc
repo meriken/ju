@@ -32,6 +32,7 @@
 
 (def service-name "匿名掲示板")
 (def anonymous-users-handle "新月名無しさん")
+(def page-size 20)
 (def thumbnail-height 256)
 (def standard-tag-headings
   ["一般"

@@ -1139,6 +1139,60 @@
 (def api-threads-100-response-cache (atom nil))
 (def api-new-posts-rss-response-cache (atom nil))
 
+(defn update-api-thread-cache
+  [thread-title page-num page-size]
+  ;(timbre/debug "update-api-thread-cache:" thread-title page-num page-size)
+  (let [page-num (cond
+                   (or (= page-num "") (nil? page-num)) 0
+                   (string? page-num) (Integer/parseInt page-num)
+                   :else page-num)
+        page-size (if (string? page-size) (Integer/parseInt page-size) page-size)
+        cache-entry (get @api-thread-response-cache [thread-title page-num page-size] nil)
+        file (db/get-file (thread-title-to-file-name thread-title))
+        tags (into #{} (map :tag-string (db/get-tags-for-file (:id file))))
+        use-cache? (and
+                     cache-entry
+                     (= (:num-records file) (:num-records cache-entry))
+                     (= (:time-updated file) (:time-updated cache-entry))
+                     (= tags (:tags cache-entry)))
+        response (if use-cache?
+                   (:response cache-entry)
+                   (process-api-thread-command thread-title page-num page-size nil false))]
+    ;(timbre/debug "use-cache?" (pr-str use-cache?))
+    (if-not use-cache?
+      (swap! api-thread-response-cache
+             assoc
+             [thread-title page-num page-size]
+             {:response response
+              :num-records (:num-records file)
+              :time-updated (:time-updated file)
+              :tags tags}))
+    response))
+
+(defn update-api-thread-cache-for-all-files
+  ([]
+   (update-api-thread-cache-for-all-files 0))
+  ([wait-time]
+   (try
+     (dorun
+       (map
+         (fn [file]
+           (if (and
+                 (:num-records file)
+                 (pos? (:num-records file))
+                 (not (some #{(:file-name file)} param/known-corrupt-files)))
+             (dorun (map
+                      (fn [page-num]
+                        (update-api-thread-cache (file-name-to-thread-title (:file-name file)) page-num param/page-size)
+                        (Thread/sleep wait-time))
+                      (range
+                        (quot
+                          (+ (:num-records file) (dec param/page-size))
+                          param/page-size))))))
+         (db/get-all-files)))
+     (catch Throwable t
+       (timbre/error "update-api-thread-cache-for-all-files:" t)))))
+
 (defn start-api-cache-manager
   []
   (do
@@ -1174,7 +1228,15 @@
                                                     :posts [(process-record-body record)]
                                                     :anchors (into [] (db/get-anchors (:file-id record)  (:record-short-id record)))}))
                                                (db/get-recent-records 100))))))})})
-        (Thread/sleep 500)))))
+        (Thread/sleep 500))))
+
+  (do
+    (future
+      (timbre/info "Thread API Cache Manager started.")
+      (update-api-thread-cache-for-all-files)
+      (timbre/info "Thread API Cache Manager: Initial caching completed.")
+      (while true
+        (update-api-thread-cache-for-all-files 100)))))
 
 (defn create-2ch-subject-txt
   [sorted-files]
@@ -1389,31 +1451,10 @@
                (timbre/info "/api/thread" (get-remote-address request) thread-title page-num page-size record-short-id download)
                (let [check-cache? (and
                                   (not download)
-                                  (not (and record-short-id (pos? (count record-short-id)))))
-                     cache-entry (if check-cache?
-                                   (get @api-thread-response-cache [thread-title page-num page-size] nil))
-                     file (db/get-file (thread-title-to-file-name thread-title))
-                     tags (into #{} (map :tag-string (db/get-tags-for-file (:id file))))
-                     use-cache? (and
-                                  cache-entry
-                                  (= (:num-records file) (:num-records cache-entry))
-                                  (= (:time-updated file) (:time-updated cache-entry))
-                                  (= tags (:tags cache-entry)))
-                     response (if use-cache?
-                                (:response cache-entry)
-                                (process-api-thread-command thread-title page-num page-size record-short-id download))]
-                 (if-not use-cache?
-                   (swap! api-thread-response-cache
-                          assoc
-                          [thread-title page-num page-size]
-                          {:response response
-                           :num-records (:num-records file)
-                           :time-updated (:time-updated file)
-                           :tags tags}))
-                 (if use-cache?
-                   (timbre/info "/api/thread:" thread-title "Served response in cache.")
-                   (timbre/info "/api/thread:" thread-title "Generated response."))
-                 response)))
+                                  (not (and record-short-id (pos? (count record-short-id)))))]
+                 (if check-cache?
+                   (update-api-thread-cache thread-title page-num page-size)
+                   (process-api-thread-command thread-title page-num page-size record-short-id download)))))
 
            (POST "/api/new-posts"
                  request
@@ -1460,7 +1501,7 @@
                (if tag
                  (create-thread-list n tag)
                  (do
-                   (timbre/debug "@api-threads-cache")
+                   ;(timbre/debug "@api-threads-cache")
                    (case n
                      nil @api-threads-response-cache
                      100 @api-threads-100-response-cache
