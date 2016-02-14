@@ -570,7 +570,7 @@
                        (timbre/info (str "Blocked record with invalid stamp: " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 "")))
                        (db/add-blocked-record-with-origin file-name stamp record-id node-name))
 
-                     (and (:file_name elements) (not (= (:file_name elements) (:file-name file))))
+                     (and (:file_name elements) (not (= (:file_name elements) file-name)))
                      (do
                        (timbre/info (str "Blocked record with invalid file name: " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 "")))
                        (db/add-blocked-record-with-origin file-name stamp record-id node-name))
