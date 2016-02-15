@@ -60,6 +60,7 @@
                  [com.twelvemonkeys.imageio/imageio-jpeg "3.1.1"]
                  [cheshire "5.5.0"]
                  [clj-rss "0.2.3"]
+                 [org.clojure/math.combinatorics "0.1.1"]
                  ]
 
   :min-lein-version "2.0.0"

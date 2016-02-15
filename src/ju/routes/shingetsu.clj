@@ -23,7 +23,8 @@
             [clj-time.predicates]
             [clojure.data.codec.base64 :as base64]
             [cheshire.core]
-            [clj-rss.core])
+            [clj-rss.core]
+            [clojure.math.combinatorics])
   (:import (java.net URLEncoder)
            (java.nio.file Files)
            (java.security MessageDigest)
@@ -1974,3 +1975,137 @@
                      (taoensso.timbre/info "Processed" (:id record) "records."))))
                (sort #(< (:id %1) (:id %2)) (ju.db.core/get-all-records-with-ids-only))))
   (ju.db.core/update-all-files))
+
+(defn resurrect-archived-posts
+  []
+  (doall
+    (apply
+      concat
+      (remove
+        nil?
+        (pmap
+          (fn [thread-title-hash]
+            (try
+              (let [thread-top (:body (clj-http.client/get (str "http://archive.shingetsu.info/" thread-title-hash "/")))
+                    file-names (distinct (re-seq #"[0-9a-f]{8}\.html" thread-top))
+                    short-ids (doall (map #(re-find #"^[0-9a-f]{8}" %) file-names))]
+                (if-not (empty? file-names)
+                  (let [first-post-url (str "http://archive.shingetsu.info/" thread-title-hash "/" (first file-names))
+                        first-post (:body (clj-http.client/get first-post-url))
+                        thread-title (second (re-find #"<h1><a href=\"./\">([^<]+)</a></h1>" first-post))
+                        _
+                        (timbre/debug "resurrect-archived-posts:" thread-title)
+                        file-name (thread-title-to-file-name thread-title)
+                        file (db/get-file file-name)
+                        file (cond
+                               file file
+                               :else (do
+                                       (db/add-file file-name)
+                                       (db/get-file file-name)
+                                       ))
+                        existing-records (db/get-all-records-in-file (:id file))
+                        short-ids (clojure.set/difference (into #{} short-ids) (into #{} (map :record-short-id existing-records)))
+                        results (doall
+                                  (remove
+                                    nil?
+                                    (map
+                                      (fn [short-id]
+                                        (let [post-url (str "http://archive.shingetsu.info/" thread-title-hash "/" short-id ".html")
+                                              post (:body (clj-http.client/get post-url))
+
+                                              name (second (re-find #"<span class=\"name\">([^>]+)</span>" post))
+                                              name (if (= name "Anonymous") nil name)
+
+                                              stamp (nth (re-find #"<span class=\"stamp\" id=\"s([0-9]{10})\">" post) 1 nil)
+                                              stamp (if stamp (Long/parseLong stamp) nil)
+
+                                              sign (nth (re-find #"<span class=\"sign\"[^>]+>([^>]+)</span>" post) 1 nil)
+
+                                              match (re-find #"\n    \[([^\]]+)\]\n" post)
+                                              mail (if match (str (nth match 1)))
+
+                                              match (re-find #"<a href=\"([a-f0-9]{8})x\.([a-z0-9]+)\">" post)
+                                              suffix (if (and match (= short-id (second match))) (nth match 2))
+
+                                              attach-url (str "http://archive.shingetsu.info/" thread-title-hash "/" short-id "x." suffix)
+                                              attach (if suffix (String. (clojure.data.codec.base64/encode (:body (clj-http.client/get attach-url {:as :byte-array}))) "ASCII"))
+
+                                              ;suffix (if (and (nil? suffix) (re-find #"<a href=\"([a-f0-9]{8})x\.\">" post)) "txt" suffix)
+                                              ;attach (if (and suffix (nil? attach)) (String. (clojure.data.codec.base64/encode (byte-array 0)) "ASCII") attach)
+
+                                              body (second (re-find #"(?s)<dd[^>]+>\n(.*)\n  </dd>" post))
+                                              body (clojure.string/replace body #"(?m)^    " "")
+                                              body (clojure.string/replace body #"<br />\n" "<br>")
+                                              body (clojure.string/replace body #"<a[^>]*>" "")
+                                              body (clojure.string/replace body #"</a>" "")
+                                              body (if (= body "") nil body)
+
+                                              record-bodies (map #(clojure.string/replace (apply str %) #"^<>" "")
+                                                                 (concat
+                                                                   (clojure.math.combinatorics/permutations
+                                                                     [(if name (str "<>name:" name) "")
+                                                                      (if mail (str "<>mail:" mail) "")
+                                                                      (if body (str "<>body:" body) "")
+                                                                      (if attach (str "<>attach:" attach) "")
+                                                                      (if suffix (str "<>suffix:" suffix) "")
+                                                                      ])
+                                                                   (clojure.math.combinatorics/permutations
+                                                                     [(str "<>name:" name)
+                                                                      (str "<>mail:" mail)
+                                                                      (str "<>body:" body)
+                                                                      (if attach (str "<>attach:" attach) "")
+                                                                      (if suffix (str "<>suffix:" suffix) "")
+                                                                      ])))
+                                              record-body (nth (remove #(not (= short-id (apply str (take 8 (ju.util/md5 %)))))
+                                                                       record-bodies)
+                                                               0 nil)
+                                              record-id (md5 record-body)
+                                              success (and stamp (= short-id (apply str (take 8 record-id))))
+                                              record (if file (db/get-record-in-file-by-short-id (:id file) short-id))
+                                              result (cond
+                                                       (and success record (= stamp (:stamp record))) :existing
+                                                       (and success record) :wrong-stamp
+                                                       success :new
+                                                       :else :invalid)
+                                              elements (if record-body
+                                                         (->> (clojure.string/split record-body #"<>")
+                                                            (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
+                                                            (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                                            (apply merge)))
+                                              ]
+                                          (when (= result :new)
+                                            (db/add-record
+                                              (:id file)
+                                              stamp
+                                              record-id
+                                              (.getBytes record-body "UTF-8")
+                                              false
+                                              (convert-record-into-dat-file-line
+                                                (-> elements
+                                                    (assoc :stamp stamp)
+                                                    (assoc :record-id record-id)))
+                                              (:suffix elements)
+                                              "http://archive.shingetsu.info/"
+                                              nil)
+                                            (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
+                                              (create-image (:id file) stamp record-id elements false))
+                                            (db/update-file (:id file)))
+                                          {:thread-title thread-title
+                                           :thread-title-hash thread-title-hash
+                                           :short-id short-id
+                                           :success success
+                                           :result result
+                                           ;:record-body record-body
+                                           :name name
+                                           :sign sign
+                                           :mail mail
+                                           :suffix suffix
+                                           :body body
+                                           :stamp stamp
+                                           }))
+                                      short-ids ; (take 1 short-ids)
+                                      )))]
+                    results)))
+              (catch Throwable t
+                (clojure.stacktrace/print-stack-trace t))))
+          (distinct (re-seq #"[0-9a-f]{32}" (:body (clj-http.client/get "http://archive.shingetsu.info/")))))))))
