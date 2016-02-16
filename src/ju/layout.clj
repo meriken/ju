@@ -38,5 +38,5 @@
    and the status specified by the status key"
   [error-details]
   {:status  (:status error-details)
-   :headers {"Content-Type" "text/html; charset=utf-8"}
-   :body    (parser/render-file "error.html" error-details)})
+   :headers {"Content-Type" "text/plain; charset=utf-8"}
+   :body    (str (:status error-details) " " (:message error-details))})

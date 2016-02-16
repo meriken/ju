@@ -214,6 +214,12 @@
                           ju.db.schema/db-spec
                           ["SELECT COUNT(*) FROM files WHERE deleted=FALSE AND num_records>0"]))))
 
+(defn count-records-in-range
+  [start end]
+  (count-keyword (first (clojure.java.jdbc/query
+                          ju.db.schema/db-spec
+                          ["SELECT COUNT(*) FROM records WHERE deleted=FALSE AND ? <= stamp AND stamp < ?" start end]))))
+
 (defn really-delete-file
   [file-id]
   (transaction
