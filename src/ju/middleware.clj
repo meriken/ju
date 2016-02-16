@@ -81,11 +81,11 @@
     (zero? (count s))
     ""
 
-    (re-find #"^(%[0-9A-F]{2})+$" s)
+    (re-find #"^(%[0-9A-Fa-f]{2})+$" s)
     s
 
-    (re-find #"^%[0-9A-F]{2}" s)
-    (let [match (re-find #"^(%[0-9A-F]{2})(.*)$" s)]
+    (re-find #"^%[0-9A-Fa-f]{2}" s)
+    (let [match (re-find #"^(%[0-9A-Fa-f]{2})(.*)$" s)]
       (percent-encode-everything
         (str
           (nth match 1)
@@ -105,7 +105,7 @@
 
 (defn percent-decode-for-2ch-post
   [s]
-  (timbre/debug "percent-decode-for-2ch-post:" s)
+  ;(timbre/debug "percent-decode-for-2ch-post:" s)
   (percent-decode (percent-encode-everything s) "windows-31j"))
 
 (defn wrap-2ch-post
