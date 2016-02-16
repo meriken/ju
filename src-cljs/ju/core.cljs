@@ -250,7 +250,7 @@
        "RSSフィード"
        [:span.glyphicon.glyphicon-chevron-right.pull-right]]
 
-      ;[:a {:on-click handle-click-on-link :href "/create-new-thread" :class "list-group-item"} "新規スレッド作成" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
+      [:a {:on-click handle-click-on-link :href "/create-new-thread" :class "list-group-item"} "新規スレッド作成" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       (if @admin
         [:a {:on-click handle-click-on-link :href "/status" :class "list-group-item"} "状態" [:span.glyphicon.glyphicon-chevron-right.pull-right]])
       ;[:a {:on-click handle-click-on-link :href "/help" :class "list-group-item"} "使い方" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
@@ -438,17 +438,22 @@
   []
   (fn []
     [:form#post-form
-     {:style {:display (if @post-form-enabled? "display" "none")}}
-     [:input {:type "hidden" :name "thread-title" :value (session/get :thread-title)}]
+     {:style {:display (if (or @post-form-enabled? (= (session/get :page) :create-new-thread)) "display" "none")}}
+     (if (= (session/get :page) :thread)
+       [:input {:type "hidden" :name "thread-title" :value (session/get :thread-title)}])
      [:div
       [:ul#post-form-tabs.nav.nav-tabs {:style {:border-bottom "none"}}
        [:li#post-form-edit-tab.active {:on-click #(js/switchTabsForPostForm "#post-form-edit-tab") :role "presentation"} [:a "編集"]]
        [:li#post-form-emoji-tab {:on-click #(js/switchTabsForPostForm "#post-form-emoji-tab") :role "presentation"} [:a "絵文字入力"]]
        [:li#post-form-preview-tab {:on-click #(js/switchTabsForPostForm "#post-form-preview-tab") :role "presentation"} [:a "プレビュー"]]]
-      [:div.input-wrapper
-       [:div.wrapped-input.input-group
-        [:span.no-border.input-group-addon {:style {:border-radius "4px 0 0 0"}} [:span.glyphicon.glyphicon-user ]]
-        [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "name" :placeholder "名前"}]]
+       [:div.input-wrapper
+        (if (= (session/get :page) :create-new-thread)
+          [:div.wrapped-input.input-group
+           [:span.no-border.input-group-addon {:style {:border-radius "4px 0 0 0"}} [:span.glyphicon.glyphicon-th-list ]]
+           [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "thread-title" :placeholder "題名"}]])
+        [:div.wrapped-input.input-group
+         [:span.no-border.input-group-addon {:style {:border-radius "4px 0 0 0"}} [:span.glyphicon.glyphicon-user ]]
+         [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "name" :placeholder "名前"}]]
        [:div.wrapped-input.input-group
         [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-envelope ]]
         [:input#mail.no-border.form-control {:name "mail" :placeholder "メール"}]]
@@ -682,12 +687,14 @@
       "変更"]]
     ]])
 
-(defn create-new-thread-page []
+(defn create-new-thread-page
+  []
   [(keyword (str "div.container"
-                 (if (not @navbar-enabled?) ".without-navbar")
-                 (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
-   [:h3 "新規スレッド作成"]
-   [:div#content]])
+                   (if (not @navbar-enabled?) ".without-navbar")
+                   (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
+     [:h3 "新規スレッド作成"]
+     [:div#content
+      [post-form]]])
 
 (defn help-page []
   [(keyword (str "div.container"

@@ -992,8 +992,19 @@
 
 (defn process-post
   [thread-title name mail password body attachment remote-address]
-  (let [file-id (db/get-file-id-by-thread-title thread-title)
-        file (db/get-file-by-id file-id)
+  (if (or
+        (not (re-find #"^[^\[\]\<\>\/]{1,30}$" thread-title))
+        (re-find #"^[ 　]" thread-title)
+        (re-find #"[ 　]$" thread-title))
+    (throw (IllegalArgumentException. "Invalid thread title.")))
+  (let [file-name (thread-title-to-file-name thread-title)
+        file (db/get-file file-name)
+        file (if file
+               file
+               (do
+                 (db/add-file file-name)
+                 (db/get-file file-name)))
+        file-id (:id file)
         stamp (long (/ (clj-time.coerce/to-long (clj-time.core/now)) 1000))
         escape-special-characters (fn [s]
                                     (-> s
