@@ -582,6 +582,20 @@
           (where {:stamp (:stamp record)
                   :record_id (:record-id record)}))))))
 
+(defn mark-record-with-record-id-as-deleted
+  [record-id]
+  (transaction
+    (update
+          records
+          (set-fields {:deleted true})
+          (where {:stamp (:stamp record)
+                  :record_id record-id}))
+        (update
+          images
+          (set-fields {:deleted true})
+          (where {:stamp (:stamp record)
+                  :record_id record-id}))))
+
 (defn mark-record-in-file-with-record-id-as-deleted
   [file-id record-id]
   (update
