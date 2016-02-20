@@ -87,8 +87,22 @@
 	}
 
 	body > #app > .container {
-	  max-width: 640px;
+	  max-width: 758px;
 	  padding: 55px 15px 39px;
+	}
+    @media(min-width:768px) {
+	body > #app > .container {
+	  width: auto;
+	}
+	}
+    @media(min-width:788px) {
+	body > #app > .container {
+	  width: 758px;
+	}
+	}
+
+	.ad > .adsbygoogle {
+	    margin-bottom: 10px;
 	}
 
 	body > #app > .container.without-navbar {

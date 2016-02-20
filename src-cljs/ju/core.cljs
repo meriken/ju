@@ -1114,12 +1114,12 @@
                             (map
                               #(list
                                 (if (get (:ads response) %2)
-                                  [:span.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) %2)}}])
+                                  [:div.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) %2)}}])
                                 (generate-html-for-post %1 :thread (session/get :thread-title) (:anchors response)))
                               (:posts response)
                               (range (count (:posts response))))
                             (if (get (:ads response) (count (:posts response)))
-                              [:span.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) (count (:posts response)))}}]))])
+                              [:div.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) (count (:posts response)))}}]))])
                   {:component-did-mount
                    #(do
                      (.each ($ (keyword ".post .string:not(.processed)"))
@@ -1132,8 +1132,9 @@
                             (fn []
                               (this-as tag
                                 (.log js/console tag)
-                                (.attr ($ tag) "src" (.attr ($ tag) "src"))
-                                (js/eval (.text ($ tag))))))
+                                (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
+                                (try (js/eval (.text ($ tag))) (catch js/Error _))
+                                )))
                      (process-jump-command))})])))
 
 (defn new-posts-handler
