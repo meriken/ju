@@ -1128,7 +1128,6 @@
                                 (.html ($ s)
                                        (.unicodeToImage js/emojione (.text ($ s))))
                                 (.addClass ($ s) "processed"))))
-                     (try (.push js/adsbygoogle (clj->js {})) (catch js/Error _))
                      (process-jump-command))})])))
 
 (defn new-posts-handler
