@@ -48,6 +48,6 @@
     (route/not-found
       (:body
         (error-page {:status 404
-                     :message "404 Page Not Found ページが見つかりません。"})))))
+                     :message "Page Not Found ページが見つかりません。"})))))
 
 (def app (middleware/wrap-base #'app-routes))

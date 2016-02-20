@@ -42,7 +42,7 @@
       (catch Throwable t
         (timbre/error t)
         (error-page {:status 500
-                     :message "500 Internal Error 内部エラーが発生しました。"})))))
+                     :message "Internal Error 内部エラーが発生しました。"})))))
 
 (defn wrap-csrf [handler]
   (wrap-anti-forgery
@@ -133,3 +133,4 @@
       wrap-2ch-post
       wrap-context
       wrap-internal-error))
+
