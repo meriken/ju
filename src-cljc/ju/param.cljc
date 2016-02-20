@@ -7,14 +7,14 @@
 (def initial-nodes
   ["node.shingetsu.info:8000/server.cgi"
    "node.fuktommy.com:8000/server.cgi"
-   "melchior.ygg.io:8880/server"
-   "caspar.ygg.io:8880/server"
-   "balthazar.ygg.io:8880/server"
+   "melchior.ygg.ch:8880/server"
+   "caspar.ygg.ch:8880/server"
+   "balthazar.ygg.ch:8880/server"
    "24.130.242.114:8000/server.cgi"])
 (def initial-super-nodes
-  ["melchior.ygg.io:8880/server"
-   "caspar.ygg.io:8880/server"
-   "balthazar.ygg.io:8880/server"
+  ["melchior.ygg.cg:8880/server"
+   "caspar.ygg.ch:8880/server"
+   "balthazar.ygg.ch:8880/server"
    "24.130.242.114:8000/server.cgi"])
 (def blocked-nodes
   [])
@@ -69,6 +69,10 @@
 (def google-analytics-tracking-id nil)
 
 (def google-site-verification nil)
+
+(defn ad-code-for-thread
+  [thread-title tags position]
+  nil)
 
 (def known-files
   #{"thread_74686973206973206D79206669727374207469746C65"

@@ -1161,6 +1161,7 @@
               :anchors   anchors
               :tags      tags
               :suggested-tags suggested-tags
+              :ads (into [] (map #(try (param/ad-code-for-thread thread-title tags %) (catch Throwable t nil)) (range (inc page-size))))
               :related-threads (create-related-thread-list thread-title 5)})}))
 
 (def api-thread-response-cache (atom {}))

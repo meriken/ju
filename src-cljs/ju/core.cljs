@@ -1110,10 +1110,16 @@
     (session/put!
       :posts
       [(with-meta (fn [] [:div#posts
-                          (doall
+                          (list
                             (map
-                              #(generate-html-for-post % :thread (session/get :thread-title) (:anchors response))
-                              (:posts response)))])
+                              #(list
+                                (if (get (:ads response) %2)
+                                  [:span {:dangerouslySetInnerHTML {:__html (get (:ads response) %2)}}])
+                                (generate-html-for-post %1 :thread (session/get :thread-title) (:anchors response)))
+                              (:posts response)
+                              (range (count (:posts response))))
+                            (if (get (:ads response) (count (:posts response)))
+                              [:span {:dangerouslySetInnerHTML {:__html (get (:ads response) (count (:posts response)))}}]))])
                   {:component-did-mount
                    #(do
                      (.each ($ (keyword ".post .string:not(.processed)"))
