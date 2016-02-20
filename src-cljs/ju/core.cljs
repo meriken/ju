@@ -1114,12 +1114,12 @@
                             (map
                               #(list
                                 (if (get (:ads response) %2)
-                                  [:span {:dangerouslySetInnerHTML {:__html (get (:ads response) %2)}}])
+                                  [:span.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) %2)}}])
                                 (generate-html-for-post %1 :thread (session/get :thread-title) (:anchors response)))
                               (:posts response)
                               (range (count (:posts response))))
                             (if (get (:ads response) (count (:posts response)))
-                              [:span {:dangerouslySetInnerHTML {:__html (get (:ads response) (count (:posts response)))}}]))])
+                              [:span.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) (count (:posts response)))}}]))])
                   {:component-did-mount
                    #(do
                      (.each ($ (keyword ".post .string:not(.processed)"))
@@ -1128,6 +1128,12 @@
                                 (.html ($ s)
                                        (.unicodeToImage js/emojione (.text ($ s))))
                                 (.addClass ($ s) "processed"))))
+                     (.each ($ (keyword ".ad script"))
+                            (fn []
+                              (this-as tag
+                                (.log js/console tag)
+                                (.attr ($ tag) "src" (.attr ($ tag) "src"))
+                                (js/eval (.text ($ tag))))))
                      (process-jump-command))})])))
 
 (defn new-posts-handler
