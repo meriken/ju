@@ -1116,7 +1116,7 @@
                                 (generate-html-for-post %1 :thread (session/get :thread-title) (:anchors response)))
                               (:posts response)
                               (range (count (:posts response))))
-                            (if (get (:ads response) (count param/page-size))
+                            (if (get (:ads response) param/page-size)
                               [:div.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) (count (:posts response)))}}]))])
                   {:component-did-mount
                    #(do
