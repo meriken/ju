@@ -225,11 +225,9 @@
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 @service-name]
    [:p
-    "「" @service-name "」は新月ネットワークに参加しているP2P型の匿名掲示板です。"
-    [:a {:href "/terms" :on-click handle-click-on-link} "新月ネットワーク利用規約"] "を守った上で、自由に利用してください。"
-    [:span "2ちゃんねる専用ブラウザで利用する場合は "
-       [:strong  (str @server-url-base "/2ch/")]
-       " を外部板として登録してください。"]]
+    "「" @service-name "」は新月ネットワークに参加しているP2P型の匿名掲示板です。" [:br]
+    [:a {:href "/terms" :on-click handle-click-on-link} "新月ネットワーク利用規約"] "を守った上で、自由に利用してください。" [:br]
+    [:span "2ちゃんねる専用ブラウザで利用する場合は " [:strong  (str @server-url-base "/2ch/")] " を外部板として登録してください。"]]
 
    [:div.row
     [:div#main-menu-column.col-sm-6
@@ -1118,7 +1116,7 @@
                                 (generate-html-for-post %1 :thread (session/get :thread-title) (:anchors response)))
                               (:posts response)
                               (range (count (:posts response))))
-                            (if (get (:ads response) (count (:posts response)))
+                            (if (get (:ads response) (count param/page-size))
                               [:div.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) (count (:posts response)))}}]))])
                   {:component-did-mount
                    #(do
@@ -1196,7 +1194,7 @@
          :keywords? true
          :params {:thread-title thread-title
                   :page-num page-num
-                  :param/page-size param/page-size
+                  :page-size param/page-size
                   :record-short-id record-short-id
                   :download @download-thread?}}))
 
@@ -1569,7 +1567,7 @@
                                                            :dataType "json"
                                                            :data     {:thread-title    (attr ($ element) "data-thread-title")
                                                                       :page-num        nil
-                                                                      :param/page-size       nil
+                                                                      :page-size       nil
                                                                       :record-short-id (attr ($ element) "data-record-short-id")}})
                                                   post (first (:posts @result))]
                                               (reset! jump-command nil)
