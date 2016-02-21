@@ -494,7 +494,16 @@
             :preview
             (session/get :thread-title)
             '())))
-  (js/setTimeout #(highlight-code-block) 0))
+  (js/setTimeout
+    #(do
+      (.each ($ (keyword ".post .string:not(.processed)"))
+             (fn []
+               (this-as s
+                 (.html ($ s)
+                        (.unicodeToImage js/emojione (.text ($ s))))
+                 (.addClass ($ s) "processed"))))
+      (highlight-code-block))
+    0))
 
 (defn tags-for-thread
   []
@@ -1160,6 +1169,12 @@
                                 (:threads response)))]))
                   {:component-did-mount
                    (fn []
+                     (.each ($ (keyword ".post .string:not(.processed)"))
+                            (fn []
+                              (this-as s
+                                (.html ($ s)
+                                       (.unicodeToImage js/emojione (.text ($ s))))
+                                (.addClass ($ s) "processed"))))
                      (when (not (:rss response))
                        (reset! new-post-notification false)
                        (dorun
