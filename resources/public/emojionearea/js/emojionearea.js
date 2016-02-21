@@ -22,35 +22,46 @@
 
         filters: {
             people: {
-                icon: "yum",
+                icon: "relaxed",
                 emoji: "grinning,grin,joy,smiley,smile,sweat_smile,laughing,innocent,smiling_imp,imp,wink,blush," +
                 "relaxed,yum,relieved,heart_eyes,sunglasses,smirk,neutral_face,expressionless,unamused,sweat," +
                 "pensive,confused,confounded,kissing,kissing_heart,kissing_smiling_eyes,kissing_closed_eyes," +
                 "stuck_out_tongue,stuck_out_tongue_winking_eye,stuck_out_tongue_closed_eyes,disappointed,worried," +
                 "angry,rage,cry,persevere,triumph,disappointed_relieved,frowning,anguished,fearful,weary," +
                 "sleepy,tired_face,grimacing,sob,open_mouth,hushed,cold_sweat,scream,astonished,flushed," +
-                "sleeping,dizzy_face,no_mouth,mask,slight_frown,slight_smile,smile_cat,joy_cat,smiley_cat," +
-                "heart_eyes_cat,smirk_cat,kissing_cat,pouting_cat,crying_cat_face,scream_cat,footprints," +
+                "sleeping,dizzy_face,no_mouth,mask,slight_frown,slight_smile," +
+
+                "footprints," +
                 "bust_in_silhouette,busts_in_silhouette,levitate,spy,baby,boy,girl,man,woman,family," +
-                "family_mwg,family_mwgb,family_mwbb,family_mwgg,family_wwb,family_wwg,family_wwgb,family_wwbb," +
-                "family_wwgg,family_mmb,family_mmg,family_mmgb,family_mmbb,family_mmgg,couple,two_men_holding_hands," +
+                //"family_mwg,family_mwgb,family_mwbb,family_mwgg,family_wwb,family_wwg,family_wwgb,family_wwbb," +
+                //"family_wwgg,family_mmb,family_mmg,family_mmgb,family_mmbb,family_mmgg," +
+                "couple,two_men_holding_hands," +
                 "two_women_holding_hands,dancers,bride_with_veil,person_with_blond_hair,man_with_gua_pi_mao," +
                 "man_with_turban,older_man,older_woman,cop,construction_worker,princess,guardsman,angel," +
                 "santa,ghost,japanese_ogre,japanese_goblin,poop,skull,alien,space_invader,bow," +
                 "information_desk_person,no_good,ok_woman,raising_hand,person_with_pouting_face,person_frowning," +
-                "massage,haircut,couple_with_heart,couple_ww,couple_mm,couplekiss,kiss_ww,kiss_mm,raised_hands," +
-                "clap,ear,eye,eyes,nose,lips,kiss,tongue,nail_care,wave,thumbsup,thumbsdown," +
-                "point_up,point_up_2,point_down,point_left,point_right,ok_hand,v,punch,fist,raised_hand," +
-                // "muscle,open_hands,writing_hand,hand_splayed,middle_finger,vulcan,pray"
+                "massage,haircut,couple_with_heart," +
+                //"couple_ww,couple_mm," +
+                "couplekiss," +
+                //"kiss_ww,kiss_mm," +
+                "raised_hands," +
+                "clap,ear,eye,eyes,nose,lips,kiss,tongue,nail_care,wave,thumbsup,thumbsdown,point_up,"+
+                "point_up_2,point_down,point_left,point_right,ok_hand,v,punch,fist,raised_hand," +
+                //"muscle,open_hands,writing_hand,hand_splayed,middle_finger,vulcan,pray"
                 "muscle,open_hands,hand_splayed,middle_finger,vulcan,pray"
-            },
+           },
 
             nature: {
-                icon: "whale",
+                icon: "penguin",
                 emoji: "seedling,evergreen_tree,deciduous_tree,palm_tree,cactus,tulip,cherry_blossom,rose,hibiscus," +
                 "sunflower,blossom,bouquet,ear_of_rice,herb,four_leaf_clover,maple_leaf,fallen_leaf,leaves," +
                 "mushroom,chestnut,rat,mouse2,mouse,hamster,ox,water_buffalo,cow2,cow,tiger2,leopard," +
-                "tiger,chipmunk,rabbit2,rabbit,cat2,cat,racehorse,horse,ram,sheep,goat,rooster,chicken," +
+                "tiger,chipmunk,rabbit2,rabbit,cat2,cat," +
+
+                "smile_cat,joy_cat,smiley_cat," +
+                "heart_eyes_cat,smirk_cat,kissing_cat,pouting_cat,crying_cat_face,scream_cat," +
+
+                "racehorse,horse,ram,sheep,goat,rooster,chicken," +
                 "baby_chick,hatching_chick,hatched_chick,bird,penguin,elephant,dromedary_camel,camel,boar,pig2," +
                 "pig,pig_nose,dog2,poodle,dog,wolf,bear,koala,panda_face,monkey_face,see_no_evil,hear_no_evil," +
                 "speak_no_evil,monkey,dragon,dragon_face,crocodile,snake,turtle,frog,whale2,whale,dolphin," +
@@ -64,7 +75,7 @@
             },
 
             food_drink: {
-                icon: "cherries",
+                icon: "tangerine",
                 emoji: "tomato,eggplant,corn,sweet_potato,hot_pepper,grapes,melon,watermelon,tangerine,lemon," +
                 "banana,pineapple,apple,green_apple,pear,peach,cherries,strawberry,hamburger,pizza,meat_on_bone," +
                 "poultry_leg,rice_cracker,rice_ball,rice,curry,ramen,spaghetti,bread,fries,dango,oden,sushi," +
@@ -74,7 +85,7 @@
             },
 
             celebration: {
-                icon: "tada",
+                icon: "flags",
                 emoji: "ribbon,gift,birthday,jack_o_lantern,christmas_tree,tanabata_tree,bamboo,rice_scene," +
                 "fireworks,sparkler,tada,confetti_ball,balloon,dizzy,sparkles,boom,mortar_board,crown," +
                 "reminder_ribbon,military_medal,dolls,flags,wind_chime,crossed_flags,izakaya_lantern,ring," +
@@ -83,7 +94,7 @@
             },
 
             activity: {
-                icon: "trophy",
+                icon: "soccer",
                 emoji: "runner,walking,dancer,lifter,golfer,rowboat,swimmer,surfer,bath,snowboarder,ski," +
                 "snowman,bicyclist,mountain_bicyclist,motorcycle,race_car,horse_racing,tent,fishing_pole_and_fish," +
                 "soccer,basketball,football,baseball,tennis,rugby_football,golf,trophy,medal,running_shirt_with_sash," +
@@ -94,7 +105,7 @@
             },
 
             travel: {
-                icon: "rocket",
+                icon: "bullettrain_front",
                 emoji: "railway_car,mountain_railway,steam_locomotive,train,monorail,bullettrain_side," +
                 "bullettrain_front,train2,metro,light_rail,station,tram,railway_track,bus,oncoming_bus," +
                 "trolleybus,minibus,ambulance,fire_engine,police_car,oncoming_police_car,rotating_light,taxi," +
@@ -112,7 +123,7 @@
             },
 
             objects_symbols: {
-                icon: "paperclips",
+                icon: "computer",
                 emoji: "watch,iphone,calling,computer,desktop,keyboard,trackball,printer,alarm_clock,clock," +
                 "hourglass_flowing_sand,hourglass,camera,camera_with_flash,video_camera,movie_camera,projector," +
                 "tv,microphone2,level_slider,control_knobs,radio,pager,joystick,telephone_receiver,telephone," +
@@ -164,7 +175,7 @@
             },
 
             flags: {
-                icon: "triangular_flag_on_post",
+                icon: "jp",
                 emoji: "au,at,be,br,ca,flag_cl,cn,co,dk,fi,fr,de,hk,in,flag_id,ie,il,it,jp,kr,mo," +
                 "my,mx,nl,nz,no,ph,pl,pt,pr,ru,flag_sa,sg,za,es,se,ch,tr,gb,us,ae,vn,af,al,dz," +
                 "ad,ao,ai,ag,ar,am,aw,ac,az,bs,bh,bd,bb,by,bz,bj,bm,bt,bo,ba,bw,bn,bg,bf,bi," +

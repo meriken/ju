@@ -476,6 +476,13 @@
            (.highlightBlock js/hljs block)
            (.addClass ($ block) "highlighted"))))
 
+(defn ^:extern convert-string-for-emojione
+  [s]
+  (-> s
+      (clojure.string/replace #"\u261d" "\u261d\ufe0f")
+      (clojure.string/replace #"\u263a" "\u263a\ufe0f")
+      (clojure.string/replace #"\u270c" "\u270c\ufe0f")))
+
 ;TODO: Do something with attachment.
 (defn ^:export render-preview
   []
@@ -499,8 +506,7 @@
       (.each ($ (keyword ".post .string:not(.processed)"))
              (fn []
                (this-as s
-                 (.html ($ s)
-                        (.unicodeToImage js/emojione (.text ($ s))))
+                 (.html ($ s) (.unicodeToImage js/emojione (convert-string-for-emojione (.text ($ s)))))
                  (.addClass ($ s) "processed"))))
       (highlight-code-block))
     0))
@@ -1133,7 +1139,7 @@
                             (fn []
                               (this-as s
                                 (.html ($ s)
-                                       (.unicodeToImage js/emojione (.text ($ s))))
+                                       (.unicodeToImage js/emojione (convert-string-for-emojione (.text ($ s)))))
                                 (.addClass ($ s) "processed"))))
                      (.each ($ (keyword ".ad script"))
                             (fn []
@@ -1173,7 +1179,7 @@
                             (fn []
                               (this-as s
                                 (.html ($ s)
-                                       (.unicodeToImage js/emojione (.text ($ s))))
+                                       (.unicodeToImage js/emojione (convert-string-for-emojione (.text ($ s)))))
                                 (.addClass ($ s) "processed"))))
                      (when (not (:rss response))
                        (reset! new-post-notification false)

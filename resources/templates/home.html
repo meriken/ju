@@ -230,7 +230,7 @@
                 hideSource: true,
                 // shortnames: true,
                 useSprite: false,
-            })[0].emojioneArea.setText($("#post-form textarea").val());
+            })[0].emojioneArea.setText(ju.core.convert_string_for_emojione($("#post-form textarea").val()));
             $("#post-form .emojionearea").show();
         } else if ($(newActiveTab).attr('id') == 'post-form-edit-tab') {
             $("#post-form .input-group").show();
