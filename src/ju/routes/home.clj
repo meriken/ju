@@ -66,17 +66,18 @@
                      (re-find #"^[0-9]+\.[a-zA-Z0-9]+$" stamp-and-suffix))
                (let [file-id (:id (db/get-file file-name))
                      [_ stamp suffix] (re-find #"^([0-9]+)\.([a-zA-Z0-9]+)$" stamp-and-suffix)
-                     record (db/get-record-in-file-by-record-id file-id record-id)
-                     body (String. (:body record) "UTF-8")
-                     elements (->> (clojure.string/split body #"<>")
-                                   (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
-                                   (map #(do {(keyword (nth % 1)) (nth % 2)}))
-                                   (apply merge))]
-                 ;(timbre/debug (:suffix elements))
-                 (if (= suffix (:suffix elements))
-                   {:status  200
-                    :headers {"Content-Type" (ring.util.mime-type/ext-mime-type suffix)}
-                    :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))))
+                     record (db/get-record-in-file-by-record-id file-id record-id)]
+                 (if record
+                   (let [body (String. (:body record) "UTF-8")
+                         elements (->> (clojure.string/split body #"<>")
+                                       (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                       (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                       (apply merge))]
+                     ;(timbre/debug (:suffix elements))
+                     (if (= suffix (:suffix elements))
+                       {:status  200
+                        :headers {"Content-Type" (ring.util.mime-type/ext-mime-type suffix)}
+                        :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))))))
 
            (GET "/new-posts" [] (home-page "新着レス"))
            (GET "/create-new-thread" [] (home-page "新規スレッド作成"))
