@@ -1599,10 +1599,13 @@
 (defn ^:export show-post-form-with-files
   [files]
   (when (session/get :page :thread)
-    (session/put! :files files)
-    (reset! post-form-enabled? true)
-    (if (not (session/get :record-short-id))
-      (reset! posts-displayed? false))))
+    (if @post-form-enabled?
+      (set! (.-files (aget ($ (keyword ".btn-file :file")) 0)) files)
+      (do
+        (session/put! :files files)
+        (reset! post-form-enabled? true)
+        (if (and (not (session/get :record-short-id)) @posts-displayed?)
+          (reset! posts-displayed? false))))))
 
 (defn init! []
   (fetch-server-status! true)
