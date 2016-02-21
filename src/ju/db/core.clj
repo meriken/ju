@@ -312,6 +312,7 @@
                                        (get-all-records))))]
     results))
 
+
 (defn add-record [file-id stamp record-id body deleted dat-file-line suffix origin remote-address]
   (if (zero? (count (select files (fields :id) (where {:id file-id}))))
     (throw (IllegalArgumentException. "Invalid file ID.")))
@@ -950,7 +951,18 @@
   (select anchors
           (where {:file_id file-id :destination destination})))
 
-
+(defn remove-duplicate-anchors
+  []
+  (distinct (apply concat
+                   (map
+                     (fn [anchor]
+                       (drop 1 (sort (map :id
+                                          (select anchors
+                                                  (fields :id)
+                                                  (where {:file_id (:file-id anchor)
+                                                          :source (:source anchor)
+                                                          :destination (:destination anchor)}))))))
+                     (select anchors (fields :file_id :source :destination))))))
 
 
 (defn add-image [image]
