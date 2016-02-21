@@ -21,7 +21,6 @@
             [clj-time.coerce]
             [clj-time.format]
             [clj-time.predicates]
-            [clojure.data.codec.base64 :as base64]
             [cheshire.core]
             [clj-rss.core]
             [clojure.math.combinatorics])
@@ -176,98 +175,6 @@
         param/static-server-url-base
         (str "http://" (clojure.string/replace @server-node-name (re-pattern (str param/server-path "$")) "")))
       #"/$" "")))
-
-
-
-;;;;;;;;;;
-; Images ;
-;;;;;;;;;;
-
-(defn create-thumbnail
-  [^java.awt.Image awt-image]
-  ; (log :debug "create-thumbnail")
-  (try
-    (let [output    (new ByteArrayOutputStream 1000)
-          width     (.getWidth awt-image)
-          height    (.getHeight awt-image)
-          thumbnail-height (min height param/thumbnail-height)
-          thumbnail-width (int (/ (* thumbnail-height width) height))
-          thumbnail (new BufferedImage thumbnail-width thumbnail-height BufferedImage/TYPE_INT_RGB)
-
-          writer (.next (ImageIO/getImageWritersByFormatName "jpeg"))
-          param (.getDefaultWriteParam writer)]
-
-      (-> thumbnail
-          (.createGraphics)
-          (.drawImage
-            (.getScaledInstance
-              awt-image
-              thumbnail-width
-              thumbnail-height
-              Image/SCALE_SMOOTH)
-            0
-            0
-            nil))
-      (.setCompressionMode param ImageWriteParam/MODE_EXPLICIT)
-      (.setCompressionQuality param 0.9)
-      (.setOutput writer (MemoryCacheImageOutputStream. output))
-      (.write writer nil (IIOImage. thumbnail nil nil) param)
-      (.flush output)
-      (let [byte-array (.toByteArray output)]
-        (.close output)
-        byte-array))
-
-    (catch Throwable t
-      (timbre/error "create-thumbnail:" (str t))
-      nil)))
-
-(defn create-image
-  [file-id stamp record-id elements deleted]
-  (try
-    (let [image    (if (:attach elements)
-                     (base64/decode
-                      (.getBytes (:attach elements))))
-          awt-image (if image
-                      (ImageIO/read
-                        (new ByteArrayInputStream image)))
-          thumbnail (if awt-image
-                      (create-thumbnail awt-image))]
-      (when thumbnail
-        (db/add-image
-          {
-           :file_id      file-id
-           :stamp        (if (string? stamp) (Long/parseLong stamp) stamp)
-           :record_id    record-id
-           :suffix       (:suffix elements)
-           :thumbnail    thumbnail
-           :width        (.getWidth awt-image)
-           :height       (.getHeight awt-image)
-           :jane_md5_string (jane-md5 image)
-           :md5_string   (md5 image)
-           :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
-           :size         (count image)
-           :deleted      (if deleted true false)
-           })
-        )
-      true)
-    (catch Throwable t
-      (timbre/error "create-image:" t))))
-
-(defn create-images
-  []
-  (dorun (map
-           (fn [record]
-             (let [record (db/get-record-by-id (:id record))]
-               (when (some #{(:suffix record)} #{"jpg" "jpeg" "png" "gif"})
-                 (timbre/info "create-images:" (:id record) (:record-id record))
-                 (let [record (db/get-record-by-id (:id record))
-                       body (String. (:body record) "UTF-8")
-                       elements (->> (clojure.string/split body #"<>")
-                                     (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
-                                     (map #(do {(keyword (nth % 1)) (nth % 2)}))
-                                     (apply merge))]
-                   (create-image (:file-id record) (:stamp record) (:record-id record) elements (:deleted record))))))
-           (sort-by :id (db/get-all-records-with-ids-only)))))
 
 
 
@@ -593,7 +500,7 @@
                          nil)
                        (db/mark-file-as-dirty file-id)
                        (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
-                         (create-image file-id stamp record-id elements deleted))
+                         (db/create-image file-id stamp record-id elements deleted))
                        )))
                  (catch Throwable t
                    ;(clojure.stacktrace/print-stack-trace t)
@@ -1072,7 +979,7 @@
       @server-node-name
       remote-address)
     (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
-      (create-image file-id stamp record-id elements false))
+      (db/create-image file-id stamp record-id elements false))
     (db/update-file file-id)
     (db/process-update-command (:file-name file) stamp record-id)
     (do (future
@@ -1284,10 +1191,13 @@
      (dorun
        (map
          (fn [file]
+           (db/update-file (:id file))
            (when (and
                    (:num-records file)
                    (pos? (:num-records file))
                    (not (some #{(:file-name file)} param/known-corrupt-files)))
+             (db/remove-duplicate-records-in-file (:id file))
+             (db/remove-duplicate-anchors-in-file (:id file))
              (update-dat-file-response-cache
                (str (+ (long (/ (clj-time.coerce/to-long (:time-first-post file)) 1000)) (* 9 60 60))))
              (dorun (map
@@ -2110,7 +2020,7 @@
                                               "http://archive.shingetsu.info/"
                                               nil)
                                             (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
-                                              (create-image (:id file) stamp record-id elements false))
+                                              (db/create-image (:id file) stamp record-id elements false))
                                             (db/update-file (:id file)))
                                           {:thread-title thread-title
                                            :thread-title-hash thread-title-hash

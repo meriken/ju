@@ -10,12 +10,16 @@
     [taoensso.timbre :as timbre]
     [korma.core :refer :all]
     [korma.db :refer [defdb transaction create-db default-connection]]
+    [ju.param :as param]
     [ju.util :refer :all]
     [ju.db.schema :as schema]
-    [clj-time.coerce])
-  (:import [java.sql
-            ;BatchUpdateException
-            PreparedStatement]))
+    [clj-time.coerce]
+    [clojure.data.codec.base64 :as base64])
+  (:import (javax.imageio ImageIO ImageWriter ImageWriteParam IIOImage)
+           (java.io ByteArrayInputStream ByteArrayOutputStream)
+           (java.awt.image BufferedImage)
+           (java.awt Image)
+           (javax.imageio.stream MemoryCacheImageOutputStream)))
 
 
 
@@ -639,7 +643,7 @@
 (declare update-file)
 (defn remove-duplicate-records-in-file
   [file-id]
-  (timbre/info "remove-duplicate-records-in-file:" file-id)
+  ;(timbre/info "remove-duplicate-records-in-file:" file-id)
   (let [duplicate-lists (remove #(= (count %) 1)
                            (map (fn [record] (let [record (ju.db.core/get-record-by-id (:id record))]
                                                (map #(:id %) (remove #(or
@@ -968,6 +972,25 @@
                                                               :destination (:destination anchor)}))))))
                          (select anchors (fields :file_id :source :destination))))))))
 
+(defn remove-duplicate-anchors-in-file
+  [file-id]
+  (count
+    (map
+      (fn [id]
+        (delete anchors (where {:id id})))
+      (distinct (apply concat
+                       (map
+                         (fn [anchor]
+                           (drop 1 (sort (map :id
+                                              (select anchors
+                                                      (fields :id)
+                                                      (where {:file_id file-id
+                                                              :source (:source anchor)
+                                                              :destination (:destination anchor)}))))))
+                         (select anchors
+                                 (fields :source :destination)
+                                 (where {:file_id file-id}))))))))
+
 
 (defn add-image [image]
   (if (zero? (count (select files (fields :id) (where {:id (:file_id image)}))))
@@ -982,6 +1005,93 @@
                                                  :stamp (:stamp image)
                                                  :md5_string (:md5_string image) }))))
         (insert images (values image))))))
+
+
+(defn create-thumbnail
+  [^java.awt.Image awt-image]
+  ; (log :debug "create-thumbnail")
+  (try
+    (let [output    (new ByteArrayOutputStream 1000)
+          width     (.getWidth awt-image)
+          height    (.getHeight awt-image)
+          thumbnail-height (min height param/thumbnail-height)
+          thumbnail-width (int (/ (* thumbnail-height width) height))
+          thumbnail (new BufferedImage thumbnail-width thumbnail-height BufferedImage/TYPE_INT_RGB)
+
+          writer (.next (ImageIO/getImageWritersByFormatName "jpeg"))
+          param (.getDefaultWriteParam writer)]
+
+      (-> thumbnail
+          (.createGraphics)
+          (.drawImage
+            (.getScaledInstance
+              awt-image
+              thumbnail-width
+              thumbnail-height
+              Image/SCALE_SMOOTH)
+            0
+            0
+            nil))
+      (.setCompressionMode param ImageWriteParam/MODE_EXPLICIT)
+      (.setCompressionQuality param 0.9)
+      (.setOutput writer (MemoryCacheImageOutputStream. output))
+      (.write writer nil (IIOImage. thumbnail nil nil) param)
+      (.flush output)
+      (let [byte-array (.toByteArray output)]
+        (.close output)
+        byte-array))
+
+    (catch Throwable t
+      (timbre/error "create-thumbnail:" (str t))
+      nil)))
+
+(defn create-image
+  [file-id stamp record-id elements deleted]
+  (try
+    (let [image    (if (:attach elements)
+                     (base64/decode
+                       (.getBytes (:attach elements))))
+          awt-image (if image
+                      (ImageIO/read
+                        (new ByteArrayInputStream image)))
+          thumbnail (if awt-image
+                      (create-thumbnail awt-image))]
+      (when thumbnail
+        (add-image
+          {
+           :file_id      file-id
+           :stamp        (if (string? stamp) (Long/parseLong stamp) stamp)
+           :record_id    record-id
+           :suffix       (:suffix elements)
+           :thumbnail    thumbnail
+           :width        (.getWidth awt-image)
+           :height       (.getHeight awt-image)
+           :jane_md5_string (jane-md5 image)
+           :md5_string   (md5 image)
+           :time_created (clj-time.coerce/to-sql-time (clj-time.core/now))
+           :size         (count image)
+           :deleted      (if deleted true false)
+           })
+        )
+      true)
+    (catch Throwable t
+      (timbre/error "create-image:" t))))
+
+(defn create-images
+  []
+  (dorun (map
+           (fn [record]
+             (let [record (get-record-by-id (:id record))]
+               (when (some #{(:suffix record)} #{"jpg" "jpeg" "png" "gif"})
+                 (timbre/info "create-images:" (:id record) (:record-id record))
+                 (let [record (get-record-by-id (:id record))
+                       body (String. (:body record) "UTF-8")
+                       elements (->> (clojure.string/split body #"<>")
+                                     (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
+                                     (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                     (apply merge))]
+                   (create-image (:file-id record) (:stamp record) (:record-id record) elements (:deleted record))))))
+           (sort-by :id (get-all-records-with-ids-only)))))
 
 (defn get-image [file-id record-id]
   (nth (select images (where {:file_id file-id

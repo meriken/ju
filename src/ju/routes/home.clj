@@ -45,7 +45,17 @@
                (re-find #"^thumbnail-[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier)
                (let [file-id (db/get-file-id-by-thread-title thread-title)
                      [_ record-id suffix] (re-find #"^thumbnail-([a-f0-9]{32})\.([a-zA-Z0-9]+)$" qualifier)
-                     image (db/get-image file-id record-id)]
+                     image (or
+                             (db/get-image file-id record-id)
+                             (let [record (db/get-record-in-file-by-record-id file-id record-id)
+                                   body (if record (String. (:body record) "UTF-8"))
+                                   elements (if record (->> (clojure.string/split body #"<>")
+                                                            (map #(re-find #"^([a-zA-Z0-9_]+):(.*)$" %))
+                                                            (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                                            (apply merge)))]
+                               (when record
+                                 (db/create-image file-id (:stamp record) record-id elements false)
+                                 (db/get-image file-id record-id))))]
                  ;(timbre/debug (:suffix elements))
                  (if (and image (= suffix "jpg"))
                    {:status  200
