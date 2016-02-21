@@ -476,7 +476,7 @@
            (.highlightBlock js/hljs block)
            (.addClass ($ block) "highlighted"))))
 
-(defn ^:extern convert-string-for-emojione
+(defn ^:export convert-string-for-emojione
   [s]
   (-> s
       (clojure.string/replace #"\u261d" "\u261d\ufe0f")
