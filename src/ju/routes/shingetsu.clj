@@ -1152,7 +1152,6 @@
         suggested-tags (if (:suggested-tags file)
                          (into [] (clojure.string/split (:suggested-tags file) #" +"))
                          [])]
-    ;(timbre/info "anchors:" (apply str anchors))
     {:status 200
      :headers {"Content-Type" "application/json; charset=utf-8"}
      :body (cheshire.core/generate-string
@@ -1161,7 +1160,9 @@
               :anchors   anchors
               :tags      tags
               :suggested-tags suggested-tags
-              :ads (into [] (map #(try (param/ad-code-for-thread thread-title tags %) (catch Throwable t nil)) (range (inc page-size))))
+              :ads (if (and page-size (not (= page-size "")))
+                     (into [] (map #(try (param/ad-code-for-thread thread-title tags %) (catch Throwable t nil)) (range (inc page-size))))
+                     [])
               :related-threads (create-related-thread-list thread-title 5)})}))
 
 (def api-thread-response-cache (atom {}))
