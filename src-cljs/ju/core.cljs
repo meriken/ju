@@ -1113,7 +1113,7 @@
   [response]
   (let [num-posts (:num-posts response)
         num-pages (+ (quot num-posts param/page-size) (if (pos? (rem num-posts param/page-size)) 1 0))]
-    (.log js/console "posts-handler:" num-posts num-pages (clj->js response))
+    ;(.log js/console "posts-handler:" num-posts num-pages (clj->js response))
     (session/put! :num-posts num-posts)
     (session/put! :num-pages num-pages)
     (session/put! :tags (:tags response))
@@ -1123,16 +1123,22 @@
     (session/put!
       :posts
       [(with-meta (fn [] [:div#posts
-                          (list
-                            (map
-                              #(list
-                                (if (get (:ads response) %2)
-                                  [:div.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) %2)}}])
-                                (generate-html-for-post %1 :thread (session/get :thread-title) (:anchors response)))
-                              (:posts response)
-                              (range (count (:posts response))))
-                            (if (get (:ads response) param/page-size)
-                              [:div.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) (count (:posts response)))}}]))])
+                          (doall
+                            (apply concat
+                                   (list
+                                     (apply concat
+                                            (map
+                                              #(list
+                                                (if (get (:ads response) %2)
+                                                  [:div.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) %2)}
+                                                            :key (my-uuid)
+                                                            }])
+                                                (generate-html-for-post %1 :thread (session/get :thread-title) (:anchors response)))
+                                              (:posts response)
+                                              (range (count (:posts response)))))
+                                     (list
+                                       (if (get (:ads response) param/page-size)
+                                         [:div.ad {:key (my-uuid) :dangerouslySetInnerHTML {:__html (get (:ads response) param/page-size)}}])))))])
                   {:component-did-mount
                    #(do
                      (.each ($ (keyword ".post .string:not(.processed)"))
@@ -1144,7 +1150,7 @@
                      (.each ($ (keyword ".ad script"))
                             (fn []
                               (this-as tag
-                                (.log js/console tag)
+                                ;(.log js/console tag)
                                 (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
                                 (try (js/eval (.text ($ tag))) (catch js/Error _))
                                 )))
@@ -1204,7 +1210,7 @@
 
 (defn fetch-posts!
   [thread-title page-num record-short-id]
-  (.log js/console "fetch-posts!:" thread-title page-num record-short-id)
+  ;(.log js/console "fetch-posts!:" thread-title page-num record-short-id)
   (session/put! :posts [:span.glyphicon.glyphicon-refresh.spinning.loading-component])
   (session/put! :recent-threads nil)
   (POST (str "/api/thread" )
