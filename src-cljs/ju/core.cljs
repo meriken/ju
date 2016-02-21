@@ -1440,6 +1440,7 @@
   (session/put! :page-num 0)
   (session/put! :record-short-id nil)
   (session/put! :href-base (str "/thread/" (js/decodeURIComponent thread-title)))
+  (session/put! :files nil)
   (session/put! :page :thread)
   (set-title))
 
@@ -1480,6 +1481,7 @@
     (session/put! :page-num page-num)
     (session/put! :record-short-id record-short-id)
     (session/put! :href-base (str "/thread/" (js/decodeURIComponent thread-title)))
+    (session/put! :files nil)
     (session/put! :page :thread)
     (set-title)))
 
@@ -1583,10 +1585,24 @@
       (when (and
               (= (session/get :page) :thread)
               @post-form-enabled?
-              (session/get :record-short-id))
+              (session/get :record-short-id)
+              (zero? (count (.val ($ :textarea#body)))))
         (-> ($ :textarea#body) (.val (str ">>" (session/get :record-short-id) "\n")))
         (.setSelectionRange (aget ($ :textarea#body) 0) 22 22)) ;TODO: This routine does not work with Firefox.
+      (when (and
+              (= (session/get :page) :thread)
+              @post-form-enabled?
+              (session/get :files))
+        (set! (.-files (aget ($ (keyword ".btn-file :file")) 0)) (session/get :files))) ;TODO: This routine does not work with Firefox.
       ) 0))
+
+(defn ^:export show-post-form-with-files
+  [files]
+  (when (session/get :page :thread)
+    (session/put! :files files)
+    (reset! post-form-enabled? true)
+    (if (not (session/get :record-short-id))
+      (reset! posts-displayed? false))))
 
 (defn init! []
   (fetch-server-status! true)

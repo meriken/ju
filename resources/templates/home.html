@@ -176,8 +176,7 @@
             .on("drop", function(event) {
                 event.stopPropagation();
                 event.preventDefault();
-                if ($('.btn-file :file').length > 0)
-                    $('.btn-file :file')[0].files = event.originalEvent.dataTransfer.files;
+                ju.core.show_post_form_with_files(event.originalEvent.dataTransfer.files);
                 return false;
             });
     });
