@@ -375,8 +375,8 @@
 
     function unicodeTo(str, template) {
         return str.replace(uniRegexp, function(unicodeChar) {
-            if (typeof unicodeChar !== 'undefined' && unicodeChar in emojione.jsecapeMap) {
-                return getTemplate(template, emojione.jsecapeMap[unicodeChar]);
+            if (typeof unicodeChar !== 'undefined' && unicodeChar in emojione.jsEscapeMap) {
+                return getTemplate(template, emojione.jsEscapeMap[unicodeChar]);
             }
             return unicodeChar;
         });
