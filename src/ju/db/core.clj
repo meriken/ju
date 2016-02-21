@@ -953,16 +953,20 @@
 
 (defn remove-duplicate-anchors
   []
-  (distinct (apply concat
-                   (map
-                     (fn [anchor]
-                       (drop 1 (sort (map :id
-                                          (select anchors
-                                                  (fields :id)
-                                                  (where {:file_id (:file-id anchor)
-                                                          :source (:source anchor)
-                                                          :destination (:destination anchor)}))))))
-                     (select anchors (fields :file_id :source :destination))))))
+  (count
+    (map
+      (fn [id]
+        (delete anchors (where {:id id})))
+      (distinct (apply concat
+                       (map
+                         (fn [anchor]
+                           (drop 1 (sort (map :id
+                                              (select anchors
+                                                      (fields :id)
+                                                      (where {:file_id (:file-id anchor)
+                                                              :source (:source anchor)
+                                                              :destination (:destination anchor)}))))))
+                         (select anchors (fields :file_id :source :destination))))))))
 
 
 (defn add-image [image]
