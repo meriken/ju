@@ -171,9 +171,31 @@
         });
 
         $('html, body')
-            .on("dragenter", function(event) { event.preventDefault(); })
-            .on("dragover", function(event) { event.preventDefault(); })
+            .on("dragenter", function(event) {
+                if (event.originalEvent.dataTransfer.types) {
+                    for (var i = 0; i < event.originalEvent.dataTransfer.types.length; i++) {
+                        if (event.originalEvent.dataTransfer.types[i] == "Files") {
+                            event.preventDefault();
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            })
+            .on("dragover", function(event) {
+                if (event.originalEvent.dataTransfer.types) {
+                    for (var i = 0; i < event.originalEvent.dataTransfer.types.length; i++) {
+                        if (event.originalEvent.dataTransfer.types[i] == "Files") {
+                            event.preventDefault();
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            })
             .on("drop", function(event) {
+                if (event.originalEvent.dataTransfer.files.length <= 0)
+                    return true;
                 event.stopPropagation();
                 event.preventDefault();
                 ju.core.show_post_form_with_files(event.originalEvent.dataTransfer.files);
