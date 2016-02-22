@@ -33,17 +33,17 @@
 
                 "footprints," +
                 "bust_in_silhouette,busts_in_silhouette,levitate,spy,baby,boy,girl,man,woman,family," +
-                //"family_mwg,family_mwgb,family_mwbb,family_mwgg,family_wwb,family_wwg,family_wwgb,family_wwbb," +
-                //"family_wwgg,family_mmb,family_mmg,family_mmgb,family_mmbb,family_mmgg," +
+                "family_mwg,family_mwgb,family_mwbb,family_mwgg,family_wwb,family_wwg,family_wwgb,family_wwbb," +
+                "family_wwgg,family_mmb,family_mmg,family_mmgb,family_mmbb,family_mmgg," +
                 "couple,two_men_holding_hands," +
                 "two_women_holding_hands,dancers,bride_with_veil,person_with_blond_hair,man_with_gua_pi_mao," +
                 "man_with_turban,older_man,older_woman,cop,construction_worker,princess,guardsman,angel," +
                 "santa,ghost,japanese_ogre,japanese_goblin,poop,skull,alien,space_invader,bow," +
                 "information_desk_person,no_good,ok_woman,raising_hand,person_with_pouting_face,person_frowning," +
                 "massage,haircut,couple_with_heart," +
-                //"couple_ww,couple_mm," +
+                "couple_ww,couple_mm," +
                 "couplekiss," +
-                //"kiss_ww,kiss_mm," +
+                "kiss_ww,kiss_mm," +
                 "raised_hands," +
                 "clap,ear,eye,eyes,nose,lips,kiss,tongue,nail_care,wave,thumbsup,thumbsdown,point_up,"+
                 "point_up_2,point_down,point_left,point_right,ok_hand,v,punch,fist,raised_hand," +

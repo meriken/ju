@@ -131,6 +131,55 @@
                        (take 3 (drop 15 r)) ["-"]
                        (take 12 (drop 18 r))))))
 
+(defn ^:export convert-string-for-emojione
+  [s]
+  (-> s
+      ; ':kiss_ww:      ':["1f469-200d-2764-fe0f-200d-1f48b-200d-1f469","1f469-2764-1f48b-1f469"],
+      ; ':couplekiss_ww:':["1f469-200d-2764-fe0f-200d-1f48b-200d-1f469","1f469-2764-1f48b-1f469"],
+      ; ':kiss_mm:      ':["1f468-200d-2764-fe0f-200d-1f48b-200d-1f468","1f468-2764-1f48b-1f468"],
+      ; ':couplekiss_mm:':["1f468-200d-2764-fe0f-200d-1f48b-200d-1f468","1f468-2764-1f48b-1f468"],
+      (clojure.string/replace #"(\uD83D\uDC68)(\u2764)(\uD83D\uDC8B)(\uD83D\uDC68)" "$1\u200D$2\u200D$3\u200D$4")
+      (clojure.string/replace #"(\uD83D\uDC69)(\u2764)(\uD83D\uDC8B)(\uD83D\uDC69)" "$1\u200D$2\u200D$3\u200D$4")
+      ; ':couple_ww:           ':["1f469-200d-2764-fe0f-200d-1f469","1f469-2764-1f469"],
+      ; ':couple_with_heart_ww:':["1f469-200d-2764-fe0f-200d-1f469","1f469-2764-1f469"],
+      ; ':couple_mm:           ':["1f468-200d-2764-fe0f-200d-1f468","1f468-2764-1f468"],
+      ; ':couple_with_heart_mm:':["1f468-200d-2764-fe0f-200d-1f468","1f468-2764-1f468"],
+      (clojure.string/replace #"(\uD83D\uDC68)(\u2764)(\uD83D\uDC68)" "$1\u200d$2\u200d$3")
+      (clojure.string/replace #"(\uD83D\uDC69)(\u2764)(\uD83D\uDC69)" "$1\u200d$2\u200d$3")
+      ; ':family_mmbb:':["1f468-200d-1f468-200d-1f466-200d-1f466","1f468-1f468-1f466-1f466"],
+      ; ':family_mmgb:':["1f468-200d-1f468-200d-1f467-200d-1f466","1f468-1f468-1f467-1f466"],
+      ; ':family_mmgg:':["1f468-200d-1f468-200d-1f467-200d-1f467","1f468-1f468-1f467-1f467"],
+      ; ':family_mwbb:':["1f468-200d-1f469-200d-1f466-200d-1f466","1f468-1f469-1f466-1f466"],
+      ; ':family_mwgb:':["1f468-200d-1f469-200d-1f467-200d-1f466","1f468-1f469-1f467-1f466"],
+      ; ':family_mwgg:':["1f468-200d-1f469-200d-1f467-200d-1f467","1f468-1f469-1f467-1f467"],
+      ; ':family_wwbb:':["1f469-200d-1f469-200d-1f466-200d-1f466","1f469-1f469-1f466-1f466"],
+      ; ':family_wwgb:':["1f469-200d-1f469-200d-1f467-200d-1f466","1f469-1f469-1f467-1f466"],
+      ; ':family_wwgg:':["1f469-200d-1f469-200d-1f467-200d-1f467","1f469-1f469-1f467-1f467"],
+      (clojure.string/replace #"(\uD83D\uDC68|\uD83D\uDC69)(\uD83D\uDC68|\uD83D\uDC69)(\uD83D\uDC67|\uD83D\uDC66)(\uD83D\uDC67|\uD83D\uDC66)" "$1\u200d$2\u200d$3\u200d$4")
+      ; ':family_mmb:':["1f468-200d-1f468-200d-1f466","1f468-1f468-1f466"],
+      ; ':family_mmg:':["1f468-200d-1f468-200d-1f467","1f468-1f468-1f467"],
+      ; ':family_wwb:':["1f469-200d-1f469-200d-1f466","1f469-1f469-1f466"],
+      ; ':family_wwg:':["1f469-200d-1f469-200d-1f467","1f469-1f469-1f467"],
+      (clojure.string/replace #"(\uD83D\uDC68|\uD83D\uDC69)(\uD83D\uDC68|\uD83D\uDC69)(\uD83D\uDC67|\uD83D\uDC66)" "$1\u200d$2\u200d$3")
+      ; ':hash:':["0023-fe0f-20e3","0023-20e3"],
+      ; ':keycap_asterisk:':["002a-fe0f-20e3","002a-20e3"], ; broken in Emojione
+      ; ':asterisk:':["002a-fe0f-20e3","002a-20e3"], ; broken in Emojione
+      ; ':zero:':["0030-fe0f-20e3","0030-20e3"],
+      ; ':one:':["0031-fe0f-20e3","0031-20e3"],
+      ; ':two:':["0032-fe0f-20e3","0032-20e3"],
+      ; ':three:':["0033-fe0f-20e3","0033-20e3"],
+      ; ':four:':["0034-fe0f-20e3","0034-20e3"],
+      ; ':five:':["0035-fe0f-20e3","0035-20e3"],
+      ; ':six:':["0036-fe0f-20e3","0036-20e3"],
+      ; ':seven:':["0037-fe0f-20e3","0037-20e3"],
+      ; ':eight:':["0038-fe0f-20e3","0038-20e3"],
+      ; ':nine:':["0039-fe0f-20e3","0039-20e3"],
+      (clojure.string/replace #"(\u0023|\u002a|\u0030|\u0031|\u0032|\u0033|\u0034|\u0035|\u0036|\u0037|\u0038|\u0039)\u20e3" "$1\ufe0f\u20e3")
+      ; Others
+      ; ':eye_in_speech_bubble:':["1f441-200d-1f5e8","1f441-1f5e8"], ; broken in Emojione
+      ; TODO: Use surrogate pairs.
+      (clojure.string/replace #"(\u00a9|\u00ae|\u1f004|\u1f170|\u1f171|\u1f17e|\u1f17f|\u1f202|\u1f21a|\u1f22f|\u1f237|\u203c|\u21a9|\u21aa|\u231a|\u231b|\u24c2|\u25aa|\u25ab|\u25b6|\u25c0|\u25fb|\u25fc|\u25fd|\u25fe|\u260e|\u261d|\u263a|\u264a|\u264b|\u264c|\u264d|\u264e|\u264f|\u267b|\u267f|\u26a0|\u26a1|\u26aa|\u26ab|\u26bd|\u26be|\u26c4|\u26c5|\u26d4|\u26ea|\u26f2|\u26f3|\u26f5|\u26fa|\u26fd|\u270c|\u270f|\u27a1|\u2b05|\u2b06|\u2b07|\u2b1b|\u2b1c|\u2b50|\u2b55|\u303d|\u2049|\u2122|\u2139|\u2194|\u2195|\u2196|\u2197|\u2198|\u2199|\u2600|\u2601|\u2611|\u2614|\u2615|\u2648|\u2649|\u2650|\u2651|\u2652|\u2653|\u2660|\u2663|\u2665|\u2666|\u2668|\u2693|\u2702|\u2708|\u2709|\u2712|\u2714|\u2716|\u2733|\u2734|\u2744|\u2747|\u2757|\u2764|\u2934|\u2935|\u3030|\u3297|\u3299)" "$1\ufe0f")))
+
 
 
 (defn nav-link [uri title page]
@@ -412,6 +461,11 @@
 (defn submit-post
   [e]
   (.preventDefault e)
+
+  (.text
+    ($ (keyword "#post-form textarea#body"))
+    (convert-string-for-emojione
+      (.text ($ (keyword "#post-form textarea#body")))))
   (let [result (atom nil)
         _ (ajax "/api/post"
                 {:method      "POST"
@@ -476,12 +530,7 @@
            (.highlightBlock js/hljs block)
            (.addClass ($ block) "highlighted"))))
 
-(defn ^:export convert-string-for-emojione
-  [s]
-  (-> s
-      (clojure.string/replace #"\u261d" "\u261d\ufe0f")
-      (clojure.string/replace #"\u263a" "\u263a\ufe0f")
-      (clojure.string/replace #"\u270c" "\u270c\ufe0f")))
+
 
 ;TODO: Do something with attachment.
 (defn ^:export render-preview
