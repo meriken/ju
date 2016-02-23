@@ -1531,14 +1531,23 @@
                                               posts (map process-record-body
                                                          (db/get-new-records-in-file file-id (:time-last-accessed thread)))
                                               ;_ (timbre/debug thread (count posts))
+                                              record-short-ids (map :record-short-id posts)
                                               anchors (distinct (into [] (apply concat (map (fn [destnation]
                                                                                               (db/get-anchors file-id destnation))
-                                                                                            (map :record-short-id posts)))))]
+                                                                                            record-short-ids))))]
                                           (if (zero? (count posts))
                                             nil
                                             {:thread-title (:thread-title thread)
                                              :posts posts
-                                             :anchors anchors})))
+                                             :anchors anchors
+                                             :popup-cache (apply merge (remove nil? (map
+                                                                                        #(try
+                                                                                          {%
+                                                                                           (process-record-body
+                                                                                             (db/get-record-in-file-by-short-id file-id %))}
+                                                                                          (catch Throwable _ nil))
+                                                                                        (expand-record-short-ids file-id (into #{} record-short-ids)))))
+                                             })))
                                       threads)))}})))
 
            (POST "/api/new-post-notification"

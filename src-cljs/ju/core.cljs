@@ -1210,6 +1210,7 @@
   [response]
   (let []
     ;(.log js/console "new-posts-handler:" num-posts num-pages (clj->js (:anchors response)))
+    (session/put! :popup-cache (apply merge (map #(:popup-cache %) (:threads response))))
     (session/put!
       :posts
       [(with-meta (fn []
@@ -1650,7 +1651,7 @@
                                                                       :record-short-id (attr ($ element) "data-record-short-id")}})
                                                   post (get (session/get :popup-cache) (keyword (attr ($ element) "data-record-short-id")));(first (:posts @result))
                                                   ]
-                                              (.log js/console (pr-str post))
+                                              ;(.log js/console (pr-str post))
                                               (reset! jump-command nil)
                                               (update-page)
                                               (reagent.core/render-component-to-string
