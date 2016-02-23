@@ -1162,12 +1162,13 @@
   [response]
   (let [num-posts (:num-posts response)
         num-pages (+ (quot num-posts param/page-size) (if (pos? (rem num-posts param/page-size)) 1 0))]
-    ;(.log js/console "posts-handler:" num-posts num-pages (clj->js response))
+    (.log js/console "posts-handler:" (pr-str (:popup-cache response)))
     (session/put! :num-posts num-posts)
     (session/put! :num-pages num-pages)
     (session/put! :tags (:tags response))
     (session/put! :new-tags (:tags response))
     (session/put! :suggested-tags (:suggested-tags response))
+    (session/put! :popup-cache (:popup-cache response))
     (thread-list-handler (:related-threads response) :related-threads)
     (session/put!
       :posts
@@ -1637,7 +1638,7 @@
                                :html      true
                                :title     (fn []
                                             (let [result (atom nil)
-                                                  _ (ajax "/api/thread"
+                                                  _ (comment ajax "/api/thread"
                                                           {:method   "POST"
                                                            :success  (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
                                                            :error    (fn [] (reset! result "ERROR"))
@@ -1647,7 +1648,9 @@
                                                                       :page-num        nil
                                                                       :page-size       nil
                                                                       :record-short-id (attr ($ element) "data-record-short-id")}})
-                                                  post (first (:posts @result))]
+                                                  post (get (session/get :popup-cache) (keyword (attr ($ element) "data-record-short-id")));(first (:posts @result))
+                                                  ]
+                                              (.log js/console (pr-str post))
                                               (reset! jump-command nil)
                                               (update-page)
                                               (reagent.core/render-component-to-string

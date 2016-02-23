@@ -1039,38 +1039,70 @@
     (catch Throwable t
       (clojure.stacktrace/print-stack-trace t))))
 
-(defn process-api-thread-command
+(defn expand-record-short-ids
+  [file-id record-short-ids]
+  ;(timbre/info "expand-record-short-ids:" file-id (pr-str record-short-ids))
+  (let [anchors (distinct (concat
+                    (apply concat (map (fn [destnation]
+                                         (db/get-anchors file-id destnation))
+                                       record-short-ids))
+                    (apply concat (map (fn [source]
+                                         (db/get-anchors-for-source file-id source))
+                                       record-short-ids))))
+        new-record-short-ids (into #{} (concat
+                                         (map :source anchors)
+                                         (map :destination anchors)))]
+    (if (= record-short-ids new-record-short-ids)
+      record-short-ids
+      (expand-record-short-ids file-id new-record-short-ids))))
+
+(defn process-api-thread-command*
   [thread-title page-num page-size record-short-id download]
   (let [ file-id (db/get-file-id-by-thread-title thread-title)
         file (db/get-file-by-id file-id)
         _ (if (and file download)
             (download-file (:file-name file)))
+        popup?  (and record-short-id (pos? (count record-short-id)))
         results (map
                   process-record-body
-                  (if (and record-short-id (pos? (count record-short-id)))
+                  (if popup?
                     (db/get-records-in-file-by-short-id file-id record-short-id)
                     (db/get-records-on-page file-id page-size page-num)))
         ;_ (timbre/debug (str (count results)))
+        record-short-ids (map :record-short-id results)
         anchors (into [] (distinct (apply concat (map (fn [destnation]
-                                                        ;(timbre/info file-id destnation (apply str (db/get-anchors file-id destnation)))
                                                         (db/get-anchors file-id destnation))
-                                                      (map :record-short-id results)))))
+                                                      record-short-ids))))
         tags (into [] (map :tag-string (db/get-tags-for-file file-id)))
         suggested-tags (if (:suggested-tags file)
                          (into [] (clojure.string/split (:suggested-tags file) #" +"))
                          [])]
-    {:status 200
-     :headers {"Content-Type" "application/json; charset=utf-8"}
-     :body (cheshire.core/generate-string
-             {:num-posts (:num-records file)
-              :posts     results
-              :anchors   anchors
-              :tags      tags
-              :suggested-tags suggested-tags
-              :ads (if (and page-size (not (= page-size "")))
-                     (into [] (map #(try (param/ad-code-for-thread thread-title tags %) (catch Throwable t nil)) (range (inc page-size))))
-                     [])
-              :related-threads (create-related-thread-list thread-title 5)})}))
+    ;(timbre/info "anchors:"(pr-str anchors))
+    {:num-posts (:num-records file)
+     :posts     results
+     :anchors   anchors
+     :popup-cache (if popup?
+                      {}
+                      (apply merge (remove nil? (map
+                               #(try
+                                 {%
+                                  (process-record-body
+                                    (db/get-record-in-file-by-short-id file-id %))}
+                                 (catch Throwable _ nil))
+                               (expand-record-short-ids file-id (into #{} record-short-ids))))))
+     :tags      tags
+     :suggested-tags suggested-tags
+     :ads (if (and page-size (not (= page-size "")))
+            (into [] (map #(try (param/ad-code-for-thread thread-title tags %) (catch Throwable t nil)) (range (inc page-size))))
+            [])
+     :related-threads (create-related-thread-list thread-title 5)}))
+
+(defn process-api-thread-command
+  [thread-title page-num page-size record-short-id download]
+  {:status 200
+   :headers {"Content-Type" "application/json; charset=utf-8"}
+   :body (cheshire.core/generate-string
+           (process-api-thread-command* thread-title page-num page-size record-short-id download))})
 
 (def api-thread-response-cache (atom {}))
 (def api-threads-cache (atom nil))

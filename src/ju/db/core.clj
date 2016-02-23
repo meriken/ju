@@ -398,6 +398,12 @@
     (select records (where {:file_id file-id :record_id record-id :deleted false}))
     0 nil))
 
+(defn get-record-in-file-by-record-short-id
+  [file-id record-short-id]
+  (nth
+    (select records (where {:file_id file-id :record_short_id record-short-id :deleted false}))
+    0 nil))
+
 (defn get-record-by-record-id
   [record-id]
   (nth
@@ -954,6 +960,11 @@
   [file-id destination]
   (select anchors
           (where {:file_id file-id :destination destination})))
+
+(defn get-anchors-for-source
+  [file-id source]
+  (select anchors
+          (where {:file_id file-id :source source})))
 
 (defn remove-duplicate-anchors
   []
