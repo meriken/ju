@@ -55,6 +55,7 @@
                                                             (apply merge)))]
                                (when record
                                  (db/create-image file-id (:stamp record) record-id elements false)
+                                 (Thread/sleep 1000) ;TODO
                                  (db/get-image file-id record-id))))]
                  ;(timbre/debug (:suffix elements))
                  (if (and image (= suffix "jpg"))
