@@ -104,7 +104,8 @@
                 "externs/twitter-bootstrap.js"
                 "externs/blueimp.js"
                 "externs/highlight.js"
-                "externs/emojione.js"]
+                "externs/emojione.js"
+                "externs/bootstrap-dialog.js"]
       :pretty-print true}}}}
   
   :profiles

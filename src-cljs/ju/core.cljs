@@ -478,7 +478,7 @@
     (if (= @result :error)
       (do
         (.show js/BootstrapDialog (clj->js
-                                    {;:type (.-TYPE_DANGER js/BootstrapDialog)
+                                    {:type (.-TYPE_DANGER js/BootstrapDialog)
                                      :title "エラー"
                                      :message "書き込みに失敗しました。"
                                      :buttons [{ :label "閉じる" :action #(.close %) }]}))
