@@ -499,7 +499,7 @@
                          node-name
                          nil)
                        (db/mark-file-as-dirty file-id)
-                       (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
+                       (if (some #{(:suffix elements)} image-suffixes)
                          (db/create-image file-id stamp record-id elements deleted))
                        )))
                  (catch Throwable t
@@ -980,7 +980,7 @@
       (:suffix elements)
       @server-node-name
       remote-address)
-    (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
+    (if (some #{(:suffix elements)} image-suffixes)
       (db/create-image file-id stamp record-id elements false))
     (db/update-file file-id)
     (db/process-update-command (:file-name file) stamp record-id)
@@ -2062,7 +2062,7 @@
                                               (:suffix elements)
                                               "http://archive.shingetsu.info/"
                                               nil)
-                                            (if (some #{(:suffix elements)} #{"jpg" "jpeg" "png" "gif"})
+                                            (if (some #{(:suffix elements)} image-suffixes)
                                               (db/create-image (:id file) stamp record-id elements false))
                                             (db/update-file (:id file)))
                                           {:thread-title thread-title

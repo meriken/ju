@@ -34,6 +34,7 @@
 (def anonymous-users-handle "新月名無しさん")
 (def page-size 20)
 (def thumbnail-height 256)
+(def image-suffixes #{"jpg" "jpeg" "png" "gif" "JPG" "JPEG" "PNG" "GIF"})
 (def standard-tag-headings
   ["一般"
    "生活"
