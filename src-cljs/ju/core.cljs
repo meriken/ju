@@ -476,11 +476,13 @@
                  :processData false
                  :data        (js/FormData. (.getElementById js/document "post-form"))})]
     (if (= @result :error)
-      (.show js/BootstrapDialog (clj->js
-                                  {:type (.-TYPE_DANGER js/BootstrapDialog)
-                                   :title "エラー"
-                                   :message "書き込みに失敗しました。"
-                                   :buttons (clj->js [ (clj->js { :label "閉じる" :action #(.close %) })])}))
+      (do
+        (.show js/BootstrapDialog (clj->js
+                                    {:type (.-TYPE_DANGER js/BootstrapDialog)
+                                     :title "エラー"
+                                     :message "書き込みに失敗しました。"
+                                     :buttons [{ :label "閉じる" :action #(.close %) }]}))
+        )
       (open-internal-page
         (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
         (session/get :thread-title)
