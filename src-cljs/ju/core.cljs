@@ -1017,7 +1017,7 @@
                         "." "jpg"))
      complete-src (str @server-url-base src)
      body-exists? (pos? (count body))
-     thumbnail-exists? (and (:suffix post) (re-find #"^(jpe?g|png|gif|bmp)$" (:suffix post)))
+     thumbnail-exists? (and (:suffix post) (some #{(:suffix post)} param/image-suffixes))
      ascii2d-form-id (my-uuid)
      tineye-form-id (my-uuid)
      heading [{:style {:vertical-align "middle"}}
