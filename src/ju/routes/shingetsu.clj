@@ -826,6 +826,8 @@
         elements (assoc elements :attach (if (:attach elements) true false))]
     (-> record
         (assoc :body nil)
+        (dissoc :origin)
+        (dissoc :remote-address)
         (merge elements))))
 
 (defn update-dat-file-lines-in-all-records
@@ -1546,7 +1548,7 @@
                                             {:thread-title (:thread-title thread)
                                              :posts posts
                                              :anchors anchors
-                                             :popup-cache (create-popup-cache (:file-id (first threads)) record-short-ids)
+                                             :popup-cache (create-popup-cache file-id record-short-ids)
                                              })))
                                       threads)))}})))
 

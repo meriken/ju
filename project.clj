@@ -98,6 +98,7 @@
      {:output-to "target/cljsbuild/public/js/app.js"
       :output-dir "target/cljsbuild/public/js/out"
       :externs ["react/externs/react.js"
+                "externs/gpt.js"
                 "externs/jquery.js"
                 "externs/hoverIntent.js"
                 "externs/twitter-bootstrap.js"
