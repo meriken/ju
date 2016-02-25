@@ -1204,6 +1204,8 @@
                                 (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
                                 (try (js/eval (.text ($ tag))) (catch js/Error _))
                                 )))
+                     (if js/googletag
+                       (.refresh (.pubads js/googletag)))
                      (process-jump-command))})])))
 
 (defn new-posts-handler
@@ -1211,6 +1213,7 @@
   (let []
     ;(.log js/console "new-posts-handler:" num-posts num-pages (clj->js (:anchors response)))
     (session/put! :popup-cache (apply merge (map #(:popup-cache %) (:threads response))))
+    (.log js/console "new-posts-handler:" (pr-str (:threads response)))
     (session/put!
       :posts
       [(with-meta (fn []

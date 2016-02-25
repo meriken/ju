@@ -1056,6 +1056,16 @@
       record-short-ids
       (expand-record-short-ids file-id new-record-short-ids))))
 
+(defn create-popup-cache
+  [file-id record-short-ids]
+  (apply merge (remove nil? (map
+                              #(try
+                                {%
+                                 (process-record-body
+                                   (db/get-record-in-file-by-short-id file-id %))}
+                                (catch Throwable _ nil))
+                              (expand-record-short-ids file-id (into #{} record-short-ids))))))
+
 (defn process-api-thread-command*
   [thread-title page-num page-size record-short-id download]
   (let [ file-id (db/get-file-id-by-thread-title thread-title)
@@ -1083,13 +1093,7 @@
      :anchors   anchors
      :popup-cache (if popup?
                       {}
-                      (apply merge (remove nil? (map
-                               #(try
-                                 {%
-                                  (process-record-body
-                                    (db/get-record-in-file-by-short-id file-id %))}
-                                 (catch Throwable _ nil))
-                               (expand-record-short-ids file-id (into #{} record-short-ids))))))
+                      (create-popup-cache file-id record-short-ids))
      :tags      tags
      :suggested-tags suggested-tags
      :ads (if (and page-size (not (= page-size "")))
@@ -1268,10 +1272,12 @@
                             (into []
                                   (doall (map
                                            (fn [threads]
-                                             (let []
+                                             (let [posts (into [] (apply concat (map :posts threads)))
+                                                   record-short-ids (map :record-short-id posts)]
                                                {:thread-title  (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id (first threads)))))
-                                                :posts (into [] (apply concat (map :posts threads)))
-                                                :anchors (into [] (distinct (apply concat (map :anchors threads))))}))
+                                                :posts posts
+                                                :anchors (into [] (distinct (apply concat (map :anchors threads))))
+                                                :popup-cache (create-popup-cache (:file-id (first threads)) record-short-ids)}))
                                            (partition-by
                                              :file-id
                                              (map (fn [record]
@@ -1540,13 +1546,7 @@
                                             {:thread-title (:thread-title thread)
                                              :posts posts
                                              :anchors anchors
-                                             :popup-cache (apply merge (remove nil? (map
-                                                                                        #(try
-                                                                                          {%
-                                                                                           (process-record-body
-                                                                                             (db/get-record-in-file-by-short-id file-id %))}
-                                                                                          (catch Throwable _ nil))
-                                                                                        (expand-record-short-ids file-id (into #{} record-short-ids)))))
+                                             :popup-cache (create-popup-cache (:file-id (first threads)) record-short-ids)
                                              })))
                                       threads)))}})))
 
