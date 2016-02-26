@@ -1207,6 +1207,7 @@
     (session/put! :new-tags (:tags response))
     (session/put! :suggested-tags (:suggested-tags response))
     (session/put! :popup-cache (:popup-cache response))
+    (session/put! :anchors (:anchors response))
     (thread-list-handler (:related-threads response) :related-threads)
     (session/put!
       :posts
@@ -1251,6 +1252,7 @@
   (let []
     ;(.log js/console "new-posts-handler:" num-posts num-pages (clj->js (:anchors response)))
     (session/put! :popup-cache (apply merge (map #(:popup-cache %) (:threads response))))
+    (session/put! :anchors (apply merge (map #(:anchors %) (:threads response))))
     (session/put!
       :posts
       [(with-meta (fn []
@@ -1678,24 +1680,12 @@
                                :opacity   1
                                :html      true
                                :title     (fn []
-                                            (let [result (atom nil)
-                                                  _ (comment ajax "/api/thread"
-                                                          {:method   "POST"
-                                                           :success  (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
-                                                           :error    (fn [] (reset! result "ERROR"))
-                                                           :async    false
-                                                           :dataType "json"
-                                                           :data     {:thread-title    (attr ($ element) "data-thread-title")
-                                                                      :page-num        nil
-                                                                      :page-size       nil
-                                                                      :record-short-id (attr ($ element) "data-record-short-id")}})
-                                                  post (get (session/get :popup-cache) (keyword (attr ($ element) "data-record-short-id")));(first (:posts @result))
-                                                  ]
+                                            (let [post (get (session/get :popup-cache) (keyword (attr ($ element) "data-record-short-id")))]
                                               ;(.log js/console (pr-str post))
                                               (reset! jump-command nil)
                                               (update-page)
                                               (reagent.core/render-component-to-string
-                                                (generate-html-for-post post :popup (attr ($ element) "data-thread-title") (:anchors @result)))))})))))
+                                                (generate-html-for-post post :popup (attr ($ element) "data-thread-title") (session/get :anchors)))))})))))
       (keep-popups-within-view)
       (highlight-code-block)
       (process-jump-command)
