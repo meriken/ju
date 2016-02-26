@@ -18,6 +18,7 @@
             [ju.param :as param]
             [ju.param :as param])
   (:use     [jayq.core :only [$ parent attr on off html add-class remove-class has-class ajax]])
+  (:require-macros [cljs.core :refer [exists?]])
   (:use-macros [jayq.macros :only [ready]])
   (:import [goog.history Html5History]
             [goog Uri]
@@ -467,22 +468,29 @@
     (convert-string-for-emojione
       (.text ($ (keyword "#post-form textarea#body")))))
   (let [result (atom nil)
+        response (atom nil)
         _ (ajax "/api/post"
                 {:method      "POST"
-                 :success     (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
-                 :error       (fn [] (reset! result :error))
+                 :success     (fn [_response]
+                                (reset! result :success)
+                                (if (string? _response)
+                                  (reset! response _response)
+                                  (reset! response (clojure.walk/keywordize-keys (js->clj _response)))))
+                 :error       (fn [_response]
+                                (reset! result :error)
+                                (if (string? _response)
+                                  (reset! response _response)
+                                  (reset! response (clojure.walk/keywordize-keys (js->clj _response)))))
                  :async       false
                  :contentType false
                  :processData false
                  :data        (js/FormData. (.getElementById js/document "post-form"))})]
     (if (= @result :error)
-      (do
-        (.show js/BootstrapDialog (clj->js
+      (.show js/BootstrapDialog (clj->js
                                     {:type (.-TYPE_DANGER js/BootstrapDialog)
                                      :title "エラー"
-                                     :message "書き込みに失敗しました。"
+                                     :message (if (:responseText @response) (:responseText @response) (:message @response))
                                      :buttons [{ :label "閉じる" :action #(.close %) }]}))
-        )
       (open-internal-page
         (str "/thread/" (js/decodeURIComponent (session/get :thread-title)))
         (session/get :thread-title)
@@ -978,8 +986,14 @@
 (defn generate-html-for-post
   [post context thread-title anchors]
   (let
-    [name (and (:name post)
+    [name (if (:name post)
                (goog.string/unescapeEntities (:name post)))
+     tripcode (if (and name (re-find #"◆" name))
+                (second (re-find #"^[^◆]*(◆.*)$" name)))
+     name (if tripcode
+            (second (re-find #"^([^◆]*)◆" name))
+            name)
+     name (if (= name "") nil name)
      mail (and (:mail post)
                (goog.string/unescapeEntities (:mail post)))
      body (if (and (:body post) (re-find #"^@markdown<br>" (:body post)))
@@ -1057,6 +1071,7 @@
                                "このレスを" (nth (re-find #"^https?://([^/:]+)(:[0-9]+)?/.*/$" %) 1 %) "で開く"]])
                        ["http://bbs.shingetsu.info/thread.cgi/"
                         "http://rep4649.ddo.jp:8000/thread.cgi/"
+                        "http://shingetu.fe100.net:8000/thread.cgi/"
                         "http://opptape.iobb.net:8000/thread.cgi/"])
                   [:li.divider {:role "separator"}]
                   [:li [:a
@@ -1095,16 +1110,17 @@
                      [:a
                       {:on-click #(.submit (aget ($ (keyword (str "#" tineye-form-id))) 0)) :target "_blank"}
                       "「TinEye」で画像検索"]])
-                  ]])
+                  ]]) 
               [:div
                {:style {:vertical-align "middle"}}
                [:a.btn.btn-xs.btn-default.id
                 {:href (str href-base "/" (:record-short-id post))
                  :on-click handle-click-on-link}
                 [:span.glyphicon.glyphicon-tag] " " (:record-short-id post)] " "
-               (if (and (:name post) (pos? (count (:name post)))) [:span.name [:span.glyphicon.glyphicon-user] name]) " "
+               (if name [:span.name [:span.glyphicon.glyphicon-user] name]) " "
+               (if tripcode [:span.tripcode {:class (if-not (= (:pubkey post) param/tripcode-public-key) "invalid")} tripcode]) " "
                (if (and (:mail post) (pos? (count (:mail post)))) [:span.mail [:span.glyphicon.glyphicon-envelope] mail]) " "
-               (if (:pubkey post) [:span.signature [:span.glyphicon.glyphicon-pencil] (take 11 (goog.crypt.base64/encodeByteArray (.digest md5)))]) " "
+               (if (and (:pubkey post) (not tripcode)) [:span.signature [:span.glyphicon.glyphicon-pencil] (take 11 (goog.crypt.base64/encodeByteArray (.digest md5)))]) " "
 
                [:span.timestamp
                 [:span.glyphicon.glyphicon-time]
@@ -1206,7 +1222,7 @@
                                 (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
                                 (try (js/eval (.text ($ tag))) (catch js/Error _))
                                 )))
-                     (if js/googletag
+                     (if (exists? js/googletag)
                        (.refresh (.pubads js/googletag)))
                      (process-jump-command))})])))
 

@@ -139,7 +139,15 @@
 
 (defn convert-record-into-dat-file-line
   [record]
-  (let [name (if (nil? (:name record)) param/anonymous-users-handle (:name record))
+  (let [name (:name record)
+        name (if name
+               (if (re-find #"◆" name)
+                 (let [valid-tripcode? (= (:pubkey record) param/tripcode-public-key)]
+                   (if valid-tripcode?
+                     (clojure.string/replace name #"(◆.*)$" " </b>$1<b>")
+                     (clojure.string/replace name #"(◆.*)$" "")))
+                 name))
+        name (if (nil? name) param/anonymous-users-handle name)
         mail (if (nil? (:mail record)) "" (:mail record))
         local-time (clj-time.core/to-time-zone (clj-time.coerce/from-long (* (:stamp record) 1000)) (clj-time.core/time-zone-for-offset +9))
         ts (str
@@ -903,9 +911,10 @@
   [thread-title name mail password body attachment remote-address]
   (if (or
         (not (re-find #"^[^\[\]\<\>\/]{1,30}$" thread-title))
-        (re-find #"^[ 　]" thread-title)
-        (re-find #"[ 　]$" thread-title))
-    (throw (IllegalArgumentException. "Invalid thread title.")))
+        (re-find #"^[ ]" thread-title)
+        (re-find #"[ ]$" thread-title)
+        (re-find #"^[ 　]*$" thread-title))
+    (throw (ex-info "スレッドの題名が不正です。\n題名の長さは30文字までです。\n題名に次の文字は使えません: /<>[]\nまた先頭、もしくは末尾の半角の空白も不可です。" {})))
   (let [file-name (thread-title-to-file-name thread-title)
         file (db/get-file file-name)
         file (if file
@@ -920,7 +929,25 @@
                                         (clojure.string/replace #"&" "&amp;")
                                         (clojure.string/replace #"<" "&lt;")
                                         (clojure.string/replace #">" "&gt;")))
+        name? (and name (pos? (count name)))
+        password? (and password (pos? (count password)))
         body? (and body (pos? (count body)))
+        tripcode? (and name? (re-find #"#" name))
+        _ (if (and tripcode? password?)
+            (throw (ex-info "署名とトリップは同時に使うことは出来ません。" {})))
+        _ (if (and tripcode? (nil? param/tripcode-password))
+            (throw (ex-info "この掲示版ではトリップは使えません。" {})))
+        password (if tripcode?
+                   param/tripcode-password
+                   password)
+        password? (if tripcode?
+                   true
+                   password?)
+        tripcode-key (if tripcode? (second (re-find #"#(.*)$" name)))
+        tripcode (if tripcode-key (generate-tripcode tripcode-key))
+        name (if tripcode
+               (str (second (re-find #"^(.*)#" name)) "◆" tripcode)
+               name)
         attachment? (and attachment
                          (:filename attachment)
                          (pos? (count (:filename attachment)))
@@ -928,7 +955,9 @@
                          (pos? (:size attachment))
                          (:tempfile attachment))
         _ (if (and (not body?) (not attachment?))
-            (throw (Exception. "空の書き込みはできません。")))
+            (throw (ex-info "空の書き込みはできません。"  {})))
+        _ (if (and attachment? (> (:size attachment) param/max-attachment-size))
+            (throw (ex-info (str "添付ファイルが大きすぎです(最大サイズ: " (quot param/max-attachment-size (* 1024 1024)) "MB)。") {})))
         record-body (str
                       (if body?
                         (str
@@ -948,7 +977,7 @@
                       (if (and mail (pos? (count mail))) (str "<>mail:" (escape-special-characters mail)))
                       "<>stamp:" stamp
                       "<>file_name:" (:file-name file))
-        record-body (if (or (nil? password) (zero? (count password)))
+        record-body (if-not password?
                       record-body
                       (let [{:keys [public-key signature]} (sign-post record-body password)]
                         (str
@@ -1610,12 +1639,19 @@
                                                                                 :response g-recaptcha-response
                                                                                 :remoteip remote-address}}))))]
                  (if-not recaptcha-result
-                   (throw (Exception.)))
+                   (throw (ex-info "reCAPTCHAの認証に失敗しました。\n「書き込む」ボタンの下にあるチェックボックスをクリックして、ロボットでないことを証明してください。" {})))
                  (process-post thread-title name mail password body attachment remote-address)
                  (ok "OK"))
+               (catch clojure.lang.ExceptionInfo e
+                 (timbre/error e)
+                 {:status 400
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (.getMessage e)})
                (catch Throwable t
                  (timbre/error t)
-                 (internal-server-error "NG"))))
+                 {:status 500
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (str "内部エラーが発生しました。\n" t)})))
 
            (POST "/api/update-thread-tags"
                  request

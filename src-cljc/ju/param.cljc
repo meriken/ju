@@ -22,6 +22,7 @@
 (def default-http-port 48888)
 (def io-threads 4)
 (def worker-threads 16)
+(def max-attachment-size (* 15 1024 1024))
 (def max-get-command-rersponse-size (* 32 1024 1024))
 (def enable-parallel-crawling false)
 (def check-for-duplicate-records false)
@@ -74,6 +75,9 @@
 (defn ad-code-for-thread
   [thread-title tags position]
   nil)
+
+(def tripcode-password nil)
+(def tripcode-public-key "b3VNJYGU5YTijscyfJ0wM3X1PSNegSOThOMHmwyobpEHsWRJpbGWkmP+ZJn+liveM+i/YIG1TBRc9ppvqeubIA")
 
 (def known-files
   #{"thread_74686973206973206D79206669727374207469746C65"

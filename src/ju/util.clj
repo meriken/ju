@@ -1,6 +1,8 @@
 (ns ju.util
   (:require [ju.param :as param]
-            [taoensso.timbre :as timbre])
+            [taoensso.timbre :as timbre]
+            [pandect.algo.sha1 :refer :all]
+            [clojure.data.codec.base64])
   (:import (java.net URLEncoder)
            (java.nio.file Files)
            (java.security MessageDigest)))
@@ -141,13 +143,14 @@
   [key]
   ;(timbre/debug "key:              " (apply str (map #(format "%02X " %) (get-byte-array-for-tripcode-key key))))
   (let
-    [modified-key (-> key
+    [modified-key1 (-> key
+                      (clojure.string/replace "＃" "#"))
+     modified-key2 (-> modified-key1
                       (clojure.string/replace "&r" "")
                       (clojure.string/replace "\"" "&quot;")
                       (clojure.string/replace "<" "&lt;")
-                      (clojure.string/replace ">" "&gt;")
-                      (clojure.string/replace "＃" "#"))
-     modified-key key
+                      (clojure.string/replace ">" "&gt;"))
+     modified-key modified-key1
      key-byte-array (get-byte-array-for-tripcode-key modified-key )
      key-byte-array-original-length (count key-byte-array)
      key-byte-array (java.util.Arrays/copyOf key-byte-array (+ (* (count key-byte-array) 2) 16))
@@ -215,9 +218,112 @@
     ;(timbre/debug "modified-key-0x80:" (apply str (map #(format "%02X " %) (get-byte-array-for-tripcode-key modified-key-0x80))))
     (cond
       (< (count (get-byte-array-for-tripcode-key key)) 12)
-      (subs (Crypt/crypt (byte-array key-byte-list-0x80) salt) 3))
+      ;(subs (Crypt/crypt (byte-array key-byte-list-0x80) salt) 3)
+      (subs (Crypt/crypt (byte-array key-byte-list) salt) 3)
 
-    ))
+      (re-find #"^[a-fA-F0-9]{16}[./0-9A-Za-z]{0,2}$" key)
+      (let [[_ key-hex-string salt] (re-find #"^([a-fA-F0-9]{16})([./0-9A-Za-z]{0,2})$" key)
+            salt (str salt "..")]
+        (subs (Crypt/crypt (hex-string-to-byte-array key-hex-string) salt) 3))
+
+      (and
+        (>= (count (get-byte-array-for-tripcode-key key)) 12)
+        (re-find #"^[^$#]" key))
+      (-> key-byte-list ;key-byte-list-0x80
+          (byte-array)
+          (sha1)
+          (hex-string-to-byte-array)
+          (org.apache.commons.codec.binary.Base64/encodeBase64String)
+          (subs 0 12)
+          (clojure.string/replace #"\+" "."))
+
+      (and
+        (>= (count (get-byte-array-for-tripcode-key key)) 12)
+        (re-find #"^\$[^\uFF61-\uFF9F]" key))
+      (-> key-byte-list ;key-byte-list-0x80
+          (byte-array)
+          (sha1)
+          (hex-string-to-byte-array)
+          (org.apache.commons.codec.binary.Base64/encodeBase64String)
+          (subs 3 18)
+          (clojure.string/replace #"\/" "!")
+          (clojure.string/replace #"\+" "."))
+
+      (and
+        (>= (count (get-byte-array-for-tripcode-key key)) 12)
+        (re-find #"^\$[\uFF61-\uFF9F]" key))
+      (-> key-byte-list ;key-byte-list-0x80
+          (byte-array)
+          (sha1)
+          (hex-string-to-byte-array)
+          (org.apache.commons.codec.binary.Base64/encodeBase64String)
+          (subs 3 18)
+          (clojure.string/replace #"0" "\uFF61")
+          (clojure.string/replace #"1" "\uFF62")
+          (clojure.string/replace #"2" "\uFF63")
+          (clojure.string/replace #"3" "\uFF64")
+          (clojure.string/replace #"4" "\uFF65")
+          (clojure.string/replace #"5" "\uFF66")
+          (clojure.string/replace #"6" "\uFF67")
+          (clojure.string/replace #"7" "\uFF68")
+          (clojure.string/replace #"8" "\uFF69")
+          (clojure.string/replace #"9" "\uFF6A")
+          (clojure.string/replace #"A" "\uFF6B")
+          (clojure.string/replace #"B" "\uFF6C")
+          (clojure.string/replace #"C" "\uFF6D")
+          (clojure.string/replace #"D" "\uFF6E")
+          (clojure.string/replace #"E" "\uFF6F")
+          (clojure.string/replace #"F" "\uFF70")
+          (clojure.string/replace #"G" "\uFF71")
+          (clojure.string/replace #"H" "\uFF72")
+          (clojure.string/replace #"I" "\uFF73")
+          (clojure.string/replace #"J" "\uFF74")
+          (clojure.string/replace #"K" "\uFF75")
+          (clojure.string/replace #"L" "\uFF76")
+          (clojure.string/replace #"M" "\uFF77")
+          (clojure.string/replace #"N" "\uFF78")
+          (clojure.string/replace #"O" "\uFF79")
+          (clojure.string/replace #"P" "\uFF7A")
+          (clojure.string/replace #"Q" "\uFF7B")
+          (clojure.string/replace #"R" "\uFF7C")
+          (clojure.string/replace #"S" "\uFF7D")
+          (clojure.string/replace #"T" "\uFF7E")
+          (clojure.string/replace #"U" "\uFF7F")
+          (clojure.string/replace #"V" "\uFF80")
+          (clojure.string/replace #"W" "\uFF81")
+          (clojure.string/replace #"X" "\uFF82")
+          (clojure.string/replace #"Y" "\uFF83")
+          (clojure.string/replace #"Z" "\uFF84")
+          (clojure.string/replace #"a" "\uFF85")
+          (clojure.string/replace #"b" "\uFF86")
+          (clojure.string/replace #"c" "\uFF87")
+          (clojure.string/replace #"d" "\uFF88")
+          (clojure.string/replace #"e" "\uFF89")
+          (clojure.string/replace #"f" "\uFF8A")
+          (clojure.string/replace #"g" "\uFF8B")
+          (clojure.string/replace #"h" "\uFF8C")
+          (clojure.string/replace #"i" "\uFF8D")
+          (clojure.string/replace #"j" "\uFF8E")
+          (clojure.string/replace #"k" "\uFF8F")
+          (clojure.string/replace #"l" "\uFF90")
+          (clojure.string/replace #"m" "\uFF91")
+          (clojure.string/replace #"n" "\uFF92")
+          (clojure.string/replace #"o" "\uFF93")
+          (clojure.string/replace #"p" "\uFF94")
+          (clojure.string/replace #"q" "\uFF95")
+          (clojure.string/replace #"r" "\uFF96")
+          (clojure.string/replace #"s" "\uFF97")
+          (clojure.string/replace #"t" "\uFF98")
+          (clojure.string/replace #"u" "\uFF99")
+          (clojure.string/replace #"v" "\uFF9A")
+          (clojure.string/replace #"w" "\uFF9B")
+          (clojure.string/replace #"x" "\uFF9C")
+          (clojure.string/replace #"y" "\uFF9D")
+          (clojure.string/replace #"z" "\uFF9E")
+          (clojure.string/replace #"/" "!"))
+
+      :else
+      "???")))
 
 (defn check-tripcodes
   []
@@ -258,7 +364,7 @@
                ["gqRrL0OhYE" "◇"]
                ["G8Jw4.nqFk" "★"]
                ["G8Jw4.nqFk" "☆"]
-               ["u2YjtUz8MU" "＃"];OK
+               ["u2YjtUz8MU" "＃"];OK ;◆u2YjtUz8MU http://hanabi.2ch.net/test/read.cgi/qa/1449922222/
                ["u2YjtUz8MU" "#"]
                ["XKSnTxcTbA" "管理"];◆..M7CxRsnk http://hanabi.2ch.net/test/read.cgi/qa/1449922222/523
                ["XKSnTxcTbA" "”管理”"]
@@ -269,7 +375,7 @@
                ["M2TLe2H2No" "山崎渉"]
                ["M2TLe2H2No" "fusianasan"]
 
-               ["6ZmSz0zwL2" "÷×＋－"];◆QQnk8rTtk6 ;http://hanabi.2ch.net/test/read.cgi/qa/1449922222/538
+               ["QQnk8rTtk6" "÷×＋－"];6ZmSz0zwL2 ;◆QQnk8rTtk6 ;http://hanabi.2ch.net/test/read.cgi/qa/1449922222/538
                ["6ZmSz0zwL2" "÷うんこ"]
                ["AOGu5v68Us" "ムスカ"]
                ["AOGu5v68Us" "ムーミン"]
@@ -294,5 +400,9 @@
                ["d6yXdw5r52" "d＃#ｼﾀu!"]
                ["6089931596" "艨肇ｼﾀu!"]
 
+               ["IHp4MBMwSE" "0000000000000000ZZ"]
+               ["DLUg7SsaxM" "4141414141414141AA"]
 
+               ["rbRq1xknGPCL0u6" "$000000000000"]
+               ["ﾘｲﾕ､ｿｱﾆﾃﾜｽｰｩﾔﾗﾌ" "$ｱ00000000000"]
                ])))

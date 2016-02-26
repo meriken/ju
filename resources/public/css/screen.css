@@ -214,6 +214,7 @@
 
     .post .id,
     .post .name,
+    .post .tripcode,
     .post .mail,
     .post .signature,
     .post .timestamp,
@@ -237,6 +238,7 @@
     @media(max-width:512px) {
     .post .id,
     .post .name,
+    .post .tripcode,
     .post .mail,
     .post .signature,
     .post .timestamp,
@@ -244,6 +246,7 @@
     .post .attachment,
     .popup .id,
     .popup .name,
+    .popup .tripcode,
     .popup .mail,
     .popup .signature,
     .popup .timestamp,
@@ -286,6 +289,14 @@
     .post .name {
         color: green;
         font-weight: bold;
+    }
+
+    .post .tripcode {
+        color: green;
+    }
+
+    .post .tripcode.invalid {
+        text-decoration: line-through;
     }
 
     .post .glyphicon.glyphicon-pencil {
