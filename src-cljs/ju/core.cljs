@@ -542,33 +542,53 @@
 
 
 
+(defn generate-tripcode
+  [key]
+  (let [result (atom nil)
+        response (atom nil)
+        _ (ajax "/api/generate-tripcode"
+                {:method   "POST"
+                 :success  (fn [_response] (.log js/console "success") (reset! result :success) (reset! response (clojure.walk/keywordize-keys (js->clj _response))))
+                 :error    (fn [_response] (.log js/console "error") (reset! result :error) (reset! response (clojure.walk/keywordize-keys (js->clj _response))))
+                 :async    false
+                 :dataType "json"
+                 :data     {:key key}})]
+    (if (or (= @result :error) (not (:success @response)))
+      "???"
+      (:tripcode @response))))
+
 ;TODO: Do something with attachment.
 (defn ^:export render-preview
   []
-  (html ($ :#post-preview)
-        (reagent.core/render-component-to-string
-          (generate-html-for-post
-            {:record-id (apply str (repeat 32 "?"))
-             :record-short-id (apply str (repeat 8 "?"))
-             :name  (goog.string/htmlEscape (.val ($ :input#name)))
-             :mail  (goog.string/htmlEscape (.val ($ :input#mail)))
-             :stamp (int (/ (cljs-time.coerce/to-long (cljs-time.core/now)) 1000))
-             :body  (clojure.string/replace
-                      (goog.string/htmlEscape (.val ($ :textarea#body)))
-                      #"\n"
-                      "<br>")}
-            :preview
-            (session/get :thread-title)
-            '())))
-  (js/setTimeout
-    #(do
-      (.each ($ (keyword ".post .string:not(.processed)"))
-             (fn []
-               (this-as s
-                 (.html ($ s) (.unicodeToImage js/emojione (convert-string-for-emojione (.text ($ s)))))
-                 (.addClass ($ s) "processed"))))
-      (highlight-code-block))
-    0))
+  (let [name (.val ($ :input#name))
+        match (re-find #"^([^\#]*)\#(.*)$" name)
+        name (if match
+               (str (second match) "◆" (generate-tripcode (nth match 2)))
+               name)]
+    (html ($ :#post-preview)
+          (reagent.core/render-component-to-string
+            (generate-html-for-post
+              {:record-id (apply str (repeat 32 "?"))
+               :record-short-id (apply str (repeat 8 "?"))
+               :name  (goog.string/htmlEscape name)
+               :mail  (goog.string/htmlEscape (.val ($ :input#mail)))
+               :stamp (int (/ (cljs-time.coerce/to-long (cljs-time.core/now)) 1000))
+               :body  (clojure.string/replace
+                        (goog.string/htmlEscape (.val ($ :textarea#body)))
+                        #"\n"
+                        "<br>")}
+              :preview
+              (session/get :thread-title)
+              '())))
+    (js/setTimeout
+      #(do
+        (.each ($ (keyword ".post .string:not(.processed)"))
+               (fn []
+                 (this-as s
+                   (.html ($ s) (.unicodeToImage js/emojione (convert-string-for-emojione (.text ($ s)))))
+                   (.addClass ($ s) "processed"))))
+        (highlight-code-block))
+      0)))
 
 (defn tags-for-thread
   []
@@ -1118,7 +1138,7 @@
                  :on-click handle-click-on-link}
                 [:span.glyphicon.glyphicon-tag] " " (:record-short-id post)] " "
                (if name [:span.name [:span.glyphicon.glyphicon-user] name]) " "
-               (if tripcode [:span.tripcode {:class (if-not (= (:pubkey post) param/tripcode-public-key) "invalid")} tripcode]) " "
+               (if tripcode [:span.tripcode {:class (if (and (not (= context :preview)) (not (= (:pubkey post) param/tripcode-public-key))) "invalid")} tripcode]) " "
                (if (and (:mail post) (pos? (count (:mail post)))) [:span.mail [:span.glyphicon.glyphicon-envelope] mail]) " "
                (if (and (:pubkey post) (not tripcode)) [:span.signature [:span.glyphicon.glyphicon-pencil] (take 11 (goog.crypt.base64/encodeByteArray (.digest md5)))]) " "
 

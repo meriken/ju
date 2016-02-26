@@ -1688,6 +1688,25 @@
                   :google-analytics-tracking-id param/google-analytics-tracking-id
                   :thumbnail-height param/thumbnail-height}}}))
 
+           (POST "/api/generate-tripcode"
+                 request
+             (try
+               (let [{:keys [key]} (:params request)
+                     _ (timbre/debug "/api/generate-tripcode" (get-remote-address request) key)]
+                 {:body
+                  {:success true
+                  :tripcode (generate-tripcode key)}})
+               (catch clojure.lang.ExceptionInfo e
+                 (timbre/error e)
+                 {:status 400
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (.getMessage e)})
+               (catch Throwable t
+                 (timbre/error t)
+                 {:status 500
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (str "内部エラーが発生しました。\n" t)})))
+
 
 
            (GET "/bbsmenu.html"
