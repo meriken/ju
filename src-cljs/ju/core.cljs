@@ -515,7 +515,7 @@
            [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "thread-title" :placeholder "題名"}]])
         [:div.wrapped-input.input-group
          [:span.no-border.input-group-addon {:style {:border-radius "4px 0 0 0"}} [:span.glyphicon.glyphicon-user ]]
-         [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "name" :placeholder "名前"}]]
+         [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "name" :placeholder "名前 (トリップ使用可)"}]]
        [:div.wrapped-input.input-group
         [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-envelope ]]
         [:input#mail.no-border.form-control {:name "mail" :placeholder "メール"}]]
@@ -1110,7 +1110,7 @@
                      [:a
                       {:on-click #(.submit (aget ($ (keyword (str "#" tineye-form-id))) 0)) :target "_blank"}
                       "「TinEye」で画像検索"]])
-                  ]]) 
+                  ]])
               [:div
                {:style {:vertical-align "middle"}}
                [:a.btn.btn-xs.btn-default.id
