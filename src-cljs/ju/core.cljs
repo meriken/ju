@@ -281,6 +281,7 @@
 
    [:div.row
     [:div#main-menu-column.col-sm-6
+     (session/get :recommended-threads)
      [:div#main-menu.list-group
       [:a {:on-click handle-click-on-link :href "/recent-threads" :class "list-group-item"} "最近更新されたスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/threads" :class "list-group-item"} "全てのスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
@@ -929,6 +930,13 @@
   (session/put! :page dest)
   (update-threads dest))
 
+(defn fetch-recommended-threads! []
+  (GET "/api/recommended-threads"
+       {:handler #(thread-list-handler % :recommended-threads)
+        :response-format :json
+        :keywords? true
+        :params {:n 3}}))
+
 (defn process-anchors
   [s thread-title]
   (let [match (re-find #"^(.*?)>>([0-9a-f]{8})(.*)$" s)]
@@ -1526,7 +1534,15 @@
                (if @service-name
                  (str " - " @service-name))))))
 
-(secretary/defroute "/" [] (process-query-string) (reset! jump-command :top) (session/put! :page :home) (set-title))
+(secretary/defroute
+  "/"
+  []
+  (process-query-string)
+  (reset! jump-command :top)
+  (fetch-recommended-threads!)
+  (session/put! :page :home)
+  (set-title))
+
 (secretary/defroute "/new-posts" [] (process-query-string) (fetch-new-posts!) (session/put! :page :new-posts) (set-title))
 (secretary/defroute "/rss" [] (process-query-string) (fetch-new-posts! true) (session/put! :page :rss) (set-title))
 (secretary/defroute "/create-new-thread" [] (process-query-string) (session/put! :page :create-new-thread) (set-title))

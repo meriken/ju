@@ -181,6 +181,15 @@
           (pos? (count files)))
       (first files))))
 
+(defn get-file-by-thread-title
+  [thread-title]
+  (let [file-name (str "thread_" (hexify thread-title))
+        files (select files (where {:file_name file-name}))]
+    (and
+      files
+      (pos? (count files))
+      (first files))))
+
 (defn get-file-id-by-thread-title
   [thread-title]
   (let [file-name (str "thread_" (hexify thread-title))

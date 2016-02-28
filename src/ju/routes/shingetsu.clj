@@ -1044,12 +1044,38 @@
                        file-list)]
     (reverse (sort-by :time-updated file-list))))
 
+(defn create-recommended-thread-list
+  [n]
+  (try
+    (let [file-list (shuffle (db/get-files-with-tag "おすすめ"))
+          file-list (remove #(or
+                              ;(not (= (:application %) "thread")) ; TODO
+                              (some #{(:file-name %)} param/known-corrupt-files)
+                              (nil? (:num-records %))
+                              (zero? (:num-records %)))
+                            file-list)
+          file-list (if n (take n file-list) file-list)
+
+          file-list (concat file-list [(db/get-file-by-thread-title "質問スレッド")])
+          file-list (concat file-list [(db/get-file-by-thread-title "【公開ゲートウェイ】ゆぐちゃんねる")])
+
+          file-list (map #(-> %
+                              (assoc :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
+                              (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %)))))
+                              (assoc :thread-title (file-name-to-thread-title (:file-name %)))
+                              (dissoc :dirty :deleted :time-first-post :application :size :time-created :suggested-tags :id :num-deleted-records))
+                         file-list)]
+      file-list)
+    (catch Throwable t
+      (clojure.stacktrace/print-stack-trace t))))
+
 (defn create-related-thread-list
   [thread-title n]
   (try
     (let [file-id (db/get-file-id-by-thread-title thread-title)
           tags (map :tag-string (db/get-tags-for-file file-id))
           tags (clojure.set/difference (into #{} tags) #{"きれいな新月"})
+          tags (clojure.set/union tags #{"おすすめ"})
           file-ids (map :id (apply concat (map db/get-files-with-tag tags)))
           file-ids (shuffle (into () (clojure.set/difference (into #{} file-ids) #{file-id})))
           file-list (map db/get-file-by-id file-ids)
@@ -1608,6 +1634,13 @@
                      nil @api-threads-response-cache
                      100 @api-threads-100-response-cache
                      (take n @api-threads-cache))))))
+
+           (GET "/api/recommended-threads"
+                {:keys [headers params body server-name] :as request}
+             (let [{:keys [n]} params
+                   n (if (zero? (count n)) nil (Integer/parseInt n))
+                   _ (timbre/info "/api/recommended-threads" (get-remote-address request) n)]
+               (create-recommended-thread-list n)))
 
            ; Not used
            (GET "/api/related-threads"
