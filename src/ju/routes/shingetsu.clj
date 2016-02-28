@@ -1126,8 +1126,9 @@
   [thread-title page-num page-size record-short-id download]
   (let [ file-id (db/get-file-id-by-thread-title thread-title)
         file (db/get-file-by-id file-id)
-        _ (if (and file download)
-            (download-file (:file-name file)))
+        _ (when (and file download)
+            (download-file (:file-name file))
+            (db/remove-duplicate-records-in-file (:id file)))
         results (map
                   process-record-body
                   (if (and record-short-id (pos? (count record-short-id)))
@@ -1910,7 +1911,7 @@
              (let [board-name (:board-name params)]
                (when (re-find #"^2ch(_[A-F0-9]+)?$" board-name)
                  (let [{:keys [dat-file-name]} (:params request)
-                       _ (timbre/info "/:board-name/dat/:dat-file-name" (get-remote-address request) dat-file-name)
+                       _ (timbre/info "/:board-name/dat/:dat-file-name" (get-remote-address request) dat-file-name headers)
                        [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)]
                    (update-dat-file-response-cache thread-number)))))
 
