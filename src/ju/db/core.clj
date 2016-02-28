@@ -211,9 +211,9 @@
                        :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))})))
     (try-times
       5
-      (let [_ (Thread/sleep 200)
-            file (get-file file-name)]
-        (if (nil? file)
+      (let [file (get-file file-name)]
+        (when (nil? file)
+          (Thread/sleep 200)
           (throw (ex-info "データベースのエラーが発生しました。" {})))
         file))))
 
