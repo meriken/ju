@@ -208,7 +208,8 @@
       (insert files
               (values {:file-name file-name
                        :application (clojure.string/replace file-name "^[a-z]+_" "")
-                       :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))})))))
+                       :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))})))
+    (get-file file-name)))
 
 (defn get-all-files
   []

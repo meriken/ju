@@ -920,9 +920,7 @@
         file (db/get-file file-name)
         file (if file
                file
-               (do
-                 (db/add-file file-name)
-                 (db/get-file file-name)))
+               (db/add-file file-name))
         file-id (:id file)
         stamp (long (/ (clj-time.coerce/to-long (clj-time.core/now)) 1000))
         escape-special-characters (fn [s]
@@ -1927,9 +1925,7 @@
                      file (if (and subject
                                    (pos? (count subject))
                                    (= submit "新規スレッド作成"))
-                            (do
-                              (db/add-file (thread-title-to-file-name subject))
-                              (db/get-file (thread-title-to-file-name subject)))
+                            (db/add-file (thread-title-to-file-name subject))
                             (db/get-file-by-thread-number key))
                      thread-title (file-name-to-thread-title (:file-name file))
                      results (db/get-all-records-in-file-without-bodies (:id file))
@@ -2064,10 +2060,7 @@
                         file (db/get-file file-name)
                         file (cond
                                file file
-                               :else (do
-                                       (db/add-file file-name)
-                                       (db/get-file file-name)
-                                       ))
+                               :else (db/add-file file-name))
                         existing-records (db/get-all-records-in-file (:id file))
                         short-ids (clojure.set/difference (into #{} short-ids) (into #{} (map :record-short-id existing-records)))
                         results (doall
