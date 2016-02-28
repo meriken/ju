@@ -638,16 +638,17 @@
 
 (defn start-crawler
   []
-  (do
-    (future
-      (Thread/sleep 60000)
-      (timbre/info "Crawler started.")
-      (crawl-nodes :force-crawling true)
-      (while true
-        (Thread/sleep crawl-nodes-interval)
-        (try
-          (crawl-nodes :force-crawling false)
-          (catch Throwable t))))))
+  (if param/enable-crawler
+    (do
+      (future
+        (Thread/sleep 60000)
+        (timbre/info "Crawler started.")
+        (crawl-nodes :force-crawling true)
+        (while true
+          (Thread/sleep crawl-nodes-interval)
+          (try
+            (crawl-nodes :force-crawling false)
+            (catch Throwable t)))))))
 
 
 
@@ -1260,14 +1261,11 @@
      (dorun
        (map
          (fn [file]
-           (db/update-file (:id file))
            (when (and
                    (:num-records file)
                    (pos? (:num-records file))
                    (not (some #{(:file-name file)} param/known-corrupt-files)))
-             (db/remove-duplicate-records-in-file (:id file))
-             (db/remove-duplicate-anchors-in-file (:id file))
-             (update-dat-file-response-cache
+            (update-dat-file-response-cache
                (str (+ (long (/ (clj-time.coerce/to-long (:time-first-post file)) 1000)) (* 9 60 60))))
              (dorun (map
                       (fn [page-num]
@@ -1283,59 +1281,61 @@
 
 (defn start-api-cache-manager
   []
-  (do
-    (future
-      (timbre/info "API Cache Manager started.")
-      (while true
+  (if param/enable-api-cache-manager
+    (do
+      (future
+        (timbre/info "API Cache Manager started.")
+        (while true
+          (try
+            (reset! api-threads-cache (doall (create-thread-list nil nil)))
+            (reset! api-threads-100-response-cache
+                    {:status 200
+                     :headers {"Content-Type" "application/json; charset=utf-8"}
+                     :body (cheshire.core/generate-string (take 100 @api-threads-cache))})
+            (reset! api-threads-response-cache
+                    {:status 200
+                     :headers {"Content-Type" "application/json; charset=utf-8"}
+                     :body (cheshire.core/generate-string @api-threads-cache)})
+            (reset! api-new-posts-rss-response-cache
+                    {:status 200
+                     :headers {"Content-Type" "application/json; charset=utf-8"}
+                     :body (cheshire.core/generate-string
+                             {:threads
+                              (into []
+                                    (doall (map
+                                             (fn [threads]
+                                               (let [posts (into [] (apply concat (map :posts threads)))
+                                                     record-short-ids (map :record-short-id posts)]
+                                                 {:thread-title  (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id (first threads)))))
+                                                  :posts posts
+                                                  :anchors (into [] (distinct (apply concat (map :anchors threads))))
+                                                  :popup-cache (create-popup-cache (:file-id (first threads)) record-short-ids)}))
+                                             (partition-by
+                                               :file-id
+                                               (map (fn [record]
+                                                      (let []
+                                                        {:file-id (:file-id record)
+                                                         :posts [(process-record-body record)]
+                                                         :anchors (into [] (db/get-anchors (:file-id record)  (:record-short-id record)))}))
+                                                    (db/get-recent-records 100))))))})})
+            (catch Throwable t
+              (timbre/error "API Cache Manager:" t)))
+          (Thread/sleep 500)))))
+
+  (if param/enable-thread-api-cache-manager
+    (do
+      (future
+        (timbre/info "Thread API Cache Manager started.")
         (try
-          (reset! api-threads-cache (doall (create-thread-list nil nil)))
-          (reset! api-threads-100-response-cache
-                  {:status 200
-                   :headers {"Content-Type" "application/json; charset=utf-8"}
-                   :body (cheshire.core/generate-string (take 100 @api-threads-cache))})
-          (reset! api-threads-response-cache
-                  {:status 200
-                   :headers {"Content-Type" "application/json; charset=utf-8"}
-                   :body (cheshire.core/generate-string @api-threads-cache)})
-          (reset! api-new-posts-rss-response-cache
-                  {:status 200
-                   :headers {"Content-Type" "application/json; charset=utf-8"}
-                   :body (cheshire.core/generate-string
-                           {:threads
-                            (into []
-                                  (doall (map
-                                           (fn [threads]
-                                             (let [posts (into [] (apply concat (map :posts threads)))
-                                                   record-short-ids (map :record-short-id posts)]
-                                               {:thread-title  (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id (first threads)))))
-                                                :posts posts
-                                                :anchors (into [] (distinct (apply concat (map :anchors threads))))
-                                                :popup-cache (create-popup-cache (:file-id (first threads)) record-short-ids)}))
-                                           (partition-by
-                                             :file-id
-                                             (map (fn [record]
-                                                    (let []
-                                                      {:file-id (:file-id record)
-                                                       :posts [(process-record-body record)]
-                                                       :anchors (into [] (db/get-anchors (:file-id record)  (:record-short-id record)))}))
-                                                  (db/get-recent-records 100))))))})})
+          (update-thread-cache-for-all-files)
           (catch Throwable t
             (timbre/error "API Cache Manager:" t)))
-        (Thread/sleep 500))))
-
-  (do
-    (future
-      (timbre/info "Thread API Cache Manager started.")
-      (try
-        (update-thread-cache-for-all-files)
-        (catch Throwable t
-          (timbre/error "API Cache Manager:" t)))
-      (timbre/info "Thread API Cache Manager: Initial caching completed.")
-      (while true
-        (try
-          (update-thread-cache-for-all-files 100)
-          (catch Throwable t
-            (timbre/error "API Cache Manager:" t)))))))
+        (timbre/info "Thread API Cache Manager: Initial caching completed.")
+        (while true
+          (try
+            (update-thread-cache-for-all-files 100)
+            (catch Throwable t
+              (timbre/error "Thread API Cache Manager:" t))))))))
 
 (defn create-2ch-subject-txt
   [sorted-files]

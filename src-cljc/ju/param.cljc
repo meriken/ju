@@ -31,6 +31,13 @@
 (def static-server-url-base nil)
 (def wait-time-after-post 0)
 
+(def enable-crawler true)
+(def enable-api-cache-manager true)
+(def enable-thread-api-cache-manager true)
+(def enable-record-monitor true)
+(def enable-new-record-monitor true)
+(def enable-file-monitor true)
+
 (def service-name "匿名掲示板")
 (def anonymous-users-handle "新月名無しさん")
 (def page-size 20)
@@ -42,7 +49,8 @@
    "画像・動画"
    "趣味"
    "政治・経済"
-   "学問"
+   "学問(理系)"
+   "学問(文系)"
    "オタク"
    "インターネット"
    "コンピューター"
@@ -50,18 +58,19 @@
    "新月"
    "その他"])
 (def standard-tags
-  [["質問" "雑談" "ニュース" "実況"]
-   ["生活", "料理", "日課"]
+  [["雑談" "ニュース" "実況" "話題" "意見"]
+   ["生活", "健康", "料理", "節約", "日課"]
    ["画像", "動画", "二次元", "三次元", "18禁"]
    ["趣味", "音楽", "テレビ" "スポーツ"]
    ["政治" "経済" "法律" "行政" "医療"]
-   ["理系" "文系" "科学" "哲学" "宗教"]
+   ["理系" "科学" "数学" "物理" "化学"]
+   ["文系" "哲学" "宗教" "歴史" "文学"]
    ["漫画", "アニメ", "ゲーム" "キャラ"]
    ["インターネット" "P2P" "2ch"]
    ["PC", "ソフトウェア", "ハードウェア"]
    ["開発", "プログラミング言語", "IT"]
-   ["新月", "運用", "スレ一覧", "テスト"]
-   ["きれいな新月", "裏"]])
+   ["新月", "運用", "スレ一覧",  "テスト"]
+   ["きれいな新月" "裏" "質問" "外国語"]])
 
 (def enable-recaptcha false)
 (def recaptcha-site-key nil)

@@ -1121,46 +1121,54 @@
 
 
 (defn start-database-monitor []
-  (comment do
-    (future
-      (timbre/debug "Record Monitor started.")
-      (while true
-        (do
-          (future
-            (try
-              (remove-duplicate-records)
-              (clean-mikas-first-spill)
-              (clean-mikas-second-spill)
-              (catch Throwable t
-                (timbre/error "Record Monitor:" t)))))
-        (Thread/sleep (* 60 60 1000)))))
+  (if param/enable-record-monitor
+    (do
+      (future
+        (timbre/debug "Record Monitor started.")
+        (while true
+          (do
+            (future
+              (try
+                (map
+                  (fn [file]
+                    (update-file (:id file))
+                    (remove-duplicate-records-in-file (:id file))
+                    (remove-duplicate-anchors-in-file (:id file)))
+                  (get-all-files))
+                ;(clean-mikas-first-spill)
+                ;(clean-mikas-second-spill)
+                (catch Throwable t
+                  (timbre/error "Record Monitor:" t)))))
+          (Thread/sleep (* 60 60 1000))))))
 
-  (do
-    (future
-      (timbre/debug "New Record Monitor started.")
-      (while true
-        (try
-          (while (remove-new-duplicate-records))
-          (catch Throwable t
-            ;(clojure.stacktrace/print-stack-trace t)
-            (timbre/error "New Record Monitor:" t)))
-        (Thread/sleep 100))))
+  (if param/enable-new-record-monitor
+    (do
+      (future
+        (timbre/debug "New Record Monitor started.")
+        (while true
+          (try
+            (while (remove-new-duplicate-records))
+            (catch Throwable t
+              ;(clojure.stacktrace/print-stack-trace t)
+              (timbre/error "New Record Monitor:" t)))
+          (Thread/sleep 100)))))
 
-  (do
-    (future
-      (timbre/info "File Monitor started.")
-      (while true
-        (try
-          (let [dirty-files (get-dirty-files)]
-            (when (pos? (count dirty-files))
-              ;(timbre/info "File Monitor: Updating" (count dirty-files) "files.")
-              (pmap
-                (fn [file]
-                  (when (is-file-dirty? (:id file))
-                    (timbre/info "File Monitor: Updating file:" (:file-name file) (file-name-to-thread-title (:file-name file)))
-                    (mark-file-as-clean (:id file))
-                    (update-file (:id file))))
-                dirty-files)))
-          (catch Throwable t
-            (timbre/error "File Monitor:" t)))
-        (Thread/sleep 100)))))
+  (if param/enable-file-monitor
+    (do
+      (future
+        (timbre/info "File Monitor started.")
+        (while true
+          (try
+            (let [dirty-files (get-dirty-files)]
+              (when (pos? (count dirty-files))
+                ;(timbre/info "File Monitor: Updating" (count dirty-files) "files.")
+                (pmap
+                  (fn [file]
+                    (when (is-file-dirty? (:id file))
+                      (timbre/info "File Monitor: Updating file:" (:file-name file) (file-name-to-thread-title (:file-name file)))
+                      (mark-file-as-clean (:id file))
+                      (update-file (:id file))))
+                  dirty-files)))
+            (catch Throwable t
+              (timbre/error "File Monitor:" t)))
+          (Thread/sleep 100))))))

@@ -1685,7 +1685,7 @@
                                                          (keyword (attr ($ element) "data-record-short-id"))
                                                          nil)
                                                   result (atom nil)]
-                                              (if (nil? post)
+                                              (if (nil? post) ; TODO: Cache the result.
                                                 (ajax "/api/thread"
                                                       {:method   "POST"
                                                        :success  (fn [response] (reset! result (clojure.walk/keywordize-keys (js->clj response))))
