@@ -209,7 +209,13 @@
               (values {:file-name file-name
                        :application (clojure.string/replace file-name "^[a-z]+_" "")
                        :time-created (clj-time.coerce/to-sql-time (clj-time.core/now))})))
-    (get-file file-name)))
+    (try-times
+      5
+      (let [_ (Thread/sleep 200)
+            file (get-file file-name)]
+        (if (nil? file)
+          (throw (ex-info "データベースのエラーが発生しました。" {})))
+        file))))
 
 (defn get-all-files
   []
