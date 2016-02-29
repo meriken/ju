@@ -909,9 +909,13 @@
                     :else "")}
           thread-title ; " (ID:" (str (:id %)) ")"
           [:span.num-posts (:num-records %)]
-          (map (fn [tag]
+          ;(if (pos? (count (:tags %))) [:br])
+          [:span
+           {:style
+            {:white-space "nowrap"}}
+           (map (fn [tag]
                  [:span.tag {:key tag :style {}} tag])
-               (:tags %))
+               (:tags %))]
           [:span.glyphicon.glyphicon-chevron-right.pull-right]])
        response)]))
 

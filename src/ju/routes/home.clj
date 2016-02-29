@@ -30,17 +30,18 @@
                (let [_ (timbre/debug "/thread/:thread-title/:qualifier" thread-title qualifier)
                      file-id (db/get-file-id-by-thread-title thread-title)
                      [_ record-id suffix] (re-find #"^([a-f0-9]{32})\.([a-zA-Z0-9]+)$" qualifier)
-                     record (db/get-record-in-file-by-record-id file-id record-id)
-                     body (String. (:body record) "UTF-8")
-                     elements (->> (clojure.string/split body #"<>")
-                                   (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
-                                   (map #(do {(keyword (nth % 1)) (nth % 2)}))
-                                   (apply merge))]
-                 ;(timbre/debug (:suffix elements))
-                 (if (= suffix (:suffix elements))
-                   {:status  200
-                    :headers {"Content-Type" (ring.util.mime-type/ext-mime-type suffix)}
-                    :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))
+                     record (db/get-record-in-file-by-record-id file-id record-id)]
+                 (if record
+                   (let [body (String. (:body record) "UTF-8")
+                         elements (->> (clojure.string/split body #"<>")
+                                       (map #(re-find #"^([a-zA-Z0-9]+):(.*)$" %))
+                                       (map #(do {(keyword (nth % 1)) (nth % 2)}))
+                                       (apply merge))]
+                     ;(timbre/debug (:suffix elements))
+                     (if (= suffix (:suffix elements))
+                       {:status  200
+                        :headers {"Content-Type" (ring.util.mime-type/ext-mime-type suffix)}
+                        :body    (ByteArrayInputStream. (base64/decode (.getBytes (:attach elements))))}))))
 
                (re-find #"^thumbnail-[a-f0-9]{32}\.[a-zA-Z0-9]+$" qualifier)
                (let [file-id (db/get-file-id-by-thread-title thread-title)
