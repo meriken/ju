@@ -1876,7 +1876,13 @@
                        _ (timbre/info "/test/read.cgi/:board-name/:thread-number/" thread-number)
                        file (db/get-file-by-thread-number thread-number)
                        _ (if (nil? file) (throw (Exception.)))]
-                   (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file)))))))))
+                   (if file
+                     (do
+                       (timbre/info "/test/read.cgi/:board-name/:thread-number/" thread-number)
+                       (redirect (str "/thread/" (percent-encode (file-name-to-thread-title (:file-name file))))))
+                     (do
+                       (timbre/info "/test/read.cgi/:board-name/:thread-number/" thread-number "Thread not found.")
+                       (redirect "/")))))))
 
            (GET "/test/read.cgi/:board-name/:thread-number/:qualifier"
                 {:keys [headers params body server-name] :as request}
