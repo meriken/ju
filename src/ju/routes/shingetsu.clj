@@ -1156,7 +1156,10 @@
      :tags      tags
      :suggested-tags suggested-tags
      :ads (if (and page-size (not (= page-size "")))
-            (into [] (map #(try (param/ad-code-for-thread thread-title tags %) (catch Throwable t nil)) (range (inc page-size))))
+            (into [] (map #(try (param/ad-code-for-thread thread-title tags % false) (catch Throwable t nil)) (range (inc page-size))))
+            [])
+     :mobile-ads (if (and page-size (not (= page-size "")))
+            (into [] (map #(try (param/ad-code-for-thread thread-title tags % true) (catch Throwable t nil)) (range (inc page-size))))
             [])
      :related-threads (create-related-thread-list thread-title 5)}))
 

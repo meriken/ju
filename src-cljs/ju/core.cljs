@@ -1211,7 +1211,8 @@
 (defn posts-handler
   [response]
   (let [num-posts (:num-posts response)
-        num-pages (+ (quot num-posts param/page-size) (if (pos? (rem num-posts param/page-size)) 1 0))]
+        num-pages (+ (quot num-posts param/page-size) (if (pos? (rem num-posts param/page-size)) 1 0))
+        ads (if (js/mobileAndTabletCheck) (:mobile-ads response) (:ads response))]
     (.log js/console "posts-handler:" (pr-str (:popup-cache response)))
     (session/put! :num-posts num-posts)
     (session/put! :num-pages num-pages)
@@ -1230,16 +1231,16 @@
                                      (apply concat
                                             (map
                                               #(list
-                                                (if (get (:ads response) %2)
-                                                  [:div.ad {:dangerouslySetInnerHTML {:__html (get (:ads response) %2)}
+                                                (if (get ads %2)
+                                                  [:div.ad {:dangerouslySetInnerHTML {:__html (get ads %2)}
                                                             :key (my-uuid)
                                                             }])
                                                 (generate-html-for-post %1 :thread (session/get :thread-title) (:anchors response)))
                                               (:posts response)
                                               (range (count (:posts response)))))
                                      (list
-                                       (if (get (:ads response) param/page-size)
-                                         [:div.ad {:key (my-uuid) :dangerouslySetInnerHTML {:__html (get (:ads response) param/page-size)}}])))))])
+                                       (if (get ads param/page-size)
+                                         [:div.ad {:key (my-uuid) :dangerouslySetInnerHTML {:__html (get ads param/page-size)}}])))))])
                   {:component-did-mount
                    #(do
                      (.each ($ (keyword ".post .string:not(.processed)"))

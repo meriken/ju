@@ -84,7 +84,7 @@
 (def google-site-verification nil)
 
 (defn ad-code-for-thread
-  [thread-title tags position]
+  [thread-title tags position mobile?]
   nil)
 
 (def tripcode-password nil)
