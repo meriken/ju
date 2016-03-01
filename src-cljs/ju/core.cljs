@@ -1044,11 +1044,12 @@
                               [:br {:key (my-uuid)}])
                             (clojure.string/split (:body post) #"<br>"))))
                  (map #(if-not (and (string? %) (re-find #"^[\t ]+" %))
-                        %
-                        (let [[_ spaces rest] (re-find #"^([\t ])+(.*)$" %)
-                              spaces (clojure.string/replace spaces #" " "&nbsp;")
-                              spaces (clojure.string/replace spaces #"\t" "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")]
-                          (list [:span {:dangerouslySetInnerHTML {:__html spaces}}] rest))))
+                               (list %)
+                               (let [[_ spaces rest] (re-find #"^([\t ])+(.*)$" %)
+                                     spaces (clojure.string/replace spaces #" " "&nbsp;")
+                                     spaces (clojure.string/replace spaces #"\t" "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")]
+                                 (list [:span {:dangerouslySetInnerHTML {:__html spaces}}] rest))))
+                 (apply concat)
                  (map #(if (string? %) (process-links %) %))
                  (map #(if (string? %) (process-anchors % thread-title) %))
                  (map #(if (string? %) (process-bracket-links %) %))
@@ -1257,7 +1258,9 @@
                                 (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
                                 (try (js/eval (.text ($ tag))) (catch js/Error _))
                                 )))
-                     (if (exists? js/googletag)
+                     (if (and
+                           (exists? js/googletag)
+                           (fn? (.-pubads js/googletag)))
                        (.refresh (.pubads js/googletag)))
                      (process-jump-command))})])))
 
