@@ -1002,9 +1002,15 @@
     (if-not match
       s
       (concat [(nth match 1)
-               [:div.video-container
-                {:key (my-uuid)}
-                [:iframe {:src (str "https://www.youtube.com/embed/" (nth match 3)) :frameBorder "0" :allowfullscreen nil}]]]
+               [:div.video-wrapper
+                [:div.video-container.youtube
+                 {:key (my-uuid)
+                  :dangerouslySetInnerHTML {:__html
+                                            (str
+                                              "<iframe src=\"https://www.youtube.com/embed/"
+                                              (nth match 3)
+                                              "\" frameBorder=\"0\" allowFullScreen>"
+                                              "</iframe>")}}]]]
               (process-youtube-links (last match))))))
 
 (defn process-nicovideo-links
@@ -1013,9 +1019,9 @@
     (if-not match
       s
       (concat [(nth match 1)
-               [:div.video-container
+               [:div.video-container.nicovideo
                 {:key (my-uuid)}
-                [:iframe {:src (str "/api/nicovideo/" (nth match 2)) :frameBorder "0" :allowfullscreen nil}]]]
+                [:iframe {:src (str "/api/nicovideo/" (nth match 2)) :frameBorder "0"}]]]
               (process-nicovideo-links (last match))))))
 
 (defn process-links
