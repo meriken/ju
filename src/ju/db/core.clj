@@ -688,6 +688,7 @@
   []
   (reduce + (map remove-duplicate-records-in-file (sort (map #(:id %) (get-all-files))))))
 
+(declare remove-duplicate-anchors-in-file)
 (defn remove-new-duplicate-records
   []
   ;(timbre/info "remove-new-duplicate-records")
@@ -708,10 +709,11 @@
                                                     record-list))
                                      new-records))
         duplicates (into #{} (apply concat (map #(drop 1 %) duplicate-lists)))]
-    (dorun (map #(do
+    (dorun (map #(let [file-id (:file-id (first (select records (fields :file_id) (where {:id %}))))]
                   (ju.db.core/really-delete-record %)
                   (delete-duplicate-images %)
-                  (mark-file-as-dirty (:file-id (select records (fields :file_id) (where {:id %})))))
+                  (remove-duplicate-anchors-in-file file-id)
+                  (mark-file-as-dirty file-id))
                 duplicates))
     (when (pos? (count duplicates))
       (timbre/info "Removed" (count duplicates) "new duplicate record(s)."))
