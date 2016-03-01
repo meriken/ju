@@ -993,16 +993,41 @@
     (.toggleClass ($ :#blueimp-gallery) "blueimp-gallery-controls" true)
     (.Gallery js/blueimp links options)))
 
+;# Gist
+;    buf = re.sub(r'\[gist:([a-f0-9]+)\]', r'<script src="https://gist.github.com/\1.js"></script>', buf);
+
+(defn process-youtube-links
+  [s]
+  (let [match (re-find #"^(.*?)https?://(www\.youtube\.com/watch\?v=|youtu.be/)([-_a-zA-Z0-9]+)(.*)$" s)]
+    (if-not match
+      s
+      (concat [(nth match 1)
+               [:div.video-container
+                {:key (my-uuid)}
+                [:iframe {:src (str "https://www.youtube.com/embed/" (nth match 3)) :frameBorder "0" :allowfullscreen nil}]]]
+              (process-youtube-links (last match))))))
+
+(defn process-nicovideo-links
+  [s]
+  (let [match (re-find #"^(.*?)https?://www\.nicovideo\.jp/watch/([a-z0-9]+)(.*)$" s)]
+    (if-not match
+      s
+      (concat [(nth match 1)
+               [:div.video-container
+                {:key (my-uuid)}
+                [:iframe {:src (str "/api/nicovideo/" (nth match 2)) :frameBorder "0" :allowfullscreen nil}]]]
+              (process-nicovideo-links (last match))))))
+
 (defn process-links
   [s]
   (let [match (re-find #"^(.*?)([htps]+://(www\.)?[-a-zA-Z0-9@:%._\+~#=']{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=']*))(.*)$" s)]
     (if-not match
       s
       (concat [(nth match 1)
-                (if false ; (re-find #"\.(jpe?g|gif|bmp|png)$" (nth match 2))
-                    [:img {:src (nth match 2) :on-click #(launch-image-viewer (nth match 2)) :height @thumbnail-height}]
-                    [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} (nth match 2)])]
-               (process-links (last match))))))
+               (if false ; (re-find #"\.(jpe?g|gif|bmp|png)$" (nth match 2))
+                 [:img {:src (nth match 2) :on-click #(launch-image-viewer (nth match 2)) :height @thumbnail-height}]
+                 [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} (nth match 2)])]
+              (process-links (last match))))))
 
 ; Not particularly sophisticated, but it works.
 (defn thread-title-to-file-name
@@ -1050,6 +1075,8 @@
                                      spaces (clojure.string/replace spaces #"\t" "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")]
                                  (list [:span {:dangerouslySetInnerHTML {:__html spaces}}] rest))))
                  (apply concat)
+                 (map #(if (string? %) (process-youtube-links %) %))
+                 (map #(if (string? %) (process-nicovideo-links %) %))
                  (map #(if (string? %) (process-links %) %))
                  (map #(if (string? %) (process-anchors % thread-title) %))
                  (map #(if (string? %) (process-bracket-links %) %))
@@ -1215,7 +1242,7 @@
   (let [num-posts (:num-posts response)
         num-pages (+ (quot num-posts param/page-size) (if (pos? (rem num-posts param/page-size)) 1 0))
         ads (if (js/mobileAndTabletCheck) (:mobile-ads response) (:ads response))]
-    (.log js/console "posts-handler:" (pr-str (:popup-cache response)))
+    ;(.log js/console "posts-handler:" (pr-str (:popup-cache response)))
     (session/put! :num-posts num-posts)
     (session/put! :num-pages num-pages)
     (session/put! :tags (:tags response))
@@ -1256,8 +1283,7 @@
                               (this-as tag
                                 ;(.log js/console tag)
                                 (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
-                                (try (js/eval (.text ($ tag))) (catch js/Error _))
-                                )))
+                                (try (js/eval (.text ($ tag))) (catch js/Error _)))))
                      (if (and
                            (exists? js/googletag)
                            (fn? (.-pubads js/googletag)))

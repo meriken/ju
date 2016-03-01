@@ -380,7 +380,7 @@
 		position: relative;
 		padding-bottom: 56.25%;/* 16:9 */
 		padding-top: 25px;
-		height: 0;
+  		height: 0;
 		overflow: hidden;
 	}
 
@@ -394,12 +394,10 @@
 		height: 100%;
 	}
 
-	/*
 	embed[src*="nicovideo.jp"]{
 		width: 100%;
 		height: auto;
 	}
-	*/
 
 	input {
 		max-width: 1;

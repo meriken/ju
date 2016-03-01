@@ -1732,7 +1732,36 @@
                      _ (timbre/debug "/api/generate-tripcode" (get-remote-address request) key)]
                  {:body
                   {:success true
-                  :tripcode (generate-tripcode key)}})
+                   :tripcode (generate-tripcode key)}})
+               (catch clojure.lang.ExceptionInfo e
+                 (timbre/error e)
+                 {:status 400
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (.getMessage e)})
+               (catch Throwable t
+                 (timbre/error t)
+                 {:status 500
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (str "内部エラーが発生しました。\n" t)})))
+
+           (GET "/api/nicovideo/:id"
+                 request
+             (try
+               (let [{:keys [id]} (:params request)
+                     _ (timbre/debug "/api/nicovideo/:id" (get-remote-address request) id)]
+                 (if (re-find #"^[a-z0-9]+$" id)
+                 {:status 200
+                  :headers {"Content-Type" "text/html; charset=utf-8"}
+                  :body (str
+                          "<html>"
+                          "<style>"
+                          "body { margin: 0; overflow: hidden; padding: 0; }"
+                          "</style>"
+                          "<body>"
+                          "<script type=\"text/javascript\" src=\"http://ext.nicovideo.jp/thumb_watch/" id "\"></script>"
+                          "</body>"
+                          "</html>"
+                          )}))
                (catch clojure.lang.ExceptionInfo e
                  (timbre/error e)
                  {:status 400
