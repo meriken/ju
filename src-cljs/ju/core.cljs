@@ -903,6 +903,7 @@
           {:href (file-name-to-path (:file-name %))
            :on-click handle-click-on-link
            :key (:file-name %)
+           :style {:overflow "hidden"}
            :class (cond
                     new-posts? "list-group-item-danger"
                     thread-last-accessed "list-group-item-info"
