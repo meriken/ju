@@ -1003,6 +1003,7 @@
       s
       (concat [(nth match 1)
                [:div.video-wrapper
+                {:key (my-uuid)}
                 [:div.video-container.youtube
                  {:key (my-uuid)
                   :dangerouslySetInnerHTML {:__html
@@ -1079,7 +1080,7 @@
                                (let [[_ spaces rest] (re-find #"^([\t ])+(.*)$" %)
                                      spaces (clojure.string/replace spaces #" " "&nbsp;")
                                      spaces (clojure.string/replace spaces #"\t" "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")]
-                                 (list [:span {:dangerouslySetInnerHTML {:__html spaces}}] rest))))
+                                 (list [:span {:key (my-uuid) :dangerouslySetInnerHTML {:__html spaces}}] rest))))
                  (apply concat)
                  (map #(if (string? %) (process-youtube-links %) %))
                  (map #(if (string? %) (process-nicovideo-links %) %))
