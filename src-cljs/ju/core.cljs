@@ -1083,7 +1083,7 @@
                                  (list [:span {:key (my-uuid) :dangerouslySetInnerHTML {:__html spaces}}] rest))))
                  (apply concat)
                  (map #(if (string? %) (process-youtube-links %) %))
-                 (map #(if (string? %) (process-nicovideo-links %) %))
+                 ;(map #(if (string? %) (process-nicovideo-links %) %))
                  (map #(if (string? %) (process-links %) %))
                  (map #(if (string? %) (process-anchors % thread-title) %))
                  (map #(if (string? %) (process-bracket-links %) %))
