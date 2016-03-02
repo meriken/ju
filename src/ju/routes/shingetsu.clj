@@ -1773,6 +1773,40 @@
                   :headers {"Content-Type" "text/plain; charset=utf-8"}
                   :body (str "内部エラーが発生しました。\n" t)})))
 
+           (GET "/api/image-proxy"
+                request
+             (try
+               (let [{:keys [url]} (:params request)
+                     _ (timbre/debug "/api/image-proxy" (get-remote-address request) url)
+                     options  {:as      :byte-array
+                               :headers {"Cache-Control" "no-cache"}
+                               :socket-timeout 60000
+                               :conn-timeout   60000}
+                     response (clj-http.client/get url options)
+                     headers  (into {} (for [[k v] (:headers response)] [(keyword k) v]))]
+                 (if (not (= (:status response) 200))
+                   (throw (Exception. (str "status " (:status response)))))
+                 (when (or (nil? (:Content-Type headers))
+                           (not (re-find #"^image(/|%2F)" (:Content-Type headers)))) ; "%2F" for http://i.minus.com/
+                   ; (log :debug "Wrong content type: " (:Content-Type headers))
+                   (throw (Exception. (str "Wrong content type: " (:Content-Type headers)))))
+
+                 {:status  200
+                  :headers {"Content-Type"  (:Content-Type headers)
+                            "Cache-Control" "private"}
+                  :body    (ByteArrayInputStream. (:body response))})
+               (catch clojure.lang.ExceptionInfo e
+                 (timbre/error e)
+                 {:status 400
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (.getMessage e)})
+               (catch Throwable t
+                 (timbre/error t)
+                 {:status 500
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (str "内部エラーが発生しました。\n" t)})))
+
+
 
 
            (GET "/bbsmenu.html"

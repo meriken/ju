@@ -1027,13 +1027,19 @@
 
 (defn process-links
   [s]
-  (let [match (re-find #"^(.*?)([htps]+://(www\.)?[-a-zA-Z0-9@:%._\+~#=']{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=']*))(.*)$" s)]
+  (let [match (re-find #"^(.*?)([htps]+://(www\.)?[-a-zA-Z0-9@:%._\+~#=']{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=']*))(.*)$" s)
+        url (if match (clojure.string/replace (nth match 2) #"^[htp]*[htp]*s://" "https://"))
+        url (if match (clojure.string/replace url #"^[htp]+://" "http://"))
+        suffix (if match (get (re-find #"\.([a-zA-Z]+)$" (nth match 2)) 1 nil))]
     (if-not match
       s
       (concat [(nth match 1)
-               (if false ; (re-find #"\.(jpe?g|gif|bmp|png)$" (nth match 2))
-                 [:img {:src (nth match 2) :on-click #(launch-image-viewer (nth match 2)) :height @thumbnail-height}]
-                 [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} (nth match 2)])]
+               (if (some #{suffix} param/image-suffixes)
+                 [:img {:src (str "/api/image-proxy?url=" (js/encodeURIComponent url))
+                        :on-click #(launch-image-viewer url)
+                        :style {:max-height @thumbnail-height}
+                        :key (my-uuid)}]
+                 [:a {:href (nth match 2) :target "_blank" :key (my-uuid)} url])]
               (process-links (last match))))))
 
 ; Not particularly sophisticated, but it works.
