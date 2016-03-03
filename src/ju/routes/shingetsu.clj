@@ -152,7 +152,7 @@
         local-time (clj-time.coerce/from-long
                        (*
                          (+
-                           (:stamp record)
+                           (if (string? (:stamp record)) (Long/parseLong (:stamp record)) (:stamp record))
                            (* 9 60 60))
                           1000))
         ts (str
