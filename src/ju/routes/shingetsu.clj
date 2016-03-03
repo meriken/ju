@@ -856,7 +856,8 @@
         dat-file-line
         (:suffix record)))
     (catch Throwable t
-      (timbre/info "update-dat-file-line-in-record:" id t))))
+      (clojure.stacktrace/print-stack-trace t)
+      (timbre/info "update-dat-file-line-in-record:" t id))))
 
 (defn update-dat-file-lines-in-all-records
   []
