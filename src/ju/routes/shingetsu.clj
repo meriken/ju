@@ -149,7 +149,12 @@
                  name))
         name (if (nil? name) param/anonymous-users-handle name)
         mail (if (nil? (:mail record)) "" (:mail record))
-        local-time (clj-time.core/to-time-zone (clj-time.coerce/from-long (* (:stamp record) 1000)) (clj-time.core/time-zone-for-offset +9))
+        local-time (clj-time.coerce/from-long
+                       (*
+                         (+
+                           (:stamp record)
+                           (* 9 60 60))
+                          1000))
         ts (str
              (clj-time.format/unparse
                (clj-time.format/formatter "yyyy/MM/dd")
