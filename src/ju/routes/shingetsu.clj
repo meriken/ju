@@ -1843,17 +1843,45 @@
                    "</HTML>"))
                (content-type "text/html; charset=Shift_JIS")))
 
+           ; For JaneStyle
            (GET "/2ch/"
                 {:keys [headers params body server-name] :as request}
-             (redirect "/threads"))
+             (->
+               (ok
+                 (str
+                   "<HTML>\n"
+                   "<HEAD>\n"
+                   "<META http-equiv=\"Content-Type\" content=\"text/html; charset=Shift_JIS\">\n"
+                   "<meta http-equiv=\"refresh\" content=\"0; URL='/threads'\" />\n"
+                   "<TITLE>" (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 param/service-name) "</TITLE>\n"
+                   "</HEAD>\n"
+                   "<BODY>\n"
+                   "</BODY>\n"
+                   "</HTML>"))
+               (content-type "text/html; charset=Shift_JIS")))
 
            (GET "/:board-name/"
                 {:keys [headers params body server-name] :as request}
-             ;(timbre/info "/:board-name/subject.txt" (get-remote-address request))
+             (timbre/info "/:board-name/subject.txt" (get-remote-address request))
              (let [board-name (:board-name params)
-                   match (re-find #"^2ch_([A-F0-9]+)$" board-name)]
+                   match (re-find #"^2ch_([A-F0-9]+)$" board-name)
+                   decoded-board-name (if match (unhexify (second match)))
+                   redirect-url (if match (str "/threads?tag=" (percent-encode decoded-board-name)))]
                (when match
-                 (redirect (str "/threads?tag=" (percent-encode (unhexify (second match))))))))
+                 (->
+                   (ok
+                     (str
+                       "<HTML>\n"
+                       "<HEAD>\n"
+                       "<META http-equiv=\"Content-Type\" content=\"text/html; charset=Shift_JIS\">\n"
+                       "<meta http-equiv=\"refresh\" content=\"0; URL='" redirect-url "'\" />\n"
+                       "<TITLE>" (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4 decoded-board-name) "</TITLE>\n"
+                       "</HEAD>\n"
+                       "<BODY>\n"
+                       "</BODY>\n"
+                       "</HTML>"))
+                   (content-type "text/html; charset=Shift_JIS"))
+                 )))
 
            (GET "/2ch/subject.txt"
                 {:keys [headers params body server-name] :as request}
