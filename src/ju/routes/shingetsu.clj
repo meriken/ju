@@ -844,19 +844,26 @@
         (dissoc :remote-address)
         (merge elements))))
 
+(defn update-dat-file-line-in-record
+  [id]
+  (try
+    (let [record (process-record-body (db/get-record-by-id id))
+          dat-file-line (convert-record-into-dat-file-line record)]
+      (if (zero? (mod id 100))
+        (timbre/info "update-dat-file-line-in-all-record:" id))
+      (db/update-dat-file-line
+        id
+        dat-file-line
+        (:suffix record)))
+    (catch Throwable t
+      (timbre/info "update-dat-file-line-in-record:" id t))))
+
 (defn update-dat-file-lines-in-all-records
   []
-  (dorun (map #(try
-                (let [record (process-record-body (db/get-record-by-id (:id %)))
-                      dat-file-line (convert-record-into-dat-file-line record)]
-                  (if (zero? (mod (:id %) 100))
-                    (timbre/info "update-dat-file-lines-in-all-records:" (:id %)))
-                  (db/update-dat-file-line
-                    (:id %)
-                    dat-file-line
-                    (:suffix record)))
-                  (catch Throwable t
-                    (timbre/info "update-dat-file-lines-in-all-records:" (str t) (:id %))))
+  (dorun (map #(do
+                (if (zero? (mod (:id %) 100))
+                  (timbre/info "update-dat-file-line-in-all-record:" (:id %)))
+                (update-dat-file-line-in-record (:id %)))
               (sort-by :id (db/get-all-records-with-ids-only)))))
 
 
