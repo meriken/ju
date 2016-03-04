@@ -1641,7 +1641,7 @@
                    n (if (zero? (count n)) nil (Integer/parseInt n))
                    tag (if (zero? (count tag)) nil tag)
                    _ (timbre/info "/api/threads" (get-remote-address request) n tag)]
-               (if tag
+               (if (or (not param/enable-api-cache-manager) tag)
                  (create-thread-list n tag)
                  (do
                    ;(timbre/debug "@api-threads-cache")
@@ -1757,6 +1757,36 @@
                   :headers {"Content-Type" "text/plain; charset=utf-8"}
                   :body (str "内部エラーが発生しました。\n" t)})))
 
+           (GET "/api/gist/:id"
+                request
+             (try
+               (let [{:keys [id]} (:params request)
+                     _ (timbre/debug "/api/gist/:id" (get-remote-address request) id)]
+                 (if (re-find #"^[a-f0-9]+$" id)
+                   {:status 200
+                    :headers {"Content-Type" "text/html; charset=utf-8"}
+                    :body (str
+                            "<html>"
+                            "<base target=\"_blank\" />"
+                            "<style>"
+                            "body { margin: 0; overflow: hidden; padding: 0; }"
+                            "</style>"
+                            "<body>"
+                            "<script type=\"text/javascript\" src=\"https://gist.github.com/" id ".js\"></script>"
+                            "</body>"
+                            "</html>"
+                            )}))
+               (catch clojure.lang.ExceptionInfo e
+                 (timbre/error e)
+                 {:status 400
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (.getMessage e)})
+               (catch Throwable t
+                 (timbre/error t)
+                 {:status 500
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (str "内部エラーが発生しました。\n" t)})))
+
            (GET "/api/nicovideo/:id"
                 request
              (try
@@ -1785,7 +1815,6 @@
                  {:status 500
                   :headers {"Content-Type" "text/plain; charset=utf-8"}
                   :body (str "内部エラーが発生しました。\n" t)})))
-
 
            (GET "/api/twitter"
                 request

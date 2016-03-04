@@ -32,8 +32,8 @@
 (def wait-time-after-post 0)
 
 (def enable-crawler true)
-(def enable-api-cache-manager true)
-(def enable-thread-api-cache-manager true)
+(def enable-api-cache-manager false)
+(def enable-thread-api-cache-manager false)
 (def enable-record-monitor true)
 (def enable-new-record-monitor true)
 (def enable-file-monitor true)

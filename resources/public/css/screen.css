@@ -381,6 +381,8 @@
         max-width: 100%;
     }
 
+    iframe { display:block; }
+
 	.video-container {
 		position: relative;
 		padding-bottom: 56.25%;/* 16:9 */
@@ -546,9 +548,6 @@
 		background: white;
 		cursor: inherit;
 		display: block;
-	}
-	.gist, .gist-file {
-		margin-bottom: 0 !important;
 	}
 
 	blockquote {

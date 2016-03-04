@@ -996,6 +996,23 @@
 ;# Gist
 ;    buf = re.sub(r'\[gist:([a-f0-9]+)\]', r'<script src="https://gist.github.com/\1.js"></script>', buf);
 
+(defn process-gist-tags
+  [s]
+  (let [match (re-find #"^(.*?)\[gist:([a-f0-9]+)\](.*)$" s)
+        iframe-id (my-uuid)]
+    (if-not match
+      s
+      (concat [(nth match 1)
+               [:iframe.gist {:id iframe-id :style {:margin "0px" :padding "0px" :width "100%"} :src (str "/api/gist/" (nth match 2)) :frameBorder "0" :scrolling "no"}]
+               [:span.script-wrapper
+                {:key (my-uuid)
+                 :dangerouslySetInnerHTML {:__html
+                                           (str
+                                             "<script>"
+                                             "$(\"#" iframe-id "\").load(function() {var iframe = this; setTimeout(function() {$(iframe).height( $(iframe).contents().find(\"body\").height() );});});"
+                                             "</script>")}}]]
+              (process-gist-tags (last match))))))
+
 (defn process-youtube-links
   [s]
   (let [match (re-find #"^(.*?)https?://(www\.youtube\.com/watch\?v=|youtu.be/)([-_a-zA-Z0-9]+)(.*)$" s)]
@@ -1041,7 +1058,7 @@
                :dataType "json"})
 
         (concat [(nth match 1)
-               [:span.tweet
+               [:span.tweet.script-wrapper
                  {:key (my-uuid)
                   :dangerouslySetInnerHTML {:__html (str
                                                       "<blockquote class=\"twitter-tweet\" data-lang=\"ja\"><p lang=\"ja\" dir=\"ltr\">"
@@ -1049,7 +1066,7 @@
                                                       "</blockquote>"
                                                       "<script async src=\"//platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>"
                                                       )}}]]
-              (process-youtube-links (last match)))))))
+              (process-twitter-links (last match)))))))
 
 (defn process-links
   [s]
@@ -1114,6 +1131,7 @@
                                      spaces (clojure.string/replace spaces #"\t" "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")]
                                  (list [:span {:key (my-uuid) :dangerouslySetInnerHTML {:__html spaces}}] rest))))
                  (apply concat)
+                 (map #(if (string? %) (process-gist-tags %) %))
                  (map #(if (string? %) (process-youtube-links %) %))
                  ;(map #(if (string? %) (process-nicovideo-links %) %))
                  (map #(if (string? %) (process-twitter-links %) %))
@@ -1301,15 +1319,17 @@
                                             (map
                                               #(list
                                                 (if (get ads %2)
-                                                  [:div.ad {:dangerouslySetInnerHTML {:__html (get ads %2)}
-                                                            :key (my-uuid)
-                                                            }])
+                                                  [:div.ad.script-wrapper
+                                                   {:dangerouslySetInnerHTML {:__html (get ads %2)}
+                                                    :key (my-uuid)}])
                                                 (generate-html-for-post %1 :thread (session/get :thread-title) (:anchors response)))
                                               (:posts response)
                                               (range (count (:posts response)))))
                                      (list
                                        (if (get ads param/page-size)
-                                         [:div.ad {:key (my-uuid) :dangerouslySetInnerHTML {:__html (get ads param/page-size)}}])))))])
+                                         [:div.ad.script-wrapper
+                                          {:key (my-uuid)
+                                           :dangerouslySetInnerHTML {:__html (get ads param/page-size)}}])))))])
                   {:component-did-mount
                    #(do
                      (.each ($ (keyword ".post .string:not(.processed)"))
@@ -1318,20 +1338,13 @@
                                 (.html ($ s)
                                        (.unicodeToImage js/emojione (convert-string-for-emojione (.text ($ s)))))
                                 (.addClass ($ s) "processed"))))
-                     (.each ($ (keyword ".ad script"))
+                     (.each ($ (keyword ".script-wrapper script:not(.processed)"))
                             (fn []
                               (this-as tag
                                 ;(.log js/console tag)
                                 (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
-                                (try (js/eval (.text ($ tag))) (catch js/Error _)))))
-                     (.each ($ (keyword ".tweet script:not(.processed)"))
-                            (fn []
-                              (this-as tag
-                                ;(.log js/console tag)
-                                (.addClass ($ tag) "processed")
-                                (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
-                                ;(try (js/eval (.text ($ tag))) (catch js/Error _))
-                                )))
+                                (try (js/eval (.text ($ tag))) (catch js/Error _))
+                                (.addClass ($ tag) "processed"))))
                      (if (and
                            (exists? js/googletag)
                            (fn? (.-pubads js/googletag)))
@@ -1371,6 +1384,13 @@
                                 (.html ($ s)
                                        (.unicodeToImage js/emojione (convert-string-for-emojione (.text ($ s)))))
                                 (.addClass ($ s) "processed"))))
+                     (.each ($ (keyword ".script-wrapper script:not(.processed)"))
+                            (fn []
+                              (this-as tag
+                                ;(.log js/console tag)
+                                (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
+                                (try (js/eval (.text ($ tag))) (catch js/Error _))
+                                (.addClass ($ tag) "processed"))))
                      (when (not (:rss response))
                        (reset! new-post-notification false)
                        (dorun
