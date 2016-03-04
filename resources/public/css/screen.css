@@ -404,6 +404,11 @@
 		height: auto;
 	}
 
+	iframe.twitter-tweet.twitter-tweet-rendered {
+	    margin-top: 0 !important;
+	    margin-bottom: 0 !important;
+	}
+
 	input {
 		max-width: 1;
 	}

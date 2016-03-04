@@ -1025,6 +1025,32 @@
                 [:iframe {:src (str "/api/nicovideo/" (nth match 2)) :frameBorder "0"}]]]
               (process-nicovideo-links (last match))))))
 
+(defn process-twitter-links
+  [s]
+  (let [match (re-find #"^(.*?)(https?://twitter\.com/[^/]+/status/[0-9]+)(.*)$" s)]
+    (if-not match
+      s
+      (let [twitter-api-url (str "/api/twitter?url=" (nth match 2))
+            html-code (atom s)]
+        (ajax twitter-api-url
+              {:method   "GET"
+               :success  (fn [response]
+                           (.log js/console (pr-str (js->clj response)))
+                           (reset! html-code (get (js->clj response) "html")))
+               :async    false
+               :dataType "json"})
+
+        (concat [(nth match 1)
+               [:span.tweet
+                 {:key (my-uuid)
+                  :dangerouslySetInnerHTML {:__html (str
+                                                      "<blockquote class=\"twitter-tweet\" data-lang=\"ja\"><p lang=\"ja\" dir=\"ltr\">"
+                                                      @html-code
+                                                      "</blockquote>"
+                                                      "<script async src=\"//platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>"
+                                                      )}}]]
+              (process-youtube-links (last match)))))))
+
 (defn process-links
   [s]
   (let [match (re-find #"^(.*?)([htps]+://((www\.)?[-a-zA-Z0-9@:%._\+~#=']{2,256}\.[a-z]{2,6}|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\b([-a-zA-Z0-9@:%_\+.~#?&//=']*))(.*)$" s)
@@ -1090,6 +1116,7 @@
                  (apply concat)
                  (map #(if (string? %) (process-youtube-links %) %))
                  ;(map #(if (string? %) (process-nicovideo-links %) %))
+                 (map #(if (string? %) (process-twitter-links %) %))
                  (map #(if (string? %) (process-links %) %))
                  (map #(if (string? %) (process-anchors % thread-title) %))
                  (map #(if (string? %) (process-bracket-links %) %))
@@ -1297,6 +1324,14 @@
                                 ;(.log js/console tag)
                                 (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
                                 (try (js/eval (.text ($ tag))) (catch js/Error _)))))
+                     (.each ($ (keyword ".tweet script:not(.processed)"))
+                            (fn []
+                              (this-as tag
+                                ;(.log js/console tag)
+                                (.addClass ($ tag) "processed")
+                                (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
+                                ;(try (js/eval (.text ($ tag))) (catch js/Error _))
+                                )))
                      (if (and
                            (exists? js/googletag)
                            (fn? (.-pubads js/googletag)))

@@ -1786,6 +1786,27 @@
                   :headers {"Content-Type" "text/plain; charset=utf-8"}
                   :body (str "内部エラーが発生しました。\n" t)})))
 
+
+           (GET "/api/twitter"
+                request
+             (try
+               (let [{:keys [url]} (:params request)
+                     _ (timbre/debug "/api/twitter" (get-remote-address request) url (pr-str (:body (client/get (str "https://api.twitter.com/1/statuses/oembed.json?url=" url)))))]
+                 {:status 200
+                  :headers {"Content-Type" "application/json; charset=utf-8"}
+                  :body (:body (client/get (str "https://api.twitter.com/1/statuses/oembed.json?url=" url)))}
+                 )
+               (catch clojure.lang.ExceptionInfo e
+                 (timbre/error e)
+                 {:status 400
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (.getMessage e)})
+               (catch Throwable t
+                 (timbre/error t)
+                 {:status 500
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (str "内部エラーが発生しました。\n" t)})))
+
            (GET "/api/image-proxy"
                 request
              (try
