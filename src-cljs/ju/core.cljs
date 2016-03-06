@@ -277,7 +277,7 @@
    [:p
     "「" @service-name "」は新月ネットワークに参加しているP2P型の匿名掲示板です。" [:br]
     [:a {:href "/terms" :on-click handle-click-on-link} "新月ネットワーク利用規約"] "を守った上で、自由に利用してください。転載は基本的に自由です。" [:br]
-    "2ちゃんねる専用ブラウザで利用する場合は " [:strong {:style {:white-space "nowrap"}} (str @server-url-base "/2ch/")] " を外部板として登録してください。"
+    "2ちゃんねる専用ブラウザで利用する場合は " [:strong {:style {:white-space "nowrap"}} (str @server-url-base "/2ch/")] " を外部板として登録してください。" [:br]
     "メニューのアドレスは " [:strong {:style {:white-space "nowrap"}} (str @server-url-base "/bbsmenu.html")] " です。"]
 
    [:div.row
