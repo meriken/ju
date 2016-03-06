@@ -1,7 +1,6 @@
 (ns ju.core
   (:require [ju.handler :refer [app init destroy]]
             [immutant.web :as immutant]
-            [ju.db.migrations :as migrations]
             [clojure.tools.nrepl.server :as nrepl]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.3rd-party.rotor :as rotor]
