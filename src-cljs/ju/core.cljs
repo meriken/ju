@@ -274,12 +274,12 @@
                  (if (not @navbar-enabled?) ".without-navbar")
                  (if (not @navbar-bottom-enabled?) ".without-navbar-bottom")))
    [:h3 @service-name]
-   [:ul
+   [:ul {:style {:overflow "hidden"}}
     [:li "「" @service-name "」は新月ネットワークに参加しているP2P型の匿名掲示板です。"
     "利用の際には" [:a {:href "/terms" :on-click handle-click-on-link} "新月の利用規約"] "を守ってください。"]
     [:li "2ちゃんねる専用ブラウザで利用する場合は " [:strong {:style {:white-space "nowrap"}} (str @server-url-base "/2ch/")] " を外部板として登録してください。 "
      [:span {:style {:white-space "nowrap"}} "(" [:a {:href (str @server-url-base "/bbsmenu.html") :target "_blank"} "専ブラ用のメニュー"] ")"]]
-    [:li {:style {:overflow-x "hidden"}} "開発・運営費の寄付を募集中です。 " [:span {:style {:white-space "nowrap"}} "Bitcoin: 1MrmEmS5MYbqLo2MeRyoFdf9Bfsd1jmfT4"]]]
+    [:li"開発・運営費の寄付を募集中です。 " [:span {:style {:white-space "nowrap"}} "Bitcoin: 1MrmEmS5MYbqLo2MeRyoFdf9Bfsd1jmfT4"]]]
 
    [:div.row
     [:div#main-menu-column.col-sm-6
