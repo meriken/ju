@@ -1364,8 +1364,7 @@
                     {:status 200
                      :headers {"Content-Type" "application/json; charset=utf-8"}
                      :body (cheshire.core/generate-string @api-threads-cache)})
-            (reset! api-new-posts-rss-response-cache
-                    create-new-posts-rss-response)
+            (reset! api-new-posts-rss-response-cache (create-new-posts-rss-response))
             (catch Throwable t
               (timbre/error "API Cache Manager:" t)))
           (Thread/sleep 500)))))
