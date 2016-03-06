@@ -23,3 +23,5 @@ ju.hsqldb.*
 /ju.clj
 ju.iml
 ju-log4j.log.1
+ju.h2.db
+ju.lock.db

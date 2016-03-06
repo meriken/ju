@@ -45,12 +45,12 @@
                     (if (> try-count 4) false true))})
 
 (def http-params-for-quick-commands
-  {:socket-timeout 60000
-   :conn-timeout 60000
+  {:socket-timeout 5000
+   :conn-timeout 5000
    :retry-handler (fn [ex try-count http-context]
                     ;(timbre/info "HTTP(S) connection failed:" try-count http-context)
                     ;(Thread/sleep 10000)
-                    (if (> try-count 4) false true))})
+                    (if (> try-count 0) false true))})
 
 (defonce http-server-port (atom nil))
 (defonce active-nodes (atom (hash-set)))
@@ -198,24 +198,26 @@
 (declare crawl-node)
 
 (defn ping [node-name]
-  (if-not (valid-node-name? node-name)
-    (throw (IllegalArgumentException. "Invalid node name.")))
-  (if-not (valid-node? node-name)
-    (throw (IllegalArgumentException. "Node was blocked.")))
-
   (try
+    (if-not (valid-node-name? node-name)
+      (throw (IllegalArgumentException. "Invalid node name.")))
+    (if-not (valid-node? node-name)
+      (throw (IllegalArgumentException. "Node was blocked.")))
+
     (let [response-body (:body (client/get (str "http://" node-name "/ping") http-params-for-quick-commands))
           new-server-node-name (second (re-find #"^PONG\n([^\n]+)\n?$" response-body))
           new-server-node-name (str new-server-node-name ":" @http-server-port param/server-path)]
       (if-not (valid-node-name? new-server-node-name)
-        (throw (Exception. "Invalid node name.")))
+        (throw (Exception. (str "Invalid node name: " new-server-node-name))))
       (if (nil? param/static-server-node-name)
         (reset! server-node-name new-server-node-name))
       (when (not (db/known-node? node-name))
         (db/add-node node-name)
         (db/mark-node-as-active node-name))
       true)
+
     (catch Throwable t
+      (timbre/debug "ping:" t node-name)
       (swap! active-nodes #(clojure.set/difference % #{node-name}))
       (swap! search-nodes #(clojure.set/difference % #{node-name}))
       false)))
@@ -309,6 +311,7 @@
             (< (count @active-nodes) max-num-active-nodes))
         (join node-name))
       (catch Throwable t
+        (timbre/error t)
         nil))
 
     ; Add as a search node if appropriate.
@@ -318,6 +321,7 @@
             (< (count @search-nodes) max-num-search-nodes))
         (swap! search-nodes conj node-name))
       (catch Throwable t
+        (timbre/error t)
         nil))
 
     ; Get a new node.
@@ -327,15 +331,16 @@
           (if (not (= new-node-name @server-node-name))
             (ping new-node-name))))
       (catch Exception e
+        (timbre/error e)
         nil))
 
-    ))
+   ))
 
 (defn check-nodes
   ([]
    (check-nodes false))
   ([burst-mode]
-   (timbre/info "Checking nodes..")
+   ;(timbre/info "Checking nodes..")
    (try
      (if (pos? (count @active-nodes))
        (bye (first (shuffle @active-nodes))))
@@ -351,20 +356,19 @@
        (bye (first (shuffle @active-nodes))))
 
      (catch Exception e
-       ;(timbre/error e)
+       (timbre/error "check-nodes:" e)
        nil))))
 
 (defn start-node-monitor []
   (if param/static-server-node-name
     (reset! server-node-name param/static-server-node-name))
   (dorun (map db/delete-node param/blocked-nodes))
+  (try
+    (check-nodes true)
+    (catch Throwable t))
   (do
     (future
-      (timbre/info "Node monitor started.")
-      (try
-        (dorun (map #(db/add-file %) param/known-files))
-        (check-nodes true)
-        (catch Throwable t))
+      (timbre/info "Node monitor started." )
       (while true
         (Thread/sleep check-nodes-interval)
         (try
@@ -646,8 +650,7 @@
   (if param/enable-crawler
     (do
       (future
-        (Thread/sleep 60000)
-        (timbre/info "Crawler started.")
+        (timbre/info "Crawler started." @active-nodes @search-nodes)
         (crawl-nodes :force-crawling true)
         (while true
           (Thread/sleep crawl-nodes-interval)
@@ -1067,9 +1070,9 @@
                             file-list)
           file-list (if n (take n file-list) file-list)
 
-          file-list (concat file-list [(db/get-file-by-thread-title "質問スレッド")])
-          file-list (concat file-list [(db/get-file-by-thread-title "【公開ゲートウェイ】ゆぐちゃんねる")])
-
+          ;file-list (concat file-list [(db/get-file-by-thread-title "質問スレッド")])
+          ;file-list (concat file-list [(db/get-file-by-thread-title "【公開ゲートウェイ】ゆぐちゃんねる")])
+          ;_ (timbre/debug (pr-str file-list))
           file-list (map #(-> %
                               (assoc :time-updated (try (long (/ (clj-time.coerce/to-long (:time-updated %)) 1000)) (catch Throwable _ nil)))
                               (assoc :tags (into [] (map :tag-string (db/get-tags-for-file (:id %)))))
@@ -1320,6 +1323,30 @@
      (catch Throwable t
        (timbre/error "update-api-thread-cache-for-all-files:" t)))))
 
+(defn create-new-posts-rss-response
+  []
+  {:status 200
+   :headers {"Content-Type" "application/json; charset=utf-8"}
+   :body (cheshire.core/generate-string
+           {:threads
+            (into []
+                  (doall (map
+                           (fn [threads]
+                             (let [posts (into [] (apply concat (map :posts threads)))
+                                   record-short-ids (map :record-short-id posts)]
+                               {:thread-title  (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id (first threads)))))
+                                :posts posts
+                                :anchors (into [] (distinct (apply concat (map :anchors threads))))
+                                :popup-cache (create-popup-cache (:file-id (first threads)) record-short-ids)}))
+                           (partition-by
+                             :file-id
+                             (map (fn [record]
+                                    (let []
+                                      {:file-id (:file-id record)
+                                       :posts [(process-record-body record)]
+                                       :anchors (into [] (db/get-anchors (:file-id record)  (:record-short-id record)))}))
+                                  (db/get-recent-records 100))))))})})
+
 (defn start-api-cache-manager
   []
   (if param/enable-api-cache-manager
@@ -1338,27 +1365,7 @@
                      :headers {"Content-Type" "application/json; charset=utf-8"}
                      :body (cheshire.core/generate-string @api-threads-cache)})
             (reset! api-new-posts-rss-response-cache
-                    {:status 200
-                     :headers {"Content-Type" "application/json; charset=utf-8"}
-                     :body (cheshire.core/generate-string
-                             {:threads
-                              (into []
-                                    (doall (map
-                                             (fn [threads]
-                                               (let [posts (into [] (apply concat (map :posts threads)))
-                                                     record-short-ids (map :record-short-id posts)]
-                                                 {:thread-title  (file-name-to-thread-title (:file-name (db/get-file-by-id (:file-id (first threads)))))
-                                                  :posts posts
-                                                  :anchors (into [] (distinct (apply concat (map :anchors threads))))
-                                                  :popup-cache (create-popup-cache (:file-id (first threads)) record-short-ids)}))
-                                             (partition-by
-                                               :file-id
-                                               (map (fn [record]
-                                                      (let []
-                                                        {:file-id (:file-id record)
-                                                         :posts [(process-record-body record)]
-                                                         :anchors (into [] (db/get-anchors (:file-id record)  (:record-short-id record)))}))
-                                                    (db/get-recent-records 100))))))})})
+                    create-new-posts-rss-response)
             (catch Throwable t
               (timbre/error "API Cache Manager:" t)))
           (Thread/sleep 500)))))
@@ -1600,8 +1607,14 @@
                  request
              (timbre/info "/api/new-posts" (get-remote-address request))
              (let [{:keys [threads rss]} (:params request)]
-               (if rss
+               (cond
+                 (and param/enable-api-cache-manager rss)
                  @api-new-posts-rss-response-cache
+
+                 rss
+                 (create-new-posts-rss-response)
+
+                 :else
                  {:body
                   {:threads
                    (into []

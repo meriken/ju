@@ -14,8 +14,7 @@
             [ju.routes.shingetsu :as shingetsu])
   (:gen-class)
   (:import (java.awt Desktop)
-           (java.net URI)
-           (org.apache.commons.lang3.exception ExceptionUtils)))
+           (java.net URI)))
 
 (defonce nrepl-server (atom nil))
 
@@ -50,15 +49,15 @@
 
 (defonce http-server (atom nil))
 
-(defn start-http-server [port]
+(defn start-http-server
+  []
   (init)
-  (reset! shingetsu/http-server-port port)
   (reset! http-server
           (immutant/run
             app
              (immutant.web.undertow/options
                :host "0.0.0.0"
-               :port port
+               :port @shingetsu/http-server-port
                :io-threads param/io-threads
                :worker-threads param/worker-threads))))
 
@@ -88,9 +87,9 @@
     (reset! config-file-loaded? (atom true))))
 
 (defn open-web-browser
-  [port]
+  []
   (if (Desktop/isDesktopSupported)
-    (.browse (Desktop/getDesktop) (URI. (str "http://localhost:" port)))))
+    (.browse (Desktop/getDesktop) (URI. (str "http://localhost:"  @shingetsu/http-server-port)))))
 
 (defn ju-output-fn
   ([data] (ju-output-fn nil data))
@@ -118,6 +117,7 @@
       {:ns-blacklist ["slf4j-timbre.adapter"]})))
 
 (defn start-app [[port]]
+  (reset! shingetsu/http-server-port (http-port port))
   (configure-timbre)
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app))
   (load-config-file-if-necessary)
@@ -132,13 +132,9 @@
   (shingetsu/start-node-monitor)
   (shingetsu/start-crawler)
   (shingetsu/start-api-cache-manager)
-  (start-http-server (http-port port))
-  (open-web-browser port)
+  (start-http-server)
+  (open-web-browser)
   (timbre/info "HTTP server started on port:" @shingetsu/http-server-port))
 
 (defn -main [& args]
-  (cond
-    (some #{"migrate" "rollback"} args)
-    (do (migrations/migrate args) (System/exit 0))
-    :else
-    (start-app args)))
+  (start-app args))

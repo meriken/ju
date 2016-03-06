@@ -2,7 +2,6 @@
   (:require [compojure.core :refer [defroutes routes wrap-routes]]
             [ju.layout :refer [error-page]]
             [ju.routes.home :refer [home-routes]]
-            [ju.routes.services :refer [service-routes]]
             [ju.routes.shingetsu :refer [shingetsu-routes]]
             [ju.middleware :as middleware]
             [ju.db.core :as db]
@@ -42,7 +41,6 @@
 
 (def app-routes
   (routes
-    (var service-routes)
     (var shingetsu-routes)
     (wrap-routes #'home-routes middleware/wrap-csrf)
     (route/not-found

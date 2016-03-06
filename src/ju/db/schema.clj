@@ -1,9 +1,9 @@
 (ns ju.db.schema
   (:require
     [clojure.java.jdbc :as sql]
-    [conman.core :as conman]
+    ;[conman.core :as conman]
     [environ.core :refer [env]]
-    [mount.core :refer [defstate]]
+    ;[mount.core :refer [defstate]]
 
     ; Meriken
     [taoensso.timbre :as timbre]
@@ -45,14 +45,15 @@
                         :subprotocol "h2"
                         :subname     (str "./" backup-db-name
                                           ";MV_STORE=FALSE"
-                                          ";MVCC=TRUE"
+                                          ";MVCC=FALSE"
                                           ";MULTI_THREADED=FALSE"
                                           ";DEFRAG_ALWAYS=FALSE"
                                           ";RECOVER=TRUE"
-                                          ";CACHE_SIZE=262144"
+                                          ";CACHE_SIZE=16384"
                                           ";LOCK_TIMEOUT=10000"
                                           ";TRACE_LEVEL_FILE=0"
-                                          ";TRACE_LEVEL_SYSTEM_OUT=0")
+                                          ";TRACE_LEVEL_SYSTEM_OUT=0"
+                                          ";DB_CLOSE_ON_EXIT=FALSE")
                         :user        "sa"
                         :password    ""
                         :make-pool?  true

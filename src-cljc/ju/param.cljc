@@ -6,16 +6,18 @@
 
 (def initial-nodes
   ["node.shingetsu.info:8000/server.cgi"
+   "bbs.shingetsu.info:8000/server.cgi"
    "node.fuktommy.com:8000/server.cgi"
+   "rep4649.ddo.jp:8000/server.cgi"
+   "shingetu.fe100.net:8000/server.cgi"
+   "opptape.iobb.net:8000/server.cgi"
    "melchior.ygg.ch:8880/server"
    "caspar.ygg.ch:8880/server"
-   "balthazar.ygg.ch:8880/server"
-   "24.130.242.114:8000/server.cgi"])
+   "balthazar.ygg.ch:8880/server"])
 (def initial-super-nodes
   ["melchior.ygg.cg:8880/server"
    "caspar.ygg.ch:8880/server"
-   "balthazar.ygg.ch:8880/server"
-   "24.130.242.114:8000/server.cgi"])
+   "balthazar.ygg.ch:8880/server"])
 (def blocked-nodes
   [])
 

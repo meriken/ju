@@ -49,7 +49,9 @@
   [row]
   (let [k (keys row) v (vals row)]
     (zipmap k
-            (map #(if (= (Class/forName "org.hsqldb.jdbc.JDBCBlobClient") (type %1))
+            (map #(if (or
+                        (= (Class/forName "org.hsqldb.jdbc.JDBCBlobClient") (type %1))
+                        (= (Class/forName "org.h2.jdbc.JdbcBlob") (type %1)))
                    (slurp-bytes (.getBinaryStream %1))
                    %1)
                  v))))

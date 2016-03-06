@@ -25,8 +25,7 @@
                  [ring "1.4.0" :exclusions [ring/ring-jetty-adapter]]
                  [mount "0.1.5"]
                  [buddy "0.8.2"]
-                 [migratus "0.8.8"]
-                 [conman "0.2.7"]
+                 ;[conman "0.2.7"]
                  [mysql/mysql-connector-java "5.1.34"]
                  [org.clojure/clojurescript "1.7.170" :scope "provided"]
                  [reagent "0.5.1"]
@@ -36,11 +35,12 @@
                  [org.clojure/core.async "0.2.374"]
                  [cljs-ajax "0.5.1"]
                  [metosin/compojure-api "0.24.1"]
-                 [metosin/ring-swagger-ui "2.1.3-4"]
+                 ;[metosin/ring-swagger-ui "2.1.3-4"]
                  ;[org.immutant/web "2.1.1" :exclusions [ch.qos.logback/logback-classic]]
                  [org.immutant/web "2.1.2" :exclusions [ch.qos.logback/logback-classic]]
 
                  ; Meriken
+                 [com.h2database/h2 "1.4.191"]
                  [org.hsqldb/hsqldb "2.3.3"]
                  [clj-http "2.0.0"]
                  [korma "0.4.2"]
@@ -65,10 +65,12 @@
 
   :min-lein-version "2.0.0"
   :uberjar-name "ju.jar"
-  :jvm-opts ["-server"
+  :jvm-opts [;"-server"
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
-             "-Xmx1024m"
+             "-Xmx320m"
+             "-XX:MaxPermSize=8m"
+             "-XX:PermSize=8m"
              ;"-XX:+UseParNewGC"
              ;"-XX:+UseConcMarkSweepGC"
              "-XX:+UseG1GC"
@@ -77,10 +79,8 @@
   :resource-paths ["resources" "target/cljsbuild"]
 
   :main ju.core
-  :migratus {:store :database}
 
   :plugins [[lein-environ "1.0.1"]
-            [migratus-lein "0.2.0"]
             [lein-cljsbuild "1.1.1"]
             [lein-uberwar "0.1.0"]]
   :uberwar

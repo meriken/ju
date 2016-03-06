@@ -276,12 +276,14 @@
    [:h3 @service-name]
    [:p
     "「" @service-name "」は新月ネットワークに参加しているP2P型の匿名掲示板です。" [:br]
-    [:a {:href "/terms" :on-click handle-click-on-link} "新月ネットワーク利用規約"] "を守った上で、自由に利用してください。" [:br]
-    [:span "2ちゃんねる専用ブラウザで利用する場合は " [:strong  (str @server-url-base "/2ch/")] " を外部板として登録してください。"]]
+    [:a {:href "/terms" :on-click handle-click-on-link} "新月ネットワーク利用規約"] "を守った上で、自由に利用してください。転載は基本的に自由です。" [:br]
+    "2ちゃんねる専用ブラウザで利用する場合は " [:strong {:style {:white-space "nowrap"}} (str @server-url-base "/2ch/")] " を外部板として登録してください。"
+    "メニューのアドレスは " [:strong {:style {:white-space "nowrap"}} (str @server-url-base "/bbsmenu.html")] " です。"]
 
    [:div.row
     [:div#main-menu-column.col-sm-6
-     (session/get :recommended-threads)
+     (if (pos? (count (second (session/get :recommended-threads))))
+       (session/get :recommended-threads))
      [:div#main-menu.list-group
       [:a {:on-click handle-click-on-link :href "/recent-threads" :class "list-group-item"} "最近更新されたスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
       [:a {:on-click handle-click-on-link :href "/threads" :class "list-group-item"} "全てのスレッド" [:span.glyphicon.glyphicon-chevron-right.pull-right]]
@@ -999,6 +1001,7 @@
 (defn process-gist-tags
   [s]
   (let [match (re-find #"^(.*?)\[gist:([a-f0-9]+)\](.*)$" s)
+        match (if match match (re-find #"^(.*?)\https?://gist.github.com/[^/]+/([a-f0-9]+)(#[-0-9a-z]+)?(.*)$" s))
         iframe-id (my-uuid)]
     (if-not match
       s
