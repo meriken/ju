@@ -411,6 +411,10 @@
 	    margin-bottom: 0 !important;
 	}
 
+    iframe.gist {
+        overflow: hidden;
+    }
+
 	input {
 		max-width: 1;
 	}
