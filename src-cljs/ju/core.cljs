@@ -276,7 +276,7 @@
    [:h3 @service-name]
    [:ul {:style {:overflow "hidden"}}
     [:li "「" @service-name "」は新月ネットワークに参加しているP2P型の匿名掲示板です "
-     [:span {:style {:white-space "nowrap"}} "(" [:a {:href "/terms" :on-click handle-click-on-link} "新月ネットワーク利用規約"] ")。"]]
+     [:span {:style {:white-space "nowrap"}} "(" [:a {:href "/terms" :on-click handle-click-on-link} "利用規約"] ")。"]]
     [:li "次のリンクで2ちゃんねる専用ブラウザに外部板として登録できます: "
      [:a {:style {:white-space "nowrap"} :href (str @server-url-base "/2ch/") :target "_blank"}
       (str @server-url-base "/2ch/")]]
