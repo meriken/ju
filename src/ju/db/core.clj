@@ -978,6 +978,7 @@
 
 (defn get-anchors
   [file-id destination]
+  ;(timbre/debug "get-anchors" file-id destination)
   (select anchors
           (where {:file_id file-id :destination destination})))
 

@@ -32,6 +32,7 @@
 (def server-path "/server")
 (def static-server-url-base nil)
 (def wait-time-after-post 0)
+(def enable-upnp true)
 
 (def enable-crawler true)
 (def enable-api-cache-manager false)

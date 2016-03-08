@@ -25,3 +25,10 @@ ju.iml
 ju-log4j.log.1
 ju.h2.db
 ju.lock.db
+/database/
+/log/
+/ju-win/database/
+/ju-win/log/
+/ju-win/jre/
+/ju-win/ju.log
+

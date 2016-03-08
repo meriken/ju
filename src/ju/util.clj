@@ -2,8 +2,9 @@
   (:require [ju.param :as param]
             [taoensso.timbre :as timbre]
             [pandect.algo.sha1 :refer :all]
-            [clojure.data.codec.base64])
-  (:import (java.net URLEncoder)
+            [clojure.data.codec.base64]
+            [taoensso.timbre.appenders.3rd-party.rotor :as rotor])
+  (:import (java.net URLEncoder InetAddress)
            (java.nio.file Files)
            (java.security MessageDigest)))
 
@@ -406,3 +407,33 @@
                ["rbRq1xknGPCL0u6" "$000000000000"]
                ["ﾘｲﾕ､ｿｱﾆﾃﾜｽｰｩﾔﾗﾌ" "$ｱ00000000000"]
                ])))
+
+
+
+(defn ju-output-fn
+  ([data] (ju-output-fn nil data))
+  ([{:keys [no-stacktrace? stacktrace-fonts] :as opts} data]
+   (let [{:keys [level ?err_ vargs_ msg_ ?ns-str hostname_ timestamp_]} data]
+     (str
+       (force timestamp_) " "
+       ; (force hostname_) " "
+       ; (clojure.string/upper-case (name level))  " "
+       ; "[" (or ?ns-str "?ns") "] "
+       (force msg_) " "
+       (if (force ?err_)
+         (org.apache.commons.lang3.exception.ExceptionUtils/getStackTrace (force ?err_)))
+       (comment when-not no-stacktrace?
+                (when-let [err (force ?err_)]
+                  (str "\n" (stacktrace err opts))))
+       ))))
+
+(defn configure-timbre
+  []
+  (let [filename-base  "ju"]
+    (timbre/merge-config!
+      {:output-fn ju-output-fn})
+    (timbre/merge-config!
+      {:appenders
+       {:rotor (rotor/rotor-appender  {:path "log/ju.log"})}})
+    (timbre/merge-config!
+      {:ns-blacklist ["slf4j-timbre.adapter"]})))

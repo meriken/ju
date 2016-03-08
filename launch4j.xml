@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>console</headerType>
+  <jar>.\target\ju.jar</jar>
+  <outfile>.\ju-win\ju.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/ja/download/</downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon></icon>
+  <singleInstance>
+    <mutexName>shingetsu-ju</mutexName>
+    <windowTitle></windowTitle>
+  </singleInstance>
+  <jre>
+    <path>.\jre</path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>1.8.0</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+    <initialHeapSize>64</initialHeapSize>
+    <maxHeapSize>512</maxHeapSize>
+    <opt>-XX:ThreadStackSize=4096 -XX:-OmitStackTraceInFastThrow  -XX:+UseG1GC -XX:MaxGCPauseMillis=1000</opt>
+  </jre>
+  <messages>
+    <startupErr>アプリケーション起動時にエラーが発生しました。</startupErr>
+    <bundledJreErr>同梱されているJREが不正です。</bundledJreErr>
+    <jreVersionErr>このアプリケーションを起動するためにはJava 8以降が必要です。</jreVersionErr>
+    <launcherErr>レジストリが不正です。</launcherErr>
+    <instanceAlreadyExistsMsg>アプリケーションはすでに起動されています。</instanceAlreadyExistsMsg>
+  </messages>
+</launch4jConfig>

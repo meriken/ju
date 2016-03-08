@@ -3,17 +3,18 @@
             [immutant.web :as immutant]
             [clojure.tools.nrepl.server :as nrepl]
             [taoensso.timbre :as timbre]
-            [taoensso.timbre.appenders.3rd-party.rotor :as rotor]
             [environ.core :refer [env]]
 
     ; Meriken
+            [ju.util :refer :all]
             [ju.param :as param]
             [ju.db.core :as db]
             [ju.db.schema :as schema]
             [ju.routes.shingetsu :as shingetsu])
   (:gen-class)
   (:import (java.awt Desktop)
-           (java.net URI)))
+           (java.net URI InetAddress)
+           (java.util.logging Logger Level)))
 
 (defonce nrepl-server (atom nil))
 
@@ -66,7 +67,45 @@
     (immutant/stop @http-server)
     (reset! http-server nil)))
 
+(defonce upnp-service (atom nil))
+
+(defn disable-upnp-port-forwading
+  []
+  (when @upnp-service
+    (.shutdown @upnp-service)
+    (reset! upnp-service nil)))
+
+(defn enable-upnp-port-forwading
+  []
+  (disable-upnp-port-forwading)
+  (.setLevel (Logger/getLogger "org.fourthline.cling") Level/FINEST)
+  (let [port-mapping-array (comment into-array
+                             [(org.fourthline.cling.support.model.PortMapping.
+                                @shingetsu/http-server-port
+                                (.getHostAddress (InetAddress/getLocalHost))
+                                org.fourthline.cling.support.model.PortMapping$Protocol/TCP
+                                "shingetsu-ju-tcp")
+                              (org.fourthline.cling.support.model.PortMapping.
+                                @shingetsu/http-server-port
+                                (.getHostAddress (InetAddress/getLocalHost))
+                                org.fourthline.cling.support.model.PortMapping$Protocol/UDP
+                                "shingetsu-ju-udp")])]
+    (reset! upnp-service (org.fourthline.cling.UpnpServiceImpl.
+                           (into-array
+                             [(org.fourthline.cling.support.igd.PortMappingListener.
+                                (org.fourthline.cling.support.model.PortMapping.
+                                  @shingetsu/http-server-port
+                                  (.getHostAddress (InetAddress/getLocalHost))
+                                  org.fourthline.cling.support.model.PortMapping$Protocol/TCP
+                                  "shingetsu-ju-tcp"))])))
+    (.search
+      (.getControlPoint @upnp-service)
+      (org.fourthline.cling.model.message.header.DeviceTypeHeader.
+        (org.fourthline.cling.model.types.DeviceType. "schemas-upnp-org" "InternetGatewayDevice" 1)))))
+
 (defn stop-app []
+  (if param/enable-upnp
+    (disable-upnp-port-forwading))
   (stop-nrepl)
   (stop-http-server)
   (db/shutdown)
@@ -90,31 +129,6 @@
   (if (Desktop/isDesktopSupported)
     (.browse (Desktop/getDesktop) (URI. (str "http://localhost:"  @shingetsu/http-server-port)))))
 
-(defn ju-output-fn
-  ([data] (ju-output-fn nil data))
-  ([{:keys [no-stacktrace? stacktrace-fonts] :as opts} data]
-   (let [{:keys [level ?err_ vargs_ msg_ ?ns-str hostname_ timestamp_]} data]
-     (str
-       (force timestamp_) " "
-       ; (force hostname_) " "
-       ; (clojure.string/upper-case (name level))  " "
-       ; "[" (or ?ns-str "?ns") "] "
-       (force msg_) " "
-       (if (force ?err_)
-         (org.apache.commons.lang3.exception.ExceptionUtils/getStackTrace (force ?err_)))
-       (comment when-not no-stacktrace?
-                (when-let [err (force ?err_)]
-                  (str "\n" (stacktrace err opts))))
-       ))))
-
-(defn configure-timbre
-  []
-  (let [filename-base  "ju"]
-    (timbre/merge-config!
-      {:output-fn ju-output-fn})
-    (timbre/merge-config!
-      {:ns-blacklist ["slf4j-timbre.adapter"]})))
-
 (defn start-app [[port]]
   (reset! shingetsu/http-server-port (http-port port))
   (configure-timbre)
@@ -128,11 +142,13 @@
       (schema/create-tables schema/db-spec)))
   (start-nrepl)
   (db/start-database-monitor)
-  (shingetsu/start-node-monitor)
-  (shingetsu/start-crawler)
   (shingetsu/start-api-cache-manager)
+  (if param/enable-upnp
+    (enable-upnp-port-forwading))
   (start-http-server)
   (open-web-browser)
+  (shingetsu/start-node-monitor)
+  (shingetsu/start-crawler)
   (timbre/info "HTTP server started on port:" @shingetsu/http-server-port))
 
 (defn -main [& args]

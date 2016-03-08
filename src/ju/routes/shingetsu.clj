@@ -330,8 +330,8 @@
         (let [new-node-name (node node-name)]
           (if (not (= new-node-name @server-node-name))
             (ping new-node-name))))
-      (catch Exception e
-        (timbre/error e)
+      (catch Throwable t
+        (timbre/error t)
         nil))
 
    ))
@@ -355,8 +355,8 @@
      (while (> (count @active-nodes) max-num-active-nodes)
        (bye (first (shuffle @active-nodes))))
 
-     (catch Exception e
-       (timbre/error "check-nodes:" e)
+     (catch Throwable t
+       (timbre/error "check-nodes:" t)
        nil))))
 
 (defn start-node-monitor []
@@ -365,7 +365,8 @@
   (dorun (map db/delete-node param/blocked-nodes))
   (try
     (check-nodes true)
-    (catch Throwable t))
+    (catch Throwable t
+      (timbre/error "Node Monitor:" t)))
   (do
     (future
       (timbre/info "Node monitor started." )
@@ -373,7 +374,8 @@
         (Thread/sleep check-nodes-interval)
         (try
           (check-nodes)
-          (catch Throwable t))))))
+          (catch Throwable t
+            (timbre/error "Node Monitor:" t)))))))
 
 (defn get-files-with-recent-command
   ([]
@@ -650,13 +652,15 @@
   (if param/enable-crawler
     (do
       (future
+        (configure-timbre)
         (timbre/info "Crawler started." @active-nodes @search-nodes)
         (crawl-nodes :force-crawling true)
         (while true
           (Thread/sleep crawl-nodes-interval)
           (try
             (crawl-nodes :force-crawling false)
-            (catch Throwable t)))))))
+            (catch Throwable t
+              (timbre/error "Crawler:" t))))))))
 
 
 
@@ -961,7 +965,7 @@
         tripcode-key (if tripcode? (second (re-find #"#(.*)$" name)))
         tripcode (if tripcode-key (generate-tripcode tripcode-key))
         name (if tripcode
-               (str (second (re-find #"^(.*)#" name)) "◆" tripcode)
+               (str (second (re-find #"^([^#]*)#" name)) "◆" tripcode)
                name)
         attachment? (and attachment
                          (:filename attachment)
@@ -1604,37 +1608,41 @@
 
            (POST "/api/new-posts"
                  request
-             (timbre/info "/api/new-posts" (get-remote-address request))
-             (let [{:keys [threads rss]} (:params request)]
-               (cond
-                 (and param/enable-api-cache-manager rss)
-                 @api-new-posts-rss-response-cache
+             (try
+               (timbre/info "/api/new-posts" (get-remote-address request))
+               (let [{:keys [threads rss]} (:params request)]
+                 (cond
+                   (and param/enable-api-cache-manager rss)
+                   @api-new-posts-rss-response-cache
 
-                 rss
-                 (create-new-posts-rss-response)
+                   rss
+                   (create-new-posts-rss-response)
 
-                 :else
-                 {:body
-                  {:threads
-                   (into []
-                         (remove nil?
-                                 (map (fn [thread]
-                                        (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))
-                                              posts (map process-record-body
-                                                         (db/get-new-records-in-file file-id (:time-last-accessed thread)))
-                                              ;_ (timbre/debug thread (count posts))
-                                              record-short-ids (map :record-short-id posts)
-                                              anchors (distinct (into [] (apply concat (map (fn [destnation]
-                                                                                              (db/get-anchors file-id destnation))
-                                                                                            record-short-ids))))]
-                                          (if (zero? (count posts))
-                                            nil
-                                            {:thread-title (:thread-title thread)
-                                             :posts posts
-                                             :anchors anchors
-                                             :popup-cache (create-popup-cache file-id record-short-ids)
-                                             })))
-                                      threads)))}})))
+                   :else
+                   {:body
+                    {:threads
+                     (into []
+                           (remove nil?
+                                   (map (fn [thread]
+                                          (let [file-id (db/get-file-id-by-thread-title (:thread-title thread))
+                                                posts (map process-record-body
+                                                           (db/get-new-records-in-file file-id (:time-last-accessed thread)))
+                                                ;_ (timbre/debug thread (count posts))
+                                                record-short-ids (map :record-short-id posts)
+                                                anchors (distinct (into [] (apply concat (map (fn [destnation]
+                                                                                                (db/get-anchors file-id destnation))
+                                                                                              record-short-ids))))]
+                                            (if (zero? (count posts))
+                                              nil
+                                              {:thread-title (:thread-title thread)
+                                               :posts posts
+                                               :anchors anchors
+                                               :popup-cache (create-popup-cache file-id record-short-ids)
+                                               })))
+                                        threads)))}}))
+               (catch Throwable t
+                 ;(clojure.stacktrace/print-stack-trace t)
+                 (timbre/error "/api/new-posts:" t))))
 
            (POST "/api/new-post-notification"
                  request

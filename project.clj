@@ -4,6 +4,7 @@
   :url "http://example.com/FIXME"
 
   :source-paths ["src" "src-cljc"]
+  :repositories {"4thline.org-repo" "http://4thline.org/m2"}
   :dependencies [; Luminus
                  [org.clojure/clojure "1.7.0"]
                  [selmer "0.9.5"]
@@ -61,6 +62,9 @@
                  [cheshire "5.5.0"]
                  [clj-rss "0.2.3"]
                  [org.clojure/math.combinatorics "0.1.1"]
+                 [org.fourthline.cling/cling-core "2.1.1-SNAPSHOT"]
+                 [org.fourthline.cling/cling-support "2.1.1-SNAPSHOT"]
+                 ;[org.bitlet/weupnp "0.1.4"]
                  ]
 
   :min-lein-version "2.0.0"
@@ -68,7 +72,7 @@
   :jvm-opts [;"-server"
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
-             "-Xmx384m"
+             "-Xmx512m"
              ;"-XX:+UseParNewGC"
              ;"-XX:+UseConcMarkSweepGC"
              "-XX:+UseG1GC"

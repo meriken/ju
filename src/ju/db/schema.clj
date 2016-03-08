@@ -25,7 +25,7 @@
 ; H2 embedded mode
 (def h2-db-spec {:classname   "org.h2.Driver"
                  :subprotocol "h2"
-                 :subname     (str "./" db-name
+                 :subname     (str "./database/" db-name
                                    ";MV_STORE=FALSE"
                                    ";MVCC=TRUE"
                                    ";MULTI_THREADED=FALSE"
@@ -43,7 +43,7 @@
 
 (def h2-backup-db-spec {:classname   "org.h2.Driver"
                         :subprotocol "h2"
-                        :subname     (str "./" backup-db-name
+                        :subname     (str "./database/" backup-db-name
                                           ";MV_STORE=FALSE"
                                           ";MVCC=FALSE"
                                           ";MULTI_THREADED=FALSE"
@@ -73,7 +73,7 @@
 ; HyperSQL embedded mode
 (def hsqldb-db-spec {:classname   "org.hsqldb.jdbc.JDBCDriver"
                      :subprotocol "hsqldb"
-                     :subname     (str "file:" db-name ".hsqldb"
+                     :subname     (str "file:database/" db-name ".hsqldb"
                                        ";hsqldb.tx=locks"
                                        ;";hsqldb.tx_level=serializable"
                                        ";hsqldb.lob_file_scale=1")
@@ -85,7 +85,7 @@
 
 (def hsqldb-backup-db-spec {:classname   "org.hsqldb.jdbc.JDBCDriver"
                             :subprotocol "hsqldb"
-                            :subname     (str "file:" backup-db-name ".hsqldb"
+                            :subname     (str "file:database/" backup-db-name ".hsqldb"
                                               ";hsqldb.tx=locks"
                                               ;";hsqldb.tx_level=serializable"
                                               ";hsqldb.lob_file_scale=1")
