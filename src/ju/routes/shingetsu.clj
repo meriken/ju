@@ -1757,7 +1757,11 @@
                   :enable-google-analytics param/enable-google-analytics
                   :google-analytics-tracking-id param/google-analytics-tracking-id
                   :thumbnail-height param/thumbnail-height
-                  :allow-tripcode (if param/tripcode-password true false)}}}))
+                  :allow-tripcode (if param/tripcode-password true false)
+                  :admin-name param/admin-name
+                  :admin-website param/admin-website
+                  :admin-email param/admin-email
+                  }}}))
 
            (POST "/api/generate-tripcode"
                  request

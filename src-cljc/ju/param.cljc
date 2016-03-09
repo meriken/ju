@@ -75,7 +75,12 @@
    ["PC", "ソフトウェア", "ハードウェア"]
    ["開発", "プログラミング言語", "IT"]
    ["新月", "運用", "スレ一覧",  "テスト"]
-   ["外国語" "裏"]])
+   ["外国語" "トリップ" "裏"]])
+(def admin-name nil)
+(def admin-website nil)
+(def admin-email nil)
+
+
 
 (def enable-recaptcha false)
 (def recaptcha-site-key nil)
