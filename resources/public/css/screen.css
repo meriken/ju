@@ -102,10 +102,14 @@
 	}
 
 	.ad {
-	text-align: center;
-	width: 100%;
+	    text-align: center;
+	    width: 100%;
 	    margin-bottom: 10px;
 	    overflow: hidden;
+	}
+
+	.ad iframe {
+	    display: block !important; /* For Google AdSense */
 	}
 
 	body > #app > .container.without-navbar {
@@ -381,8 +385,6 @@
         max-width: 100%;
     }
 
-    iframe.gist { display:block; }
-
 	.video-container {
 		position: relative;
 		padding-bottom: 56.25%;/* 16:9 */
@@ -413,6 +415,7 @@
 
     iframe.gist {
         overflow: hidden;
+        display:block;
     }
 
 	input {
