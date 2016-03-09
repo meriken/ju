@@ -106,10 +106,7 @@
 	    width: 100%;
 	    margin-bottom: 10px;
 	    overflow: hidden;
-	}
-
-	.ad iframe {
-	    display: block !important; /* For Google AdSense */
+	    line-height: 0;
 	}
 
 	body > #app > .container.without-navbar {
