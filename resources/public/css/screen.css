@@ -381,7 +381,7 @@
         max-width: 100%;
     }
 
-    iframe { display:block; }
+    iframe.gist { display:block; }
 
 	.video-container {
 		position: relative;

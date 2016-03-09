@@ -1756,7 +1756,8 @@
                   :recaptcha-site-key param/recaptcha-site-key
                   :enable-google-analytics param/enable-google-analytics
                   :google-analytics-tracking-id param/google-analytics-tracking-id
-                  :thumbnail-height param/thumbnail-height}}}))
+                  :thumbnail-height param/thumbnail-height
+                  :allow-tripcode (if param/tripcode-password true false)}}}))
 
            (POST "/api/generate-tripcode"
                  request

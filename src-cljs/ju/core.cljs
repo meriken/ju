@@ -58,6 +58,7 @@
 (def enable-google-analytics (atom param/enable-google-analytics))
 (def google-analytics-tracking-id (atom param/google-analytics-tracking-id))
 (def thumbnail-height (atom param/thumbnail-height))
+(def allow-tripcode (atom false))
 
 
 (defn remove-tooltips
@@ -522,7 +523,7 @@
            [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "thread-title" :placeholder "題名"}]])
         [:div.wrapped-input.input-group
          [:span.no-border.input-group-addon {:style {:border-radius "4px 0 0 0"}} [:span.glyphicon.glyphicon-user ]]
-         [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "name" :placeholder "名前 (トリップ使用可)"}]]
+         [:input#name.no-border.form-control {:style {:border-radius "4px 0 0 0"} :name "name" :placeholder (if allow-tripcode "名前" "名前 (トリップ使用可)")}]]
        [:div.wrapped-input.input-group
         [:span.no-border.input-group-addon [:span.glyphicon.glyphicon-envelope ]]
         [:input#mail.no-border.form-control {:name "mail" :placeholder "メール"}]]
@@ -1570,6 +1571,7 @@
                         (reset! recaptcha-site-key (:recaptcha-site-key status))
                         (reset! enable-google-analytics (:enable-google-analytics status))
                         (reset! google-analytics-tracking-id (:google-analytics-tracking-id status))
+                        (reset! allow-tripcode (:allow-tripcode status))
 
                         (set-title)
                         (if (= (session/get :page) :status)
