@@ -1250,9 +1250,9 @@
                                         (str (:dat-file-line %1) "<>\n")))
                                     results
                                     (range 1 (inc (count results))))))
-        response (->
-                   (ok (apply str posts-as-strings))
-                   (content-type "text/plain; charset=windows-31j"))]
+        response {:status 200
+                  :headers {"Content-Type" "text/plain; charset=windows-31j"}
+                  :body (apply str posts-as-strings)}]
     (swap! dat-file-response-cache assoc thread-number
            {:thread-number thread-number
             :num-records (:num-records file)
@@ -1261,15 +1261,48 @@
     response))
 
 (defn update-dat-file-response-cache
-  [thread-number]
+  [thread-number request]
+  (timbre/debug "update-dat-file-response-cache:" request)
   (let [file (db/get-file-by-thread-number thread-number)
         _ (if (nil? file) (throw (Exception.)))
-        cache-entry (get @dat-file-response-cache thread-number nil)]
-    (if (and cache-entry
-             (= (:num-records cache-entry) (:num-records file))
-             (= (:time-updated cache-entry) (:time-updated file)))
-      (:response cache-entry)
-      (create-dat-file-response thread-number))))
+        cache-entry (get @dat-file-response-cache thread-number nil)
+        response (if (and cache-entry
+                           (= (:num-records cache-entry) (:num-records file))
+                           (= (:time-updated cache-entry) (:time-updated file)))
+                    (:response cache-entry)
+                    (create-dat-file-response thread-number))
+        headers (if request (:headers request))
+        range (if headers (get headers "range"))
+        range-start (if (and
+                          range
+                          (re-find #"^bytes=([0-9]+)-$" range))
+                      (Long/parseLong (second (re-find #"^bytes=([0-9]+)-$" range))))
+        body-in-bytes (if range-start (.getBytes (:body response) "windows-31j"))
+        response (cond
+                   (and range-start (= range-start (count body-in-bytes)))
+                   {:status 304
+                    :headers {"Content-Type" "text/plain; charset=windows-31j"}
+                    :body ""}
+
+                   (and range-start (< range-start (count body-in-bytes)))
+                   (let [body-in-bytes (byte-array (drop range-start body-in-bytes))
+                         body (String. body-in-bytes "windows-31j")]
+                     {:status 206
+                      :headers {"Content-Type" "text/plain; charset=windows-31j"
+                                "Accept-Ranges" "bytes"
+                                "Content-Range" (str "bytes " range-start "-" (+ range-start (dec (count body-in-bytes))) "/" (+ range-start (count body-in-bytes)))}
+                      :body body})
+
+                   range-start
+                   {:status 416 ;RANGE_NOT_SATISFIABLE
+                    :headers {"Content-Type" "text/plain; charset=windows-31j"}
+                    :body ""}
+
+                   :else
+                   response)]
+    (timbre/debug "update-dat-file-response-cache:" (pr-str response))
+    response
+    ))
 
 (defn update-api-thread-cache
   [thread-title page-num page-size]
@@ -1313,8 +1346,9 @@
                    (:num-records file)
                    (pos? (:num-records file))
                    (not (some #{(:file-name file)} param/known-corrupt-files)))
-            (update-dat-file-response-cache
-               (str (+ (long (/ (clj-time.coerce/to-long (:time-first-post file)) 1000)) (* 9 60 60))))
+             (update-dat-file-response-cache
+               (str (+ (long (/ (clj-time.coerce/to-long (:time-first-post file)) 1000)) (* 9 60 60)))
+               nil)
              (dorun (map
                       (fn [page-num]
                         (update-api-thread-cache (file-name-to-thread-title (:file-name file)) page-num param/page-size)
@@ -2101,7 +2135,7 @@
                  (let [{:keys [dat-file-name]} (:params request)
                        _ (timbre/info "/:board-name/dat/:dat-file-name" (get-remote-address request) dat-file-name headers)
                        [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)]
-                   (update-dat-file-response-cache thread-number)))))
+                   (update-dat-file-response-cache thread-number request)))))
 
 
 

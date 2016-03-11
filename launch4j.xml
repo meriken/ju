@@ -27,7 +27,7 @@
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>
     <initialHeapSize>64</initialHeapSize>
-    <maxHeapSize>512</maxHeapSize>
+    <maxHeapSize>640</maxHeapSize>
     <opt>-XX:ThreadStackSize=4096 -XX:-OmitStackTraceInFastThrow  -XX:+UseG1GC -XX:MaxGCPauseMillis=1000</opt>
   </jre>
   <messages>
