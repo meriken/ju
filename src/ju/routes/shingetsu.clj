@@ -1431,7 +1431,7 @@
                  (zero? (:num-records %))))
        (map #(try
               (str
-                (+ (long (/ (clj-time.coerce/to-long (:time-first-post %)) 1000)) (* 9 60 60))
+                (long (/ (clj-time.coerce/to-long (:time-first-post %)) 1000))
                 ".dat<>"
                 (org.apache.commons.lang3.StringEscapeUtils/escapeHtml4
                   (unhexify (second (re-find #"^thread_(.*)$" (:file-name %)))))
@@ -1984,7 +1984,7 @@
 
            (GET "/:board-name/"
                 {:keys [headers params body server-name] :as request}
-             (timbre/info "/:board-name/subject.txt" (get-remote-address request))
+             (timbre/info "/:board-name/" (get-remote-address request))
              (let [board-name (:board-name params)
                    match (re-find #"^2ch_([A-F0-9]+)$" board-name)
                    decoded-board-name (if match (unhexify (second match)))
