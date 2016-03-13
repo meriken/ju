@@ -1152,7 +1152,7 @@
                             (clojure.string/split (:body post) #"<br>"))))
                  (map #(if-not (and (string? %) (re-find #"^[\t ]+" %))
                                (list %)
-                               (let [[_ spaces rest] (re-find #"^([\t ])+(.*)$" %)
+                               (let [[_ spaces rest] (re-find #"^([\t ]+)(.*)$" %)
                                      spaces (clojure.string/replace spaces #" " "&nbsp;")
                                      spaces (clojure.string/replace spaces #"\t" "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")]
                                  (list [:span {:key (my-uuid) :dangerouslySetInnerHTML {:__html spaces}}] rest))))
