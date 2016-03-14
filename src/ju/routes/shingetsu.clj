@@ -1351,7 +1351,7 @@
                    (pos? (:num-records file))
                    (not (some #{(:file-name file)} param/known-corrupt-files)))
              (update-dat-file-response-cache
-               (str (+ (long (/ (clj-time.coerce/to-long (:time-first-post file)) 1000)) (* 9 60 60)))
+               (long (/ (clj-time.coerce/to-long (:time-first-post file)) 1000))
                nil)
              (dorun (map
                       (fn [page-num]
@@ -1363,7 +1363,7 @@
                           param/page-size))))))
          (db/get-all-files)))
      (catch Throwable t
-       (clojure.stacktrace/print-stack-trace t)
+       ;(clojure.stacktrace/print-stack-trace t)
        (timbre/error "update-api-thread-cache-for-all-files:" t)))))
 
 (defn create-new-posts-rss-response
