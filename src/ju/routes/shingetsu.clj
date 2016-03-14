@@ -2145,6 +2145,11 @@
                      (and thread-number (db/get-file-by-thread-number thread-number))
                      (update-dat-file-response-cache thread-number request)
 
+                     (and thread-number (db/get-file-by-thread-number-plus-9 thread-number) (get headers "range"))
+                     {:status 416 ;RANGE_NOT_SATISFIABLE
+                      :headers {"Content-Type" "text/plain; charset=windows-31j"}
+                      :body ""}
+
                      (and thread-number (db/get-file-by-thread-number-plus-9 thread-number))
                      {:status 200
                       :headers {"Content-Type" "text/plain; charset=windows-31j"}
