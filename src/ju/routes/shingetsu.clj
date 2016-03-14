@@ -1363,6 +1363,7 @@
                           param/page-size))))))
          (db/get-all-files)))
      (catch Throwable t
+       (clojure.stacktrace/print-stack-trace t)
        (timbre/error "update-api-thread-cache-for-all-files:" t)))))
 
 (defn create-new-posts-rss-response
