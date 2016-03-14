@@ -137,6 +137,24 @@
                         [1368282234 "初心者用質問スレッド"]
                         [1368286488 "初心者用質問スレッド"]}))))))
 
+(defn dat-timestamp-formatter
+  [local-time]
+  (str
+    (clj-time.format/unparse
+      (clj-time.format/formatter "yyyy/MM/dd")
+      local-time)
+    (cond
+      (clj-time.predicates/sunday? local-time) "(日)"
+      (clj-time.predicates/monday? local-time) "(月)"
+      (clj-time.predicates/tuesday? local-time) "(火)"
+      (clj-time.predicates/wednesday? local-time) "(水)"
+      (clj-time.predicates/thursday? local-time) "(木)"
+      (clj-time.predicates/friday? local-time) "(金)"
+      (clj-time.predicates/saturday? local-time) "(土)")
+    (clj-time.format/unparse
+      (clj-time.format/formatter " HH:mm:ss")
+      local-time)))
+
 (defn convert-record-into-dat-file-line
   [record]
   (let [name (:name record)
@@ -155,21 +173,7 @@
                            (if (string? (:stamp record)) (Long/parseLong (:stamp record)) (:stamp record))
                            (* 9 60 60))
                           1000))
-        ts (str
-             (clj-time.format/unparse
-               (clj-time.format/formatter "yyyy/MM/dd")
-               local-time)
-             (cond
-               (clj-time.predicates/sunday? local-time) "(日)"
-               (clj-time.predicates/monday? local-time) "(月)"
-               (clj-time.predicates/tuesday? local-time) "(火)"
-               (clj-time.predicates/wednesday? local-time) "(水)"
-               (clj-time.predicates/thursday? local-time) "(木)"
-               (clj-time.predicates/friday? local-time) "(金)"
-               (clj-time.predicates/saturday? local-time) "(土)")
-             (clj-time.format/unparse
-               (clj-time.format/formatter " HH:mm:ss")
-               local-time))
+        ts (dat-timestamp-formatter local-time)
         record-short-id (second (re-find #"^(.{8})" (:record-id record)))]
     (str name
          "<>"
@@ -2134,8 +2138,27 @@
                (when (re-find #"^2ch(_[A-F0-9]+)?$" board-name)
                  (let [{:keys [dat-file-name]} (:params request)
                        _ (timbre/info "/:board-name/dat/:dat-file-name" (get-remote-address request) dat-file-name headers)
-                       [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)]
-                   (update-dat-file-response-cache thread-number request)))))
+                       [_ thread-number] (re-find #"^([0-9]+)\.dat$" dat-file-name)
+                       thread-number (if thread-number (Long/parseLong thread-number))]
+                   (cond
+                     (and thread-number (db/get-file-by-thread-number thread-number))
+                     (update-dat-file-response-cache thread-number request)
+
+                     (and thread-number (db/get-file-by-thread-number-plus-9 thread-number))
+                     {:status 200
+                      :headers {"Content-Type" "text/plain; charset=windows-31j"}
+                      :body (str
+                              "新月名無しさん<><>"
+                              (dat-timestamp-formatter
+                                (clj-time.coerce/from-long
+                                  (+
+                                    (clj-time.coerce/to-long (clj-time.core/now))
+                                    (* 9 60 60 1000))))
+                              "<>"
+                              "このスレッドは移動しました。新しいアドレスは次の通りです。<br>"
+                              (get-server-url-base) "/test/read.cgi/" board-name "/" (- thread-number (* 9 60 60)) "/"
+                              "<>このスレッドは移動しました\n")}
+                     )))))
 
 
 

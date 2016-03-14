@@ -174,9 +174,10 @@
       (pos? (count files))
       (first files))))
 
-(defn- get-file-by-thread-number-plus-9
+(defn get-file-by-thread-number-plus-9
   [thread-number]
-  (let [ts (java.sql.Timestamp. (* (- (Long/parseLong thread-number) (* 9 60 60)) 1000))
+  (let [thread-number (if (string? thread-number) (Long/parseLong thread-number) thread-number)
+        ts (java.sql.Timestamp. (* (- thread-number (* 9 60 60)) 1000))
         files (select files (where {:time_first_post ts}))]
     (if (and
           files
@@ -185,13 +186,15 @@
 
 (defn get-file-by-thread-number
   [thread-number]
-  (let [ts (java.sql.Timestamp. (* (Long/parseLong thread-number) 1000))
+  (let [thread-number (if (string? thread-number) (Long/parseLong thread-number) thread-number)
+        ts (java.sql.Timestamp. (* thread-number 1000))
         files (select files (where {:time_first_post ts}))]
     (if (and
           files
           (pos? (count files)))
       (first files)
-      (get-file-by-thread-number-plus-9 thread-number))))
+      ;(get-file-by-thread-number-plus-9 thread-number)
+      )))
 
 (defn get-file-by-thread-title
   [thread-title]
