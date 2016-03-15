@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    {% if upgrade-insecure-requests %}<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">{% endif %}
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
 
@@ -19,7 +20,6 @@
         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
     </script>
     {{ad-code-for-thread-in-head|safe}}
-    {% if upgrade-insecure-requests %}<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">{% endif %}
 </head>
 
 
