@@ -1861,11 +1861,14 @@
                     :headers {"Content-Type" "text/html; charset=utf-8"}
                     :body (str
                             "<html>"
+                            "<head>"
+                            "<meta http-equiv=\"Content-Security-Policy\" content=\"upgrade-insecure-requests\">"
+                            "</head>"
                             "<style>"
                             "body { margin: 0; overflow: hidden; padding: 0; }"
                             "</style>"
                             "<body>"
-                            "<script src=\"http://adm.shinobi.jp/s/" id "\"></script>"
+                            "<script src=\"https://adm.shinobi.jp/s/" id "\"></script>"
                             "</body>"
                             "</html>"
                             )}))
