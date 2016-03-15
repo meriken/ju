@@ -1867,7 +1867,7 @@
                             "body { margin: 0; overflow: hidden; padding: 0; }"
                             "</style>"
                             "<body>"
-                            "<script src=\"https://adm.shinobi.jp/s/" id "\"></script>"
+                            "<script src=\"http://adm.shinobi.jp/s/" id "\"></script>"
                             "</body>"
                             "</html>"
                             )}))
