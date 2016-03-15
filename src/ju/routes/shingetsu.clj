@@ -1858,8 +1858,7 @@
                      _ (timbre/debug "/api/ninja-ad/:id" (get-remote-address request) id)]
                  (if (re-find #"^[a-z0-9]+$" id)
                    {:status 200
-                    :headers {"Content-Type" "text/html; charset=utf-8"
-                              "Content-Security-Policy" "upgrade-insecure-requests"}
+                    :headers {"Content-Type" "text/html; charset=utf-8"}
                     :body (str
                             "<html>"
                             "<head>"

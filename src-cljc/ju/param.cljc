@@ -33,6 +33,7 @@
 (def static-server-url-base nil)
 (def wait-time-after-post 0)
 (def enable-upnp true)
+(def upgrade-insecure-requests false)
 
 (def enable-crawler true)
 (def enable-api-cache-manager false)

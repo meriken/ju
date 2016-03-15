@@ -26,6 +26,7 @@
           :servlet-context *app-context*
           :title (if (:title params) (:title params) param/service-name)
           :google-site-verification param/google-site-verification
+          :upgrade-insecure-requests param/upgrade-insecure-requests
           :ad-code-for-thread-in-head (param/ad-code-for-thread nil nil :head false))))
     "text/html; charset=utf-8"))
 

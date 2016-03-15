@@ -19,6 +19,7 @@
         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
     </script>
     {{ad-code-for-thread-in-head|safe}}
+    {% if upgrade-insecure-requests %}<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">{% endif %}
 </head>
 
 
