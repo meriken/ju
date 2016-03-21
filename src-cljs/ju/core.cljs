@@ -1159,7 +1159,7 @@
                  (apply concat)
                  (map #(if (string? %) (process-gist-tags %) %))
                  (map #(if (string? %) (process-youtube-links %) %))
-                 ;(map #(if (string? %) (process-nicovideo-links %) %))
+                 (map #(if (string? %) (process-nicovideo-links %) %))
                  (map #(if (string? %) (process-twitter-links %) %))
                  (map #(if (string? %) (process-links %) %))
                  (map #(if (string? %) (process-anchors % thread-title) %))
