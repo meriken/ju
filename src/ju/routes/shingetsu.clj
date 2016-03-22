@@ -1851,6 +1851,67 @@
                   :headers {"Content-Type" "text/plain; charset=utf-8"}
                   :body (str "内部エラーが発生しました。\n" t)})))
 
+           (GET "/api/i-mobile-ad"
+                request
+             (try
+               (let [{:keys [pid asid width height]} (:params request)
+                     _ (timbre/debug "/api/i-mobile-ad" (get-remote-address request))]
+                 {:status 200
+                  :headers {"Content-Type" "text/html; charset=utf-8"}
+                  :body (str
+                          "<html>"
+                          "<head>"
+                          "</head>"
+                          "<style>"
+                          "body { margin: 0; overflow: hidden; padding: 0; }"
+                          "</style>"
+                          "<body>"
+                          "<script type=\"text/javascript\">\n\t\timobile_pid = \"" pid "\"; \n\t\timobile_asid = \"" asid "\"; \n\t\timobile_width = " width "; \n\t\timobile_height = " height ";\n\t</script>\n\t<script type=\"text/javascript\" src=\"https://spdeliver.i-mobile.co.jp/script/ads.js?20101001\"></script>\n\t"
+                          "</body>"
+                          "</html>"
+                          )})
+               (catch clojure.lang.ExceptionInfo e
+                 (timbre/error e)
+                 {:status 400
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (.getMessage e)})
+               (catch Throwable t
+                 (timbre/error t)
+                 {:status 500
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (str "内部エラーが発生しました。\n" t)})))
+
+           (GET "/api/i-mobile-ad-mobile"
+                request
+             (try
+               (let [{:keys [pid asid type]} (:params request)
+                     _ (timbre/debug "/api/i-mobile-ad-mobile" (get-remote-address request))]
+                 {:status 200
+                  :headers {"Content-Type" "text/html; charset=utf-8"}
+                  :body (str
+                          "<html>"
+                          "<head>"
+                          "</head>"
+                          "<style>"
+                          "body { margin: 0; overflow: hidden; padding: 0; }"
+                          "</style>"
+                          "<body>"
+                          "<script type=\"text/javascript\">\n\t\timobile_tag_ver = \"0.3\"; \n\t\timobile_pid = \"" pid "\"; \n\t\timobile_asid = \"" asid "\"; \n\t\timobile_type = \"" type "\";\n\t</script>\n\t<script type=\"text/javascript\" src=\"https://spad.i-mobile.co.jp/script/adssp.js?20110215\"></script>\n\t"
+                          "</body>"
+                          "</html>"
+                          )})
+               (catch clojure.lang.ExceptionInfo e
+                 (timbre/error e)
+                 {:status 400
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (.getMessage e)})
+               (catch Throwable t
+                 (timbre/error t)
+                 {:status 500
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (str "内部エラーが発生しました。\n" t)})))
+
+
            (GET "/api/ninja-ad/:id"
                 request
              (try
