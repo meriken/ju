@@ -93,40 +93,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/languages/clojure.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/languages/clojure-repl.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/languages/go.min.js"></script>
-<script src="/js/fuckadblock.js" integrity="sha256-4g+Ieen60ide/scuPWvVG/zksSnfpJud+vyaRNAjk8U="></script>
-<script>
-    if(typeof FuckAdBlock === 'undefined') {
-    } else {
-      var FabPluginGoogleAdsense = function() {
-        FuckAdBlock.getPluginClass().apply(this, arguments);
-        this.options.set({
-          windowVar: 'adsbygoogle',
-        });
-
-        var data = {};
-
-        this.start = function() {
-          var self = this;
-          var windowVar = this.options.get('windowVar');
-          data.loopTimeout = setTimeout(function() {
-            if(typeof window[windowVar] !== 'undefined' && window[windowVar].loaded === true) {
-              self.callUndetected();
-            } else {
-              self.callDetected();
-            }
-          }, 1);
-          return this;
-        };
-        this.stop = function() {
-          clearInterval(data.loopTimeout);
-          clearInterval(data.loopInterval);
-          return this;
-        };
-      };
-      FabPluginGoogleAdsense.pluginName = 'google-adsense';
-      FabPluginGoogleAdsense.versionMin = [4, 0, 0];
-    }
-</script>
 {% style "/css/screen.css" %}
 
 <script type="text/javascript">

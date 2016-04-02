@@ -5,6 +5,9 @@
  * https://github.com/sitexw/FuckAdBlock
  */
 
+FuckAdBlock = undefined;
+fuckAdBlock = undefined;
+
 (function(window, instanceName, className) {
 	var debug = false;
 	var debugName = 'FuckAdBlock';
@@ -483,3 +486,11 @@
 		}, false);
 	}
 })(window, 'fuckAdBlock', 'FuckAdBlock');
+
+if (typeof FuckAdBlock === 'undefined') {
+    $('body').html('このページを表示するには、広告のブロックを解除してください。Please disable the ad blocker.');
+} else {
+    fuckAdBlock.on(true, function() { $('body').html('このページを表示するには、広告のブロックを解除してください。Please disable the ad blocker.'); });
+}
+fuckAdBlock.check();
+

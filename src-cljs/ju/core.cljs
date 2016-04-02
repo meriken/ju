@@ -1367,8 +1367,8 @@
                      (.each ($ (keyword ".script-wrapper script:not(.processed)"))
                             (fn []
                               (this-as tag
-                                ;(.log js/console tag)
-                                (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error _))
+                                ;(.log js/console (.attr ($ tag) "src"))
+                                (try (.getScript js/$ (.attr ($ tag) "src")) (catch js/Error e (.log js/console e)))
                                 (try (js/eval (.text ($ tag))) (catch js/Error _))
                                 (.addClass ($ tag) "processed"))))
                      (if (and
