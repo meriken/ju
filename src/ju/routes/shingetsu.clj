@@ -1911,6 +1911,36 @@
                   :headers {"Content-Type" "text/plain; charset=utf-8"}
                   :body (str "内部エラーが発生しました。\n" t)})))
 
+           (GET "/api/nend-ad"
+                request
+             (try
+               (let [{:keys [media site spot site oriented]} (:params request)
+                     _ (timbre/debug "/api/i-mobile-ad-mobile" (get-remote-address request))]
+                 {:status 200
+                  :headers {"Content-Type" "text/html; charset=utf-8"}
+                  :body (str
+                          "<html>"
+                          "<head>"
+                          "</head>"
+                          "<style>"
+                          "body { margin: 0; overflow: hidden; padding: 0; }"
+                          "</style>"
+                          "<body>"
+                          "<script type=\"text/javascript\">\nvar nend_params = {\"media\":" media ",\"site\":" site ",\"spot\":" spot ",\"type\":" type ",\"oriented\":" oriented "};\n</script>\n<script type=\"text/javascript\" src=\"https://js1.nend.net/js/nendAdLoader.js\"></script>"
+                          "</body>"
+                          "</html>"
+                          )})
+               (catch clojure.lang.ExceptionInfo e
+                 (timbre/error e)
+                 {:status 400
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (.getMessage e)})
+               (catch Throwable t
+                 (timbre/error t)
+                 {:status 500
+                  :headers {"Content-Type" "text/plain; charset=utf-8"}
+                  :body (str "内部エラーが発生しました。\n" t)})))
+
 
            (GET "/api/ninja-ad/:id"
                 request
