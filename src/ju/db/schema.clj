@@ -75,7 +75,7 @@
                      :subprotocol "hsqldb"
                      :subname     (str "file:database/" db-name ".hsqldb"
                                        ";hsqldb.tx=locks"
-                                       ;";hsqldb.tx_level=serializable"
+                                       ";hsqldb.tx_level=serializable"
                                        ";hsqldb.lob_file_scale=1")
                      :user        "sa"
                      :password    ""
@@ -87,7 +87,7 @@
                             :subprotocol "hsqldb"
                             :subname     (str "file:database/" backup-db-name ".hsqldb"
                                               ";hsqldb.tx=locks"
-                                              ;";hsqldb.tx_level=serializable"
+                                              ";hsqldb.tx_level=serializable"
                                               ";hsqldb.lob_file_scale=1")
                             :user        "sa"
                             :password    ""

@@ -31,6 +31,7 @@
 (def static-server-node-name nil)
 (def server-path "/server")
 (def static-server-url-base nil)
+(def wait-time-for-update-command 0)
 (def wait-time-after-post 0)
 (def enable-upnp true)
 

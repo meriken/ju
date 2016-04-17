@@ -114,7 +114,7 @@
   (pos? (count (select nodes (fields :id) (where {:node_name node-name})))))
 
 (defn add-node [node-name]
-  (transaction
+  (transaction {:isolation :serializable}
     (if-not (known-node? node-name)
       (insert nodes
               (values {:node-name node-name
@@ -218,7 +218,7 @@
   (if-not (re-find #"^[a-zA-Z0-9]+_[a-zA-Z0-9_]+$" file-name)
     (throw (IllegalArgumentException. "Invalid file name.")))
 
-  (transaction
+  (transaction {:isolation :serializable}
     (if-not (get-file-id file-name)
       (insert files
               (values {:file-name file-name
@@ -257,7 +257,7 @@
 
 (defn really-delete-file
   [file-id]
-  (transaction
+  (transaction {:isolation :serializable}
     (delete files (where {:id file-id}))
     (delete records (where {:file_id file-id}))
     (delete anchors (where {:file_id file-id}))))
@@ -284,7 +284,7 @@
   (if (re-find #"[ 　<>&]" tag-string)
     (throw (IllegalArgumentException. "Invalid tag string")))
 
-  (transaction
+  (transaction {:isolation :serializable}
     (if (zero? (count (select file_tags (fields :id) (where {:file_id file-id :tag_string tag-string}))))
       (insert file_tags
               (values {:file_id file-id
@@ -298,7 +298,7 @@
 
 (defn update-tags-for-file
   [file-id new-tags]
-  (transaction
+  (transaction {:isolation :serializable}
     (delete file_tags
             (where {:file_id file-id}))
     (dorun (map #(add-file-tag file-id %)
@@ -358,7 +358,7 @@
 
   (try-times
     5
-    (transaction
+    (transaction {:isolation :serializable}
       (when (zero? (count (select records (fields :id) (where { :file_id file-id :stamp stamp :record_id record-id }))))
         (insert records
                 (values {:file_id file-id
@@ -366,7 +366,7 @@
                          :record_id record-id
                          :record_short_id (second (re-find #"^([0-9a-f]{8})" record-id))
                          :body body
-                         :time_created nil ; dirty flag ; (clj-time.coerce/to-sql-time (clj-time.core/now))
+                         :time_created (clj-time.coerce/to-sql-time (clj-time.core/now)) ; nil means a dirty flag
                          :size (+ 10 2 32 2 (count body) 1)
                          :deleted (if deleted true false)
                          :dat_file_line dat-file-line
@@ -610,7 +610,7 @@
 
 (defn mark-record-as-deleted
   [id]
-  (transaction
+  (transaction {:isolation :serializable}
     (let [record (get-record-by-id id)]
       (when record
         (update
@@ -626,7 +626,7 @@
 
 (defn mark-record-with-record-id-as-deleted
   [record-id]
-  (transaction
+  (transaction {:isolation :serializable}
     (update
           records
           (set-fields {:deleted true})
@@ -804,7 +804,7 @@
   [file-name stamp record-id]
   (try-times
     5
-    (transaction
+    (transaction {:isolation :serializable}
       (when (zero? (count (select blocked_records (fields :id) (where { :file_name file-name :stamp stamp :record_id record-id }))))
         (insert blocked_records
                 (values {:file_name file-name
@@ -817,7 +817,7 @@
   [file-name stamp record-id origin]
   (try-times
     5
-    (transaction
+    (transaction {:isolation :serializable}
       (when (zero? (count (select blocked_records (fields :id) (where { :file_name file-name :stamp stamp :record_id record-id :origin origin}))))
         (insert blocked_records
                 (values {:file_name file-name
@@ -957,7 +957,7 @@
   (if-not (re-find #"^[a-f0-9]{32}$" record-id)
     (throw (IllegalArgumentException. (str "Invalid record ID: " record-id))))
 
-  (transaction
+  (transaction {:isolation :serializable}
     (let [existing-update-command (try (first (select update_commands (where {:file_name file-name :stamp stamp :record_id record-id}))) (catch Throwable _ nil))]
       (if (nil? existing-update-command)
       (insert update_commands
@@ -982,7 +982,7 @@
 (defn add-anchor
   [file-id source destination]
   ;(timbre/debug "add-anchor" file-id source destination)
-  (transaction
+  (transaction {:isolation :serializable}
     (when (zero? (count (select anchors (fields :id) (where { :file_id file-id :source source :destination destination}))))
       (insert anchors
               (values {:file_id file-id
@@ -1043,7 +1043,7 @@
 
   (try-times
     5
-    (transaction
+    (transaction {:isolation :serializable}
       (when (zero? (count (select images (where {
                                                  :file_id (:file_id image)
                                                  :record_id (:record_id image)
@@ -1187,6 +1187,7 @@
               (timbre/error "New Record Monitor:" t)))
           (Thread/sleep 100)))))
 
+  ; This is not used anymore.
   (if param/enable-file-monitor
     (do
       (future

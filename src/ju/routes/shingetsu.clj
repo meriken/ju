@@ -221,7 +221,7 @@
       true)
 
     (catch Throwable t
-      (timbre/debug "ping:" t node-name)
+      ;(timbre/debug "ping:" t node-name)
       (swap! active-nodes #(clojure.set/difference % #{node-name}))
       (swap! search-nodes #(clojure.set/difference % #{node-name}))
       false)))
@@ -521,14 +521,16 @@
                          (:suffix elements)
                          node-name
                          nil)
-                       (db/mark-file-as-dirty file-id)
+                       ;(db/mark-file-as-dirty file-id)
                        (if (some #{(:suffix elements)} param/image-suffixes)
                          (db/create-image file-id stamp record-id elements deleted))
                        )))
                  (catch Throwable t
+                   (db/update-file file-id)
                    ;(clojure.stacktrace/print-stack-trace t)
                    (timbre/info (str "Skipped record: " (str t) " " node-name " " file-name " " (nth (re-find #"^([0-9]+<>[0-9a-f]+)<>" record) 1 ""))))))
              records))
+         (db/update-file file-id)
          (count records))))))
 
 (defn download-file
@@ -1531,6 +1533,7 @@
 
                    (and (not (= node-name @server-node-name)) (not (some #{entry} @update-command-history)))
                    (try
+                     (Thread/sleep param/wait-time-for-update-command)
                      (download-file-from-node node-name file-name (str stamp))
                      (if-not (db/get-record-without-body (db/get-file-id file-name) stamp record-id)
                        (timbre/info "Record not found for /update:" file-name (file-name-to-thread-title file-name) stamp record-id node-name))
