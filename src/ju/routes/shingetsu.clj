@@ -1036,7 +1036,7 @@
       remote-address)
     (if (some #{(:suffix elements)} param/image-suffixes)
       (db/create-image file-id stamp record-id elements false))
-    (db/update-file file-id)
+    (db/update-num-records-in-file file-id)
     (db/process-update-command (:file-name file) stamp record-id)
     (do (future
           (swap! update-command-history conj entry)
@@ -1045,7 +1045,8 @@
                      (update % (:file-name file) stamp record-id)
                      (catch Throwable t
                        (timbre/error t)))
-                   @active-nodes))))
+                   @active-nodes))
+          (db/update-file file-id)))
     (Thread/sleep param/wait-time-after-post)))
 
 (defn create-thread-list

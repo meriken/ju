@@ -38,9 +38,9 @@
 (def enable-crawler true)
 (def enable-api-cache-manager false)
 (def enable-thread-api-cache-manager false)
-(def enable-record-monitor true)
-(def enable-new-record-monitor true)
-(def enable-file-monitor true)
+(def enable-record-monitor false)
+(def enable-new-record-monitor false)
+(def enable-file-monitor false)
 
 (def service-name "匿名掲示板")
 (def anonymous-users-handle "新月名無しさん")

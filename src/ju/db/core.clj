@@ -861,7 +861,12 @@
       '())))
 
 
-
+(defn update-num-records-in-file
+  [file-id]
+  (update
+    files
+    (set-fields {:num_records (count-records-in-file file-id)})
+    (where {:id file-id})))
 
 (defn update-file
   [file-id]
