@@ -487,10 +487,11 @@ fuckAdBlock = undefined;
 	}
 })(window, 'fuckAdBlock', 'FuckAdBlock');
 
-if (typeof FuckAdBlock === 'undefined') {
-    $('body').html('このページを表示するには、広告のブロックを解除してください。Please disable the ad blocker.');
-} else {
-    fuckAdBlock.on(true, function() { $('body').html('このページを表示するには、広告のブロックを解除してください。Please disable the ad blocker.'); });
+if (!(/bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent))) {
+	if (typeof FuckAdBlock === 'undefined') {
+		$('body').html('このページを表示するには、広告のブロックを解除してください。Please disable the ad blocker.');
+	} else {
+		fuckAdBlock.on(true, function() { $('body').html('このページを表示するには、広告のブロックを解除してください。Please disable the ad blocker.'); });
+	}
+	fuckAdBlock.check();
 }
-fuckAdBlock.check();
-
