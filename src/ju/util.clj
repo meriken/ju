@@ -434,6 +434,6 @@
       {:output-fn ju-output-fn})
     (timbre/merge-config!
       {:appenders
-       {:rotor (rotor/rotor-appender  {:path "log/ju.log"})}})
+       {:rotor (rotor/rotor-appender  {:path "ju.log"})}})
     (timbre/merge-config!
       {:ns-blacklist ["slf4j-timbre.adapter"]})))
