@@ -868,17 +868,8 @@
     (set-fields {:num_records (count-records-in-file file-id)})
     (where {:id file-id})))
 
-(defn update-file
+(defn update-time-updated-for-file
   [file-id]
-  ;(timbre/debug "update-file:" file-id)
-  (update
-    files
-    (set-fields {:num_records (count-records-in-file file-id)})
-    (where {:id file-id}))
-  (update
-    files
-    (set-fields {:num_deleted_records (count-deleted-records-in-file file-id)})
-    (where {:id file-id}))
   (update
     files
     (set-fields {:time_updated (try
@@ -892,7 +883,22 @@
                                                                   0
                                                                   nil))))
                                  (catch Throwable t nil))})
+    (where {:id file-id})))
+
+(defn update-file
+  [file-id]
+  ;(timbre/debug "update-file:" file-id)
+  (update-num-records-in-file file-id)
+  (update-time-updated-for-file file-id)
+  (update
+    files
+    (set-fields {:num_records (count-records-in-file file-id)})
     (where {:id file-id}))
+  (update
+    files
+    (set-fields {:num_deleted_records (count-deleted-records-in-file file-id)})
+    (where {:id file-id}))
+
   (update
     files
     (set-fields {:time_first_post (try

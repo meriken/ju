@@ -934,6 +934,8 @@
 
 
 
+(declare update-api-caches)
+
 (defn process-post
   [thread-title name mail password body attachment remote-address]
   (if (or
@@ -1045,7 +1047,11 @@
                      (update % (:file-name file) stamp record-id)
                      (catch Throwable t
                        (timbre/error t)))
-                   @active-nodes))
+                   @active-nodes))))
+    (do (future
+          (db/update-time-updated-for-file file-id)
+          (if param/enable-api-cache-manager
+            (update-api-caches))
           (db/update-file file-id)))
     (Thread/sleep param/wait-time-after-post)))
 
@@ -1393,6 +1399,22 @@
                                        :anchors (into [] (db/get-anchors (:file-id record)  (:record-short-id record)))}))
                                   (db/get-recent-records 100))))))})})
 
+(defn update-api-caches
+  []
+  (try
+    (reset! api-threads-cache (doall (create-thread-list nil nil)))
+    (reset! api-threads-100-response-cache
+            {:status 200
+             :headers {"Content-Type" "application/json; charset=utf-8"}
+             :body (cheshire.core/generate-string (take 100 @api-threads-cache))})
+    (reset! api-threads-response-cache
+            {:status 200
+             :headers {"Content-Type" "application/json; charset=utf-8"}
+             :body (cheshire.core/generate-string @api-threads-cache)})
+    (reset! api-new-posts-rss-response-cache (create-new-posts-rss-response))
+    (catch Throwable t
+      (timbre/error "update-api-caches:" t))))
+
 (defn start-api-cache-manager
   []
   (if param/enable-api-cache-manager
@@ -1400,19 +1422,7 @@
       (future
         (timbre/info "API Cache Manager started.")
         (while true
-          (try
-            (reset! api-threads-cache (doall (create-thread-list nil nil)))
-            (reset! api-threads-100-response-cache
-                    {:status 200
-                     :headers {"Content-Type" "application/json; charset=utf-8"}
-                     :body (cheshire.core/generate-string (take 100 @api-threads-cache))})
-            (reset! api-threads-response-cache
-                    {:status 200
-                     :headers {"Content-Type" "application/json; charset=utf-8"}
-                     :body (cheshire.core/generate-string @api-threads-cache)})
-            (reset! api-new-posts-rss-response-cache (create-new-posts-rss-response))
-            (catch Throwable t
-              (timbre/error "API Cache Manager:" t)))
+          (update-api-caches)
           (Thread/sleep 500)))))
 
   (if param/enable-thread-api-cache-manager
