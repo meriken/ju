@@ -1176,9 +1176,9 @@
               (try
                 (map
                   (fn [file]
-                    (update-file (:id file))
                     (remove-duplicate-records-in-file (:id file))
-                    (remove-duplicate-anchors-in-file (:id file)))
+                    (remove-duplicate-anchors-in-file (:id file))
+                    (update-file (:id file)))
                   (get-all-files))
                 ;(clean-mikas-first-spill)
                 ;(clean-mikas-second-spill)
