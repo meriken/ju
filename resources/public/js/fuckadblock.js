@@ -491,7 +491,7 @@ if (!(/bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent)))
 	if (typeof FuckAdBlock === 'undefined') {
 		$('body').html('このページを表示するには、広告のブロックを解除してください。Please disable the ad blocker.');
 	} else {
-		fuckAdBlock.on(true, function() { $('body').html('このページを表示するには、広告のブロックを解除してください。Please disable the ad blocker.'); });
+		setTimeout(function() { fuckAdBlock.on(true, function() { $('body').html('このページを表示するには、広告のブロックを解除してください。Please disable the ad blocker.'); }); }, 1000);
 	}
 	fuckAdBlock.check();
 }
