@@ -43,6 +43,7 @@
 (def enable-file-monitor false)
 
 (def service-name "匿名掲示板")
+(defn meta-description [page-title] nil)
 (def anonymous-users-handle "新月名無しさん")
 (def page-size 20)
 (def thumbnail-height 256)
