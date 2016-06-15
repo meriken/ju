@@ -72,7 +72,7 @@
   :jvm-opts [;"-server"
              "-XX:ThreadStackSize=4096"
              "-XX:-OmitStackTraceInFastThrow"
-             "-Xmx640m"
+             "-Xmx1g"
              "-XX:+UseParNewGC"
              "-XX:+UseConcMarkSweepGC"
              ;"-XX:+UseG1GC"
